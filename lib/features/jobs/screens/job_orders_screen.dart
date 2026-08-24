@@ -4,15 +4,18 @@ import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_card.dart';
+import 'job_order_detail_screen.dart';
 
 /// Job Orders list screen with filter tabs, live Signal counts, search, and instant status triggers.
 class JobOrdersScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
+  final void Function(JobOrderDto job)? onSelectJobForDetails;
   final void Function(JobOrderDto job)? onSelectJobForReport;
 
   const JobOrdersScreen({
     super.key,
     required this.jobsSignals,
+    this.onSelectJobForDetails,
     this.onSelectJobForReport,
   });
 
@@ -29,22 +32,43 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
     super.dispose();
   }
 
+  void _openDetails(JobOrderDto job) {
+    if (widget.onSelectJobForDetails != null) {
+      widget.onSelectJobForDetails!(job);
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => JobOrderDetailScreen(
+          jobId: job.id,
+          jobsSignals: widget.jobsSignals,
+          onOpenReport: widget.onSelectJobForReport,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final signals = widget.jobsSignals;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Assigned Work Orders',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             Text(
               'Field installations & repair dispatches',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+              ),
             ),
           ],
         ),
@@ -97,7 +121,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
         children: [
           // Search & Filter Toolbar
           Container(
-            color: Theme.of(context).cardTheme.color ?? Colors.white,
+            color: isDark ? AppTheme.darkCard : Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
               children: [
@@ -124,7 +148,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                 const SizedBox(height: 10),
 
                 // Status Filter Tabs with dynamic Signal counts
-                _buildFilterTabs(signals),
+                _buildFilterTabs(signals, isDark),
               ],
             ),
           ),
@@ -138,19 +162,24 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: AppTheme.warningSubtle,
+                color: isDark
+                    ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                    : AppTheme.warningSubtle,
                 child: Row(
                   children: [
-                    const Icon(Icons.cloud_off_rounded,
-                        size: 16, color: Color(0xFF92400E)),
+                    Icon(
+                      Icons.cloud_off_rounded,
+                      size: 16,
+                      color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '$pending local update(s) stored in Drift DB awaiting sync.',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF92400E),
+                          color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
                         ),
                       ),
                     ),
@@ -185,7 +214,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                 final jobs = signals.filteredJobs.value;
 
                 if (jobs.isEmpty) {
-                  return _buildEmptyState(signals);
+                  return _buildEmptyState(signals, isDark);
                 }
 
                 return RefreshIndicator(
@@ -198,6 +227,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       final job = jobs[index];
                       return JobCard(
                         job: job,
+                        onTap: () => _openDetails(job),
+                        onOpenDetails: () => _openDetails(job),
                         onCycleStatus: () async {
                           await signals.advanceJobStatus(job);
                           if (!context.mounted) return;
@@ -208,7 +239,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                               ),
                               duration: const Duration(seconds: 2),
                               behavior: SnackBarBehavior.floating,
-                              backgroundColor: AppTheme.darkSlate,
+                              backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
                             ),
                           );
                         },
@@ -227,95 +258,110 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
     );
   }
 
-  Widget _buildFilterTabs(JobsSignals signals) {
+  Widget _buildFilterTabs(JobsSignals signals, bool isDark) {
     return SignalBuilder(
       builder: (context) {
-      final currentFilter = signals.activeFilter.value;
-      // Only the three workflow statuses are selectable. Jobs with any other
-      // backend status, such as Applied or Confirmed, are reachable under All.
-      final tabs = [
-        {'id': 'all', 'label': 'All', 'count': signals.totalCount.value},
-        {
-          'id': JobStatus.inProgress.name,
-          'label': JobStatus.inProgress.label,
-          'count': signals.inProgressCount.value,
-        },
-        {
-          'id': JobStatus.completed.name,
-          'label': JobStatus.completed.label,
-          'count': signals.completedCount.value,
-        },
-        {
-          'id': JobStatus.activated.name,
-          'label': JobStatus.activated.label,
-          'count': signals.activatedCount.value,
-        },
-      ];
+        final currentFilter = signals.activeFilter.value;
+        final exceptionCount = signals.siteExceptionCount.value;
 
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: tabs.map((tab) {
-            final isSelected = currentFilter == tab['id'];
-            final count = tab['count'] as int;
+        final tabs = [
+          {'id': 'all', 'label': 'All', 'count': signals.totalCount.value},
+          {
+            'id': JobStatus.scheduled.name,
+            'label': JobStatus.scheduled.label,
+            'count': signals.scheduledCount.value,
+          },
+          {
+            'id': JobStatus.inProgress.name,
+            'label': JobStatus.inProgress.label,
+            'count': signals.inProgressCount.value,
+          },
+          {
+            'id': JobStatus.completed.name,
+            'label': JobStatus.completed.label,
+            'count': signals.completedCount.value,
+          },
+          {
+            'id': JobStatus.activated.name,
+            'label': JobStatus.activated.label,
+            'count': signals.activatedCount.value,
+          },
+          if (exceptionCount > 0)
+            {
+              'id': 'exceptions',
+              'label': 'Exceptions',
+              'count': exceptionCount,
+            },
+        ];
 
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                selected: isSelected,
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(tab['label'] as String),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.white.withValues(alpha: 0.25)
-                            : AppTheme.borderLight,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '$count',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected ? Colors.white : AppTheme.textMuted,
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: tabs.map((tab) {
+              final isSelected = currentFilter == tab['id'];
+              final count = tab['count'] as int;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  selected: isSelected,
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(tab['label'] as String),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.white.withValues(alpha: 0.25)
+                              : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                onSelected: (_) {
-                  signals.setFilter(tab['id'] as String);
-                },
-                selectedColor: AppTheme.primary,
-                backgroundColor: AppTheme.lightBg,
-                labelStyle: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? Colors.white : AppTheme.darkSlate,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppTheme.primary
-                        : AppTheme.borderLight,
+                    ],
                   ),
+                  onSelected: (_) {
+                    signals.setFilter(tab['id'] as String);
+                  },
+                  selectedColor: AppTheme.primary,
+                  backgroundColor: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+                  labelStyle: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : AppTheme.darkSlate),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppTheme.primary
+                          : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                    ),
+                  ),
+                  showCheckmark: false,
                 ),
-                showCheckmark: false,
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    });
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
   }
 
-  Widget _buildEmptyState(JobsSignals signals) {
+  Widget _buildEmptyState(JobsSignals signals, bool isDark) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -324,8 +370,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppTheme.primarySubtleBg,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -343,10 +389,13 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'There are no job orders matching your selected status filter or search keyword.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(

@@ -4,26 +4,32 @@ import '../../../core/constants/app_constants.dart';
 import '../models/job_order_model.dart';
 import 'status_badge.dart';
 
-/// Technician Job Card displaying subscriber details and interactive status triggers.
+/// Technician Job Card displaying subscriber details, status indicators, and quick action triggers.
 class JobCard extends StatelessWidget {
   final JobOrderDto job;
+  final VoidCallback? onTap;
+  final VoidCallback? onOpenDetails;
   final VoidCallback? onCycleStatus;
   final VoidCallback? onOpenReport;
 
   const JobCard({
     super.key,
     required this.job,
+    this.onTap,
+    this.onOpenDetails,
     this.onCycleStatus,
     this.onOpenReport,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: onOpenReport,
+        onTap: onTap ?? onOpenDetails ?? onOpenReport,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -39,7 +45,7 @@ class JobCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppTheme.primarySubtleBg,
+                          color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -73,29 +79,38 @@ class JobCard extends StatelessWidget {
                             : Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.warningSubtle,
+                                  color: isDark
+                                      ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                                      : AppTheme.warningSubtle,
                                   borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: const Color(0xFFFDE68A)),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFFD97706).withValues(alpha: 0.5)
+                                        : const Color(0xFFFDE68A),
+                                  ),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.cloud_off_rounded, size: 12, color: AppTheme.warning),
-                                    SizedBox(width: 3),
+                                    const Icon(Icons.cloud_off_rounded, size: 12, color: AppTheme.warning),
+                                    const SizedBox(width: 3),
                                     Text(
                                       'Offline',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF92400E),
+                                        color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                       ),
-                      StatusBadge(status: job.jobStatus, rawStatus: job.status,
-                        siteException: job.siteException),
+                      StatusBadge(
+                        status: job.jobStatus,
+                        rawStatus: job.status,
+                        siteException: job.siteException,
+                      ),
                     ],
                   ),
                 ],
@@ -128,9 +143,9 @@ class JobCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '${job.address}${job.barangay != null ? ', ${job.barangay}' : ''}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppTheme.textMuted,
+                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -151,9 +166,9 @@ class JobCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       job.contactNumber!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppTheme.textMuted,
+                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -162,7 +177,7 @@ class JobCard extends StatelessWidget {
               ],
 
               const SizedBox(height: 12),
-              const Divider(height: 1, color: AppTheme.borderLight),
+              Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
               const SizedBox(height: 12),
 
               // Plan, NAP details & Optical Power
@@ -185,9 +200,9 @@ class JobCard extends StatelessWidget {
                         if (job.portId != null || job.napId != null)
                           Text(
                             'NAP-${job.napId ?? "X"} • ${job.portId ?? "Port"}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.textMuted,
+                              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                             ),
                           ),
                       ],
@@ -199,7 +214,7 @@ class JobCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getOpticalColorSubtle(job.opticalPower!),
+                        color: _getOpticalColorSubtle(job.opticalPower!, isDark),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -270,6 +285,7 @@ class JobCard extends StatelessWidget {
 
   String _getNextStatusActionLabel(JobStatus? next) {
     return switch (next) {
+      JobStatus.scheduled => 'Schedule Work',
       JobStatus.inProgress => 'Start Work',
       JobStatus.completed => 'Mark Completed',
       JobStatus.activated => 'Mark Activated',
@@ -291,8 +307,11 @@ class JobCard extends StatelessWidget {
     return AppTheme.danger;
   }
 
-  Color _getOpticalColorSubtle(double dbm) {
+  Color _getOpticalColorSubtle(double dbm, bool isDark) {
     final base = _getOpticalColor(dbm);
+    if (isDark) {
+      return base.withValues(alpha: 0.2);
+    }
     if (base == AppTheme.success) return AppTheme.successSubtle;
     if (base == AppTheme.warning) return AppTheme.warningSubtle;
     return AppTheme.dangerSubtle;

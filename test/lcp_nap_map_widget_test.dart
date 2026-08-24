@@ -154,4 +154,18 @@ void main() {
     expect(find.byKey(const Key('lcpNapPin_5')), findsNothing);
     expect(find.byKey(const Key('lcpNapCluster')), findsNothing);
   });
+
+  testWidgets('renders zoom controls and plant legend toggle', (tester) async {
+    await pumpMap(tester);
+
+    expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.remove_rounded), findsOneWidget);
+    expect(find.text('Legend'), findsOneWidget);
+
+    // Tap legend toggle
+    await tester.tap(find.text('Legend'));
+    await tester.pump();
+
+    expect(find.text('LCP Cabinet Colors'), findsOneWidget);
+  });
 }

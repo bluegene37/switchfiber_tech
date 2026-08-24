@@ -196,6 +196,37 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFFF8591),
+          side: const BorderSide(color: Color(0xFFFF8591), width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkInput,
@@ -212,6 +243,33 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: primary, width: 2),
         ),
+        labelStyle: const TextStyle(color: textSecondaryDark, fontSize: 14),
+        hintStyle: TextStyle(color: textSecondaryDark.withValues(alpha: 0.7), fontSize: 14),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: darkCard,
+        indicatorColor: const Color(0xFF3F2327),
+        elevation: 2,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              color: Color(0xFFFF8591),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            );
+          }
+          return const TextStyle(
+            color: textSecondaryDark,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: Color(0xFFFF8591));
+          }
+          return const IconThemeData(color: textSecondaryDark);
+        }),
       ),
     );
   }

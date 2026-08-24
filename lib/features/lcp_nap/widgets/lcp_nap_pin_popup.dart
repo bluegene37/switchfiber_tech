@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../../core/services/map_navigation_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/lcp_nap_model.dart';
+import '../services/map_clustering.dart';
 
 /// Summary card shown when a technician taps a pin on the LCP NAP map.
 ///
@@ -47,10 +50,14 @@ class LcpNapPinPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hue = lcpColorSeed(location.lcp);
+    final cabinetColor = HSLColor.fromAHSL(1, hue, 0.62, 0.44).toColor();
+    final latLng = location.latLng;
+
     return Card(
       elevation: 8,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,6 +65,37 @@ class LcpNapPinPopup extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: cabinetColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: cabinetColor.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: cabinetColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        location.lcp,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: cabinetColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     location.lcpNap,
@@ -76,7 +114,7 @@ class LcpNapPinPopup extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -101,15 +139,31 @@ class LcpNapPinPopup extends StatelessWidget {
               spacing: 8,
               runSpacing: 6,
               children: [
-                // Total capacity only: the API does not report occupancy.
                 _Stat(
                   icon: Icons.hub_outlined,
                   label: '${location.portTotal} ports',
                 ),
-                _Stat(
-                  icon: Icons.my_location_rounded,
-                  label: location.coordinates ?? '',
-                ),
+                if (location.coordinates != null)
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: location.coordinates!));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Coordinates copied: ${location.coordinates}'),
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Theme.of(context).brightness == Brightness.dark
+                              ? AppTheme.darkCard
+                              : AppTheme.darkSlate,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: _Stat(
+                      icon: Icons.my_location_rounded,
+                      label: location.coordinates ?? '',
+                    ),
+                  ),
               ],
             ),
             if (_provenance != null) ...[
@@ -124,13 +178,38 @@ class LcpNapPinPopup extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: onOpenDetails,
-                icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                label: const Text('View full details'),
-              ),
+            Row(
+              children: [
+                if (latLng != null) ...[
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      MapNavigationService.showNavigationChooser(
+                        context: context,
+                        latitude: latLng.latitude,
+                        longitude: latLng.longitude,
+                        title: location.lcpNap,
+                        subtitle: _address,
+                      );
+                    },
+                    icon: const Icon(Icons.navigation_rounded, size: 15),
+                    label: const Text('Navigate', style: TextStyle(fontSize: 12)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onOpenDetails,
+                    icon: const Icon(Icons.open_in_new_rounded, size: 15),
+                    label: const Text('View details', style: TextStyle(fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -148,23 +227,29 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (label.isEmpty) return const SizedBox.shrink();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.primarySubtleBg,
+        color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppTheme.primaryActive),
+          Icon(
+            icon,
+            size: 13,
+            color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
+          ),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppTheme.primaryActive,
+              color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
             ),
           ),
         ],

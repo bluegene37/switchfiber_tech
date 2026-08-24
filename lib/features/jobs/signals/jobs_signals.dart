@@ -29,10 +29,11 @@ class JobsSignals {
     final query = searchQuery.value.trim().toLowerCase();
 
     return jobs.where((job) {
-      // 1. Status filter. Only the three workflow statuses are selectable;
-      //    everything else is reachable through 'all'.
+      // 1. Status filter. Handles workflow statuses, site exceptions, and 'all'.
       if (filter != 'all' && filter.isNotEmpty) {
-        if (job.jobStatus?.name.toLowerCase() != filter) {
+        if (filter == 'exceptions') {
+          if (job.siteException == null) return false;
+        } else if (job.jobStatus?.name.toLowerCase() != filter) {
           return false;
         }
       }
@@ -54,6 +55,9 @@ class JobsSignals {
 
   int _countOf(JobStatus s) =>
       allJobs.value.where((j) => j.jobStatus == s).length;
+
+  late final ReadonlySignal<int> scheduledCount =
+      computed(() => _countOf(JobStatus.scheduled));
 
   late final ReadonlySignal<int> inProgressCount =
       computed(() => _countOf(JobStatus.inProgress));

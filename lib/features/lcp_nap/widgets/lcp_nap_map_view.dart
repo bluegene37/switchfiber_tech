@@ -41,6 +41,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
   LcpNapDto? _selected;
   bool _didInitialFit = false;
   bool _satellite = false;
+  bool _showLegend = false;
   double _zoom = 14;
 
   @override
@@ -68,6 +69,20 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
         bounds: LatLngBounds.fromPoints(points),
         padding: const EdgeInsets.all(48),
       ),
+    );
+  }
+
+  void _zoomIn() {
+    _mapController.move(
+      _mapController.camera.center,
+      (_mapController.camera.zoom + 1).clamp(3.0, 19.0),
+    );
+  }
+
+  void _zoomOut() {
+    _mapController.move(
+      _mapController.camera.center,
+      (_mapController.camera.zoom - 1).clamp(3.0, 19.0),
     );
   }
 
@@ -126,7 +141,10 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                     ? sites.first.latLng!
                     : _fallbackCentre,
                 initialZoom: sites.isEmpty ? 11 : 14,
-                onTap: (_, __) => setState(() => _selected = null),
+                onTap: (_, __) => setState(() {
+                  _selected = null;
+                  _showLegend = false;
+                }),
                 onPositionChanged: (camera, _) {
                   // Re-cluster as the technician zooms.
                   if ((camera.zoom - _zoom).abs() >= 0.5) {
@@ -188,6 +206,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                 child: _UnmappedNotice(sites: unmappedSites),
               ),
 
+            // Top Right: Base Layer Toggle
             Positioned(
               top: unmapped > 0 ? 52 : 8,
               right: 8,
@@ -197,20 +216,53 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
               ),
             ),
 
-            if (sites.isNotEmpty)
+            // Top Left: Plant Legend Toggle
+            Positioned(
+              top: unmapped > 0 ? 52 : 8,
+              left: 8,
+              child: _PlantLegendButton(
+                expanded: _showLegend,
+                onToggle: () => setState(() => _showLegend = !_showLegend),
+              ),
+            ),
+
+            // Plant Legend Expanded Card
+            if (_showLegend)
               Positioned(
-                right: 8,
-                bottom: selected == null ? 8 : 200,
-                child: FloatingActionButton.small(
-                  heroTag: 'lcpNapFitBounds',
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppTheme.primary,
-                  tooltip: 'Fit all sites',
-                  onPressed: () => _fitToSites(sites),
-                  child: const Icon(Icons.fit_screen_rounded),
+                top: (unmapped > 0 ? 52 : 8) + 40,
+                left: 8,
+                child: _PlantLegendOverlay(
+                  signals: widget.signals,
+                  onClose: () => setState(() => _showLegend = false),
                 ),
               ),
 
+            // Right Float: Zoom Controls + Fit Bounds
+            Positioned(
+              right: 8,
+              bottom: selected == null ? 8 : 220,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _MapZoomControl(
+                    onZoomIn: _zoomIn,
+                    onZoomOut: _zoomOut,
+                  ),
+                  const SizedBox(height: 8),
+                  if (sites.isNotEmpty)
+                    FloatingActionButton.small(
+                      heroTag: 'lcpNapFitBounds',
+                      backgroundColor: Theme.of(context).cardTheme.color ?? Colors.white,
+                      foregroundColor: AppTheme.primary,
+                      tooltip: 'Fit all sites',
+                      onPressed: () => _fitToSites(sites),
+                      child: const Icon(Icons.fit_screen_rounded),
+                    ),
+                ],
+              ),
+            ),
+
+            // Bottom Selected Pin Popup Card
             if (selected != null)
               Positioned(
                 left: 8,
@@ -434,6 +486,192 @@ class _UnmappedNotice extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Zoom in / out buttons on the map.
+class _MapZoomControl extends StatelessWidget {
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+
+  const _MapZoomControl({
+    required this.onZoomIn,
+    required this.onZoomOut,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = Theme.of(context).cardTheme.color ?? Colors.white;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? Colors.white : AppTheme.darkSlate;
+
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(8),
+      color: bg,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: onZoomIn,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Icon(Icons.add_rounded, size: 20, color: iconColor),
+            ),
+          ),
+          Container(
+            height: 1,
+            width: 28,
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+          ),
+          InkWell(
+            onTap: onZoomOut,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Icon(Icons.remove_rounded, size: 20, color: iconColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Button to toggle the Plant Color Legend
+class _PlantLegendButton extends StatelessWidget {
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  const _PlantLegendButton({
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(8),
+      color: Theme.of(context).cardTheme.color ?? Colors.white,
+      child: InkWell(
+        onTap: onToggle,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.palette_outlined, size: 15, color: AppTheme.primary),
+              const SizedBox(width: 5),
+              Text(
+                'Legend',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: expanded ? AppTheme.primary : (isDark ? Colors.white : AppTheme.darkSlate),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dropdown card showing LCP Cabinet color keys and pin explanation
+class _PlantLegendOverlay extends StatelessWidget {
+  final LcpNapSignals signals;
+  final VoidCallback onClose;
+
+  const _PlantLegendOverlay({
+    required this.signals,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SignalBuilder(
+      builder: (context) {
+        final cabinets = signals.lcpCabinetList.value.where((c) => c != 'All').toList();
+
+        return Card(
+          elevation: 6,
+          child: Container(
+            width: 220,
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'LCP Cabinet Colors',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    InkWell(
+                      onTap: onClose,
+                      borderRadius: BorderRadius.circular(12),
+                      child: const Icon(Icons.close_rounded, size: 16, color: AppTheme.textMuted),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Pin numbers show NAP box ID. Outer ring hue identifies Cabinet:',
+                  style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                ),
+                const SizedBox(height: 8),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: cabinets.length,
+                    itemBuilder: (context, index) {
+                      final cab = cabinets[index];
+                      final hue = lcpColorSeed(cab);
+                      final color = HSLColor.fromAHSL(1, hue, 0.62, 0.44).toColor();
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 1.5),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                cab,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

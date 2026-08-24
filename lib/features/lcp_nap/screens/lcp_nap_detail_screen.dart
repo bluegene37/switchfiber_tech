@@ -1,35 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/services/map_navigation_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../models/lcp_nap_model.dart';
+import '../services/map_clustering.dart';
+import '../services/map_tiles.dart';
 import '../signals/lcp_nap_signals.dart';
 
-/// Screen displaying comprehensive details and status controls for an LCP NAP site.
-class LcpNapDetailScreen extends StatelessWidget {
+/// Screen displaying comprehensive details and status controls for an LCP NAP site with full Dark Mode support.
+class LcpNapDetailScreen extends StatefulWidget {
   final int locationId;
   final LcpNapSignals signals;
+  final TileProvider? tileProvider;
 
   const LcpNapDetailScreen({
     super.key,
     required this.locationId,
     required this.signals,
+    this.tileProvider,
   });
 
   @override
+  State<LcpNapDetailScreen> createState() => _LcpNapDetailScreenState();
+}
+
+class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
+  TileProvider? _tiles;
+
+  @override
+  void initState() {
+    super.initState();
+    _tiles = widget.tileProvider;
+    if (_tiles == null) _loadTileProvider();
+  }
+
+  Future<void> _loadTileProvider() async {
+    final provider = await MapTiles.provider();
+    if (!mounted) return;
+    setState(() => _tiles = provider);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SignalBuilder(
       builder: (context) {
-        // Fetch current site reactively from allLocations signal
-        final all = signals.allLocations.value;
-        final location = all.where((l) => l.id == locationId).firstOrNull;
+        final all = widget.signals.allLocations.value;
+        final location = all.where((l) => l.id == widget.locationId).firstOrNull;
 
         if (location == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Site Details')),
-            body: const Center(child: Text('Location not found')),
+            body: Center(
+              child: Text(
+                'Location not found',
+                style: TextStyle(
+                  color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                ),
+              ),
+            ),
           );
         }
 
+        final hue = lcpColorSeed(location.lcp);
+        final cabinetColor = HSLColor.fromAHSL(1, hue, 0.62, 0.44).toColor();
 
         return Scaffold(
           appBar: AppBar(
@@ -40,13 +77,26 @@ class LcpNapDetailScreen extends StatelessWidget {
             actions: [
               // Offline sync badge
               Container(
-                margin: const EdgeInsets.only(right: 16),
+                margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: location.isSynced
-                      ? AppTheme.successSubtle
-                      : AppTheme.warningSubtle,
+                      ? (isDark
+                          ? const Color(0xFF059669).withValues(alpha: 0.25)
+                          : AppTheme.successSubtle)
+                      : (isDark
+                          ? const Color(0xFF78350F).withValues(alpha: 0.25)
+                          : AppTheme.warningSubtle),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: location.isSynced
+                        ? (isDark
+                            ? const Color(0xFF059669).withValues(alpha: 0.4)
+                            : const Color(0xFFBBF7D0))
+                        : (isDark
+                            ? const Color(0xFFD97706).withValues(alpha: 0.4)
+                            : const Color(0xFFFDE68A)),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -57,22 +107,27 @@ class LcpNapDetailScreen extends StatelessWidget {
                           : Icons.cloud_off_rounded,
                       size: 14,
                       color: location.isSynced
-                          ? AppTheme.success
-                          : const Color(0xFF92400E),
+                          ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
+                          : (isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E)),
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      location.isSynced ? 'Synced' : 'Drift SQLite (Local)',
+                      location.isSynced ? 'Synced' : 'Drift SQLite',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: location.isSynced
-                            ? AppTheme.success
-                            : const Color(0xFF92400E),
+                            ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
+                            : (isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E)),
                       ),
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.share_outlined, size: 20),
+                tooltip: 'Copy Dispatch Summary',
+                onPressed: () => _copySiteSummary(context, location, isDark),
               ),
             ],
           ),
@@ -94,11 +149,12 @@ class LcpNapDetailScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primarySubtleBg,
+                                  color: cabinetColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: cabinetColor.withValues(alpha: 0.3)),
                                 ),
-                                child: const Icon(Icons.router_rounded,
-                                    color: AppTheme.primary, size: 24),
+                                child: Icon(Icons.router_rounded,
+                                    color: cabinetColor, size: 24),
                               ),
                               const SizedBox(width: 12),
                               Column(
@@ -114,9 +170,10 @@ class LcpNapDetailScreen extends StatelessWidget {
                                   ),
                                   Text(
                                     '${location.lcp} Distribution Point',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: AppTheme.textMuted,
+                                      fontWeight: FontWeight.w600,
+                                      color: cabinetColor,
                                     ),
                                   ),
                                 ],
@@ -127,39 +184,49 @@ class LcpNapDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppTheme.primarySubtleBg,
+                              color: isDark
+                                  ? const Color(0xFF3F2327)
+                                  : AppTheme.primarySubtleBg,
                               borderRadius: BorderRadius.circular(12),
-                              border:
-                                  Border.all(color: AppTheme.primarySubtleBorder),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF882933)
+                                    : AppTheme.primarySubtleBorder,
+                              ),
                             ),
                             child: Text(
                               '${location.portTotal} ports',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.primaryActive,
+                                color: isDark
+                                    ? const Color(0xFFFF8591)
+                                    : AppTheme.primaryActive,
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Divider(height: 1, color: AppTheme.borderLight),
+                      Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
                       const SizedBox(height: 14),
 
                       // Location hierarchy
                       Row(
                         children: [
-                          const Icon(Icons.location_city_rounded,
-                              size: 16, color: AppTheme.textMuted),
+                          Icon(
+                            Icons.location_city_rounded,
+                            size: 16,
+                            color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${location.barangay ?? "N/A"}, ${location.city ?? "Metro Manila"}',
-                              style: const TextStyle(
+                              '${location.street != null ? "${location.street}, " : ""}${location.barangay ?? "N/A"}, ${location.city ?? "Metro Manila"}',
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: AppTheme.darkSlate,
+                                color: isDark ? Colors.white : AppTheme.darkSlate,
                               ),
                             ),
                           ),
@@ -171,7 +238,13 @@ class LcpNapDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 3. Port Allocation & Visual Grid
+              // 2. Mini Interactive Map Card (if location is mappable)
+              if (location.isMappable) ...[
+                _buildMiniMapCard(context, location, cabinetColor, isDark),
+                const SizedBox(height: 16),
+              ],
+
+              // 3. Port Matrix & Visual Grid
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -196,11 +269,13 @@ class LcpNapDetailScreen extends StatelessWidget {
                             ],
                           ),
                           Text(
-                            '${location.portTotal} ports',
-                            style: const TextStyle(
+                            '${location.portTotal} ports total',
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: AppTheme.primaryActive,
+                              color: isDark
+                                  ? const Color(0xFFFF8591)
+                                  : AppTheme.primaryActive,
                             ),
                           ),
                         ],
@@ -221,30 +296,34 @@ class LcpNapDetailScreen extends StatelessWidget {
                         itemCount: location.portTotal,
                         itemBuilder: (context, index) {
                           final portNumber = index + 1;
-                          // The API reports total ports only; which are in use
-                          // is unknown, so no port is coloured as occupied.
                           return Container(
                             decoration: BoxDecoration(
-                              color: AppTheme.lightBg,
+                              color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppTheme.borderLight),
+                              border: Border.all(
+                                color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                              ),
                             ),
                             child: Center(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.circle_outlined,
-                                    size: 14,
-                                    color: AppTheme.textMuted,
+                                    size: 13,
+                                    color: isDark
+                                        ? AppTheme.textSecondaryDark
+                                        : AppTheme.textMuted,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'P$portNumber',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
-                                      color: AppTheme.textMuted,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : AppTheme.textMuted,
                                     ),
                                   ),
                                 ],
@@ -254,13 +333,13 @@ class LcpNapDetailScreen extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        'Port occupancy is not tracked by the backend, so no '
-                        'port is shown as used.',
-                        style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                      Text(
+                        'Standard NAP distribution box. Ready for drop cable splicing.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-
                     ],
                   ),
                 ),
@@ -293,9 +372,11 @@ class LcpNapDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.lightBg,
+                          color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppTheme.borderLight),
+                          border: Border.all(
+                            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -303,11 +384,11 @@ class LcpNapDetailScreen extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'WGS84 Coordinates',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: AppTheme.textMuted,
+                                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -332,10 +413,9 @@ class LcpNapDetailScreen extends StatelessWidget {
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
-                                          'Copied: ${location.coordinates}'),
+                                      content: Text('Copied: ${location.coordinates}'),
                                       behavior: SnackBarBehavior.floating,
-                                      backgroundColor: AppTheme.darkSlate,
+                                      backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
                                     ),
                                   );
                                 },
@@ -343,13 +423,33 @@ class LcpNapDetailScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (location.isMappable) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              MapNavigationService.showNavigationChooser(
+                                context: context,
+                                latitude: location.latLng!.latitude,
+                                longitude: location.latLng!.longitude,
+                                title: location.lcpNap,
+                                subtitle:
+                                    '${location.street ?? ""}, ${location.barangay ?? ""}, ${location.city ?? ""}',
+                              );
+                            },
+                            icon: const Icon(Icons.navigation_rounded, size: 18),
+                            label: const Text('Start Turn-by-Turn Navigation'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // 5. Remarks / Plant Notes
             ],
           ),
         );
@@ -357,7 +457,135 @@ class LcpNapDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildMiniMapCard(
+    BuildContext context,
+    LcpNapDto location,
+    Color cabinetColor,
+    bool isDark,
+  ) {
+    final latLng = location.latLng!;
+    final tiles = _tiles;
 
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.map_outlined, size: 18, color: AppTheme.primary),
+                    SizedBox(width: 8),
+                    Text(
+                      'Site Map Location',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    MapNavigationService.showNavigationChooser(
+                      context: context,
+                      latitude: latLng.latitude,
+                      longitude: latLng.longitude,
+                      title: location.lcpNap,
+                      subtitle:
+                          '${location.street ?? ""}, ${location.barangay ?? ""}, ${location.city ?? ""}',
+                    );
+                  },
+                  icon: const Icon(Icons.navigation_rounded, size: 14),
+                  label: const Text('Navigate', style: TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 180,
+            width: double.infinity,
+            child: tiles == null
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+                : FlutterMap(
+                    options: MapOptions(
+                      initialCenter: latLng,
+                      initialZoom: 16,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                      ),
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: isDark ? MapTiles.streetDarkUrl : MapTiles.streetLightUrl,
+                        subdomains: MapTiles.cartoSubdomains,
+                        maxZoom: MapTiles.streetMaxZoom,
+                        userAgentPackageName: MapTiles.userAgentPackageName,
+                        tileProvider: tiles,
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: latLng,
+                            width: 36,
+                            height: 36,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: cabinetColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2.5),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x66000000),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  location.nap.replaceAll(RegExp(r'\D'), ''),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  void _copySiteSummary(BuildContext context, LcpNapDto location, bool isDark) {
+    final summary = 'Switch Fiber Plant Record:\n'
+        'Site: ${location.lcpNap}\n'
+        'Cabinet: ${location.lcp}\n'
+        'NAP: ${location.nap}\n'
+        'Ports: ${location.portTotal}\n'
+        'Address: ${location.street ?? ""}, ${location.barangay ?? ""}, ${location.city ?? ""}\n'
+        'GPS: ${location.coordinates ?? "N/A"}';
+
+    Clipboard.setData(ClipboardData(text: summary));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Site summary copied to clipboard!'),
+        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }
-

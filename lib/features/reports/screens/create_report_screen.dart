@@ -536,16 +536,22 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     required bool isAttached,
     required VoidCallback onToggle,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       onTap: onToggle,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isAttached ? AppTheme.primarySubtleBg : AppTheme.lightBg,
+          color: isAttached
+              ? (isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg)
+              : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isAttached ? AppTheme.primary : AppTheme.borderLight,
+            color: isAttached
+                ? AppTheme.primary
+                : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
             width: isAttached ? 1.5 : 1,
           ),
         ),
@@ -556,7 +562,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   ? Icons.check_circle_rounded
                   : Icons.add_a_photo_outlined,
               size: 26,
-              color: isAttached ? AppTheme.primary : AppTheme.textMuted,
+              color: isAttached ? AppTheme.primary : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
             ),
             const SizedBox(height: 6),
             Text(
@@ -565,7 +571,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isAttached ? FontWeight.w700 : FontWeight.w500,
-                color: isAttached ? AppTheme.primaryActive : AppTheme.darkSlate,
+                color: isAttached
+                    ? (isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive)
+                    : (isDark ? Colors.white : AppTheme.darkSlate),
               ),
             ),
             const SizedBox(height: 2),
@@ -573,7 +581,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               isAttached ? 'Attached ✓' : 'Tap to attach',
               style: TextStyle(
                 fontSize: 10,
-                color: isAttached ? AppTheme.primary : AppTheme.textMuted,
+                color: isAttached ? AppTheme.primary : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
               ),
             ),
           ],
@@ -583,6 +591,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _buildCustomerSignOffSection(ReportSignals rep) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -600,9 +610,12 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Subscriber acknowledges proper optical installation and functional internet connectivity.',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -613,10 +626,14 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   height: 90,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: signed ? AppTheme.successSubtle : AppTheme.lightBg,
+                    color: signed
+                        ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.25) : AppTheme.successSubtle)
+                        : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: signed ? AppTheme.success : AppTheme.borderLight,
+                      color: signed
+                          ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.4) : AppTheme.success)
+                          : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
                       width: 1.5,
                     ),
                   ),
@@ -632,7 +649,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                             signed
                                 ? Icons.verified_rounded
                                 : Icons.touch_app_rounded,
-                            color: signed ? AppTheme.success : AppTheme.textMuted,
+                            color: signed
+                                ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
+                                : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -644,8 +663,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: signed
-                                  ? const Color(0xFF166534)
-                                  : AppTheme.textMuted,
+                                  ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534))
+                                  : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
                             ),
                           ),
                         ],

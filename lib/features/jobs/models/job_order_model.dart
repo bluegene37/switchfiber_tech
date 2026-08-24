@@ -10,6 +10,7 @@ import '../../../core/database/app_database.dart';
 /// `Applied` and `Confirmed` that make up almost the whole table today - have a
 /// null [JobOrderDto.jobStatus] and appear only under the "All" tab.
 enum JobStatus {
+  scheduled('Scheduled'),
   inProgress('In Progress'),
   completed('Completed'),
   activated('Activated');
@@ -24,15 +25,17 @@ enum JobStatus {
   /// The next status when the technician advances the job.
   /// [activated] is terminal: it must not roll back around a cycle.
   JobStatus? get next => switch (this) {
+        JobStatus.scheduled => JobStatus.inProgress,
         JobStatus.inProgress => JobStatus.completed,
         JobStatus.completed => JobStatus.activated,
         JobStatus.activated => null,
       };
 
-  /// Match a raw `status` value, or null when it is not one of the three.
+  /// Match a raw `status` value to the workflow statuses.
   static JobStatus? parse(String? raw) {
     final v = raw?.trim().toLowerCase().replaceAll(RegExp(r'[-_\s]+'), '');
     return switch (v) {
+      'scheduled' || 'confirmed' || 'applied' || 'pending' => JobStatus.scheduled,
       'inprogress' => JobStatus.inProgress,
       'completed' => JobStatus.completed,
       'activated' => JobStatus.activated,

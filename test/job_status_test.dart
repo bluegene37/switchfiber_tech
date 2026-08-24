@@ -9,25 +9,26 @@ JobOrderDto job({String status = '', String? onsiteStatus}) =>
     });
 
 void main() {
-  group('the three job statuses the technician works with', () {
-    test('recognises exactly In Progress, Completed and Activated', () {
+  group('the job statuses the technician works with', () {
+    test('recognises Scheduled, In Progress, Completed and Activated', () {
+      expect(job(status: 'Scheduled').jobStatus, JobStatus.scheduled);
       expect(job(status: 'In Progress').jobStatus, JobStatus.inProgress);
       expect(job(status: 'Completed').jobStatus, JobStatus.completed);
       expect(job(status: 'Activated').jobStatus, JobStatus.activated);
     });
 
     test('tolerates casing and spacing from the backend', () {
+      expect(job(status: 'scheduled').jobStatus, JobStatus.scheduled);
       expect(job(status: 'in progress').jobStatus, JobStatus.inProgress);
       expect(job(status: 'INPROGRESS').jobStatus, JobStatus.inProgress);
       expect(job(status: 'in-progress').jobStatus, JobStatus.inProgress);
       expect(job(status: ' Completed ').jobStatus, JobStatus.completed);
     });
 
-    test('any other status is not one of the three', () {
-      // The live table is almost entirely these two values today.
-      expect(job(status: 'Confirmed').jobStatus, isNull);
-      expect(job(status: 'Applied').jobStatus, isNull);
-      expect(job(status: '').jobStatus, isNull);
+    test('maps dispatch-ready statuses to scheduled', () {
+      expect(job(status: 'Confirmed').jobStatus, JobStatus.scheduled);
+      expect(job(status: 'Applied').jobStatus, JobStatus.scheduled);
+      expect(job(status: 'Pending').jobStatus, JobStatus.scheduled);
     });
 
     test('the raw status is still readable for display under All', () {
@@ -36,7 +37,8 @@ void main() {
   });
 
   group('advancing a job through the workflow', () {
-    test('a job outside the three statuses starts work', () {
+    test('Scheduled advances to In Progress', () {
+      expect(job(status: 'Scheduled').nextStatus, JobStatus.inProgress);
       expect(job(status: 'Confirmed').nextStatus, JobStatus.inProgress);
       expect(job(status: 'Applied').nextStatus, JobStatus.inProgress);
     });

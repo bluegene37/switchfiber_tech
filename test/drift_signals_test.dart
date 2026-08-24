@@ -54,6 +54,11 @@ void main() {
       expect(signals.filteredJobs.value.length, 1);
       expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0803');
 
+      signals.setFilter('exceptions');
+      // Job #102 has onsiteStatus: 'Reschedule'
+      expect(signals.filteredJobs.value.length, 1);
+      expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0802');
+
       signals.setFilter('all');
       expect(signals.filteredJobs.value.length, 4);
     });

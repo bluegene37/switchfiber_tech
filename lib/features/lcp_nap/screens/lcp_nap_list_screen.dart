@@ -68,11 +68,13 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
             onPressed: () {
               signals.fetchRemote();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Syncing LCP NAP records with backend...'),
+                SnackBar(
+                  content: const Text('Syncing LCP NAP records with backend...'),
                   behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppTheme.darkSlate,
-                  duration: Duration(seconds: 1),
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark
+                      ? AppTheme.darkCard
+                      : AppTheme.darkSlate,
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },
@@ -254,6 +256,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
       builder: (context) {
         final cabinets = signals.lcpCabinetList.value;
         final selected = signals.selectedLcpFilter.value;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return SizedBox(
           height: 34,
@@ -270,16 +273,20 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                 selected: isSelected,
                 onSelected: (_) => signals.setLcpFilter(cabinet),
                 selectedColor: AppTheme.primary,
-                backgroundColor: AppTheme.lightBg,
+                backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightBg,
                 labelStyle: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? Colors.white : AppTheme.darkSlate,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.white70 : AppTheme.darkSlate),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? AppTheme.primary : AppTheme.borderLight,
+                    color: isSelected
+                        ? AppTheme.primary
+                        : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
                   ),
                 ),
               );
