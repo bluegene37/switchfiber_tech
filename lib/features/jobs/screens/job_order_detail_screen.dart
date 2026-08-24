@@ -112,6 +112,12 @@ class JobOrderDetailScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              // Completion Report Quick Access
+              IconButton(
+                icon: const Icon(Icons.assignment_turned_in_outlined, size: 20),
+                tooltip: 'Field Completion Report',
+                onPressed: () => _handleOpenReport(context, job),
+              ),
               // Copy Ticket Summary Button
               IconButton(
                 icon: const Icon(Icons.share_outlined, size: 20),
@@ -121,7 +127,7 @@ class JobOrderDetailScreen extends StatelessWidget {
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+            padding: const EdgeInsets.all(16),
             children: [
               // 1. Status & Workflow Pipeline Card
               _buildWorkflowCard(context, job, isDark),
@@ -148,10 +154,9 @@ class JobOrderDetailScreen extends StatelessWidget {
               ],
 
               // 6. Onsite Notes & Completion Proofs
-              _buildOnsiteRecordsCard(job, isDark),
+              _buildOnsiteRecordsCard(context, job, isDark),
             ],
           ),
-          bottomSheet: _buildBottomActionBar(context, job, isDark),
         );
       },
     );
@@ -603,7 +608,7 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOnsiteRecordsCard(JobOrderDto job, bool isDark) {
+  Widget _buildOnsiteRecordsCard(BuildContext context, JobOrderDto job, bool isDark) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -672,6 +677,23 @@ class JobOrderDetailScreen extends StatelessWidget {
               label: 'Subscriber Digital Sign-Off',
               attached: job.clientSignature != null && job.clientSignature!.isNotEmpty,
               isDark: isDark,
+            ),
+            const SizedBox(height: 14),
+
+            // Inline action to fill/update the completion report
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _handleOpenReport(context, job),
+                icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
+                label: const Text(
+                  'Fill / Update Completion Report',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
             ),
           ],
         ),
@@ -756,44 +778,13 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomActionBar(BuildContext context, JobOrderDto job, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
-            width: 1,
-          ),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            if (onOpenReport != null) {
-              onOpenReport!(job);
-            }
-          },
-          icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
-          label: const Text(
-            'Open Field Completion Report',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-          ),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-        ),
-      ),
-    );
+  void _handleOpenReport(BuildContext context, JobOrderDto job) {
+    if (onOpenReport != null) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      onOpenReport!(job);
+    }
   }
 
   String _getAdvanceButtonLabel(JobStatus next) {

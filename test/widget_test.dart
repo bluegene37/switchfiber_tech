@@ -86,7 +86,7 @@ void main() {
     expect(find.text('Workflow Stage'), findsOneWidget);
     expect(find.text('Subscriber & Location'), findsOneWidget);
     expect(find.text('Plant & Hardware Allocation'), findsOneWidget);
-    expect(find.text('Open Field Completion Report'), findsOneWidget);
+    expect(find.text('Fill / Update Completion Report'), findsOneWidget);
 
     // Test in Dark Theme
     await tester.pumpWidget(
@@ -135,7 +135,7 @@ void main() {
 
     // Verify detailed screen opened
     expect(find.text('Subscriber & Location'), findsOneWidget);
-    expect(find.text('Open Field Completion Report'), findsOneWidget);
+    expect(find.text('Fill / Update Completion Report'), findsOneWidget);
 
     await tester.runAsync(() async {
       await jobsSignals.dispose();
