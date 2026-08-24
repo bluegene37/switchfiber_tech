@@ -20,11 +20,15 @@ void main() {
         home: Scaffold(
           body: Column(
             children: [
-              StatusBadge(status: FieldStatus.inProgress),
-              StatusBadge(status: FieldStatus.done),
-              StatusBadge(status: FieldStatus.reschedule),
-              StatusBadge(status: FieldStatus.failed),
-              StatusBadge(status: FieldStatus.dispatched),
+              StatusBadge(status: JobStatus.inProgress),
+              StatusBadge(status: JobStatus.completed),
+              StatusBadge(status: JobStatus.activated),
+              StatusBadge(status: null, rawStatus: 'Confirmed'),
+              StatusBadge(
+                status: null,
+                rawStatus: 'Confirmed',
+                siteException: SiteException.failed,
+              ),
             ],
           ),
         ),
@@ -32,10 +36,12 @@ void main() {
     );
 
     expect(find.text('In Progress'), findsOneWidget);
-    expect(find.text('Done'), findsOneWidget);
-    expect(find.text('Reschedule'), findsOneWidget);
+    expect(find.text('Completed'), findsOneWidget);
+    expect(find.text('Activated'), findsOneWidget);
+    // A status outside the three is shown as the backend words it.
+    expect(find.text('Confirmed'), findsNWidgets(2));
+    // A failed visit stays visible alongside it.
     expect(find.text('Failed'), findsOneWidget);
-    expect(find.text('Dispatched'), findsOneWidget);
   });
 
   testWidgets('OpticalPowerGauge displays dBm reading and PASS indicator', (WidgetTester tester) async {

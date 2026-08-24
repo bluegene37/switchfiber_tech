@@ -199,7 +199,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       return JobCard(
                         job: job,
                         onCycleStatus: () async {
-                          await signals.advanceFieldStatus(job);
+                          await signals.advanceJobStatus(job);
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -231,33 +231,24 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
     return SignalBuilder(
       builder: (context) {
       final currentFilter = signals.activeFilter.value;
-      // Tabs follow the API's on-site vocabulary; ids are FieldStatus names.
+      // Only the three workflow statuses are selectable. Jobs with any other
+      // backend status, such as Applied or Confirmed, are reachable under All.
       final tabs = [
         {'id': 'all', 'label': 'All', 'count': signals.totalCount.value},
         {
-          'id': FieldStatus.dispatched.name,
-          'label': FieldStatus.dispatched.label,
-          'count': signals.dispatchedCount.value,
-        },
-        {
-          'id': FieldStatus.inProgress.name,
-          'label': FieldStatus.inProgress.label,
+          'id': JobStatus.inProgress.name,
+          'label': JobStatus.inProgress.label,
           'count': signals.inProgressCount.value,
         },
         {
-          'id': FieldStatus.done.name,
-          'label': FieldStatus.done.label,
-          'count': signals.doneCount.value,
+          'id': JobStatus.completed.name,
+          'label': JobStatus.completed.label,
+          'count': signals.completedCount.value,
         },
         {
-          'id': FieldStatus.failed.name,
-          'label': FieldStatus.failed.label,
-          'count': signals.failedCount.value,
-        },
-        {
-          'id': FieldStatus.reschedule.name,
-          'label': FieldStatus.reschedule.label,
-          'count': signals.rescheduleCount.value,
+          'id': JobStatus.activated.name,
+          'label': JobStatus.activated.label,
+          'count': signals.activatedCount.value,
         },
       ];
 

@@ -144,6 +144,12 @@ class $JobOrdersTable extends JobOrders
   late final GeneratedColumn<String> clientSignature = GeneratedColumn<String>(
       'client_signature', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _rawJsonMeta =
+      const VerificationMeta('rawJson');
+  @override
+  late final GeneratedColumn<String> rawJson = GeneratedColumn<String>(
+      'raw_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _isSyncedMeta =
       const VerificationMeta('isSynced');
   @override
@@ -187,6 +193,7 @@ class $JobOrdersTable extends JobOrders
         boxReadingImage,
         routerReadingImage,
         clientSignature,
+        rawJson,
         isSynced,
         updatedAt
       ];
@@ -321,6 +328,10 @@ class $JobOrdersTable extends JobOrders
           clientSignature.isAcceptableOrUnknown(
               data['client_signature']!, _clientSignatureMeta));
     }
+    if (data.containsKey('raw_json')) {
+      context.handle(_rawJsonMeta,
+          rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta));
+    }
     if (data.containsKey('is_synced')) {
       context.handle(_isSyncedMeta,
           isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
@@ -384,6 +395,8 @@ class $JobOrdersTable extends JobOrders
           DriftSqlType.string, data['${effectivePrefix}router_reading_image']),
       clientSignature: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}client_signature']),
+      rawJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}raw_json']),
       isSynced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -421,6 +434,14 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
   final String? boxReadingImage;
   final String? routerReadingImage;
   final String? clientSignature;
+
+  /// The complete record exactly as the API returned it.
+  ///
+  /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,
+  /// but this table models only the subset the app uses. Keeping the original
+  /// JSON lets an update send the whole record back with just the changed
+  /// fields replaced, instead of blanking out everything it does not model.
+  final String? rawJson;
   final bool isSynced;
   final DateTime updatedAt;
   const JobOrder(
@@ -447,6 +468,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       this.boxReadingImage,
       this.routerReadingImage,
       this.clientSignature,
+      this.rawJson,
       required this.isSynced,
       required this.updatedAt});
   @override
@@ -511,6 +533,9 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
     if (!nullToAbsent || clientSignature != null) {
       map['client_signature'] = Variable<String>(clientSignature);
     }
+    if (!nullToAbsent || rawJson != null) {
+      map['raw_json'] = Variable<String>(rawJson);
+    }
     map['is_synced'] = Variable<bool>(isSynced);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -570,6 +595,9 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       clientSignature: clientSignature == null && nullToAbsent
           ? const Value.absent()
           : Value(clientSignature),
+      rawJson: rawJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rawJson),
       isSynced: Value(isSynced),
       updatedAt: Value(updatedAt),
     );
@@ -603,6 +631,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       routerReadingImage:
           serializer.fromJson<String?>(json['routerReadingImage']),
       clientSignature: serializer.fromJson<String?>(json['clientSignature']),
+      rawJson: serializer.fromJson<String?>(json['rawJson']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -634,6 +663,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       'boxReadingImage': serializer.toJson<String?>(boxReadingImage),
       'routerReadingImage': serializer.toJson<String?>(routerReadingImage),
       'clientSignature': serializer.toJson<String?>(clientSignature),
+      'rawJson': serializer.toJson<String?>(rawJson),
       'isSynced': serializer.toJson<bool>(isSynced),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -663,6 +693,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           Value<String?> boxReadingImage = const Value.absent(),
           Value<String?> routerReadingImage = const Value.absent(),
           Value<String?> clientSignature = const Value.absent(),
+          Value<String?> rawJson = const Value.absent(),
           bool? isSynced,
           DateTime? updatedAt}) =>
       JobOrder(
@@ -701,6 +732,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         clientSignature: clientSignature.present
             ? clientSignature.value
             : this.clientSignature,
+        rawJson: rawJson.present ? rawJson.value : this.rawJson,
         isSynced: isSynced ?? this.isSynced,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -752,6 +784,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       clientSignature: data.clientSignature.present
           ? data.clientSignature.value
           : this.clientSignature,
+      rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -783,6 +816,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           ..write('boxReadingImage: $boxReadingImage, ')
           ..write('routerReadingImage: $routerReadingImage, ')
           ..write('clientSignature: $clientSignature, ')
+          ..write('rawJson: $rawJson, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -814,6 +848,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         boxReadingImage,
         routerReadingImage,
         clientSignature,
+        rawJson,
         isSynced,
         updatedAt
       ]);
@@ -844,6 +879,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           other.boxReadingImage == this.boxReadingImage &&
           other.routerReadingImage == this.routerReadingImage &&
           other.clientSignature == this.clientSignature &&
+          other.rawJson == this.rawJson &&
           other.isSynced == this.isSynced &&
           other.updatedAt == this.updatedAt);
 }
@@ -872,6 +908,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
   final Value<String?> boxReadingImage;
   final Value<String?> routerReadingImage;
   final Value<String?> clientSignature;
+  final Value<String?> rawJson;
   final Value<bool> isSynced;
   final Value<DateTime> updatedAt;
   const JobOrdersCompanion({
@@ -898,6 +935,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.boxReadingImage = const Value.absent(),
     this.routerReadingImage = const Value.absent(),
     this.clientSignature = const Value.absent(),
+    this.rawJson = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -925,6 +963,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.boxReadingImage = const Value.absent(),
     this.routerReadingImage = const Value.absent(),
     this.clientSignature = const Value.absent(),
+    this.rawJson = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
   })  : ticketNumber = Value(ticketNumber),
@@ -954,6 +993,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     Expression<String>? boxReadingImage,
     Expression<String>? routerReadingImage,
     Expression<String>? clientSignature,
+    Expression<String>? rawJson,
     Expression<bool>? isSynced,
     Expression<DateTime>? updatedAt,
   }) {
@@ -982,6 +1022,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       if (routerReadingImage != null)
         'router_reading_image': routerReadingImage,
       if (clientSignature != null) 'client_signature': clientSignature,
+      if (rawJson != null) 'raw_json': rawJson,
       if (isSynced != null) 'is_synced': isSynced,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -1011,6 +1052,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       Value<String?>? boxReadingImage,
       Value<String?>? routerReadingImage,
       Value<String?>? clientSignature,
+      Value<String?>? rawJson,
       Value<bool>? isSynced,
       Value<DateTime>? updatedAt}) {
     return JobOrdersCompanion(
@@ -1037,6 +1079,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       boxReadingImage: boxReadingImage ?? this.boxReadingImage,
       routerReadingImage: routerReadingImage ?? this.routerReadingImage,
       clientSignature: clientSignature ?? this.clientSignature,
+      rawJson: rawJson ?? this.rawJson,
       isSynced: isSynced ?? this.isSynced,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -1114,6 +1157,9 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     if (clientSignature.present) {
       map['client_signature'] = Variable<String>(clientSignature.value);
     }
+    if (rawJson.present) {
+      map['raw_json'] = Variable<String>(rawJson.value);
+    }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
@@ -1149,6 +1195,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
           ..write('boxReadingImage: $boxReadingImage, ')
           ..write('routerReadingImage: $routerReadingImage, ')
           ..write('clientSignature: $clientSignature, ')
+          ..write('rawJson: $rawJson, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1605,6 +1652,12 @@ class $LcpNapLocationsTable extends LcpNapLocations
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _rawJsonMeta =
+      const VerificationMeta('rawJson');
+  @override
+  late final GeneratedColumn<String> rawJson = GeneratedColumn<String>(
+      'raw_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _isSyncedMeta =
       const VerificationMeta('isSynced');
   @override
@@ -1636,6 +1689,7 @@ class $LcpNapLocationsTable extends LcpNapLocations
         city,
         status,
         description,
+        rawJson,
         isSynced,
         updatedAt
       ];
@@ -1704,6 +1758,10 @@ class $LcpNapLocationsTable extends LcpNapLocations
           description.isAcceptableOrUnknown(
               data['description']!, _descriptionMeta));
     }
+    if (data.containsKey('raw_json')) {
+      context.handle(_rawJsonMeta,
+          rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta));
+    }
     if (data.containsKey('is_synced')) {
       context.handle(_isSyncedMeta,
           isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
@@ -1743,6 +1801,8 @@ class $LcpNapLocationsTable extends LcpNapLocations
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      rawJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}raw_json']),
       isSynced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -1768,6 +1828,14 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
   final String? city;
   final String status;
   final String? description;
+
+  /// The complete record exactly as the API returned it.
+  ///
+  /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,
+  /// but this table models only the subset the app uses. Keeping the original
+  /// JSON lets an update send the whole record back with just the changed
+  /// fields replaced, instead of blanking out everything it does not model.
+  final String? rawJson;
   final bool isSynced;
   final DateTime updatedAt;
   const LcpNapLocation(
@@ -1782,6 +1850,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       this.city,
       required this.status,
       this.description,
+      this.rawJson,
       required this.isSynced,
       required this.updatedAt});
   @override
@@ -1805,6 +1874,9 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || rawJson != null) {
+      map['raw_json'] = Variable<String>(rawJson);
     }
     map['is_synced'] = Variable<bool>(isSynced);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1830,6 +1902,9 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
+      rawJson: rawJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rawJson),
       isSynced: Value(isSynced),
       updatedAt: Value(updatedAt),
     );
@@ -1850,6 +1925,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       city: serializer.fromJson<String?>(json['city']),
       status: serializer.fromJson<String>(json['status']),
       description: serializer.fromJson<String?>(json['description']),
+      rawJson: serializer.fromJson<String?>(json['rawJson']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1869,6 +1945,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       'city': serializer.toJson<String?>(city),
       'status': serializer.toJson<String>(status),
       'description': serializer.toJson<String?>(description),
+      'rawJson': serializer.toJson<String?>(rawJson),
       'isSynced': serializer.toJson<bool>(isSynced),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1886,6 +1963,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
           Value<String?> city = const Value.absent(),
           String? status,
           Value<String?> description = const Value.absent(),
+          Value<String?> rawJson = const Value.absent(),
           bool? isSynced,
           DateTime? updatedAt}) =>
       LcpNapLocation(
@@ -1900,6 +1978,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
         city: city.present ? city.value : this.city,
         status: status ?? this.status,
         description: description.present ? description.value : this.description,
+        rawJson: rawJson.present ? rawJson.value : this.rawJson,
         isSynced: isSynced ?? this.isSynced,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -1920,6 +1999,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       status: data.status.present ? data.status.value : this.status,
       description:
           data.description.present ? data.description.value : this.description,
+      rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1939,6 +2019,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
           ..write('city: $city, ')
           ..write('status: $status, ')
           ..write('description: $description, ')
+          ..write('rawJson: $rawJson, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1946,8 +2027,21 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
   }
 
   @override
-  int get hashCode => Object.hash(id, lcp, nap, lcpNap, portTotal, portOccupied,
-      coordinates, barangay, city, status, description, isSynced, updatedAt);
+  int get hashCode => Object.hash(
+      id,
+      lcp,
+      nap,
+      lcpNap,
+      portTotal,
+      portOccupied,
+      coordinates,
+      barangay,
+      city,
+      status,
+      description,
+      rawJson,
+      isSynced,
+      updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1963,6 +2057,7 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
           other.city == this.city &&
           other.status == this.status &&
           other.description == this.description &&
+          other.rawJson == this.rawJson &&
           other.isSynced == this.isSynced &&
           other.updatedAt == this.updatedAt);
 }
@@ -1979,6 +2074,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
   final Value<String?> city;
   final Value<String> status;
   final Value<String?> description;
+  final Value<String?> rawJson;
   final Value<bool> isSynced;
   final Value<DateTime> updatedAt;
   const LcpNapLocationsCompanion({
@@ -1993,6 +2089,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     this.city = const Value.absent(),
     this.status = const Value.absent(),
     this.description = const Value.absent(),
+    this.rawJson = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -2008,6 +2105,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     this.city = const Value.absent(),
     this.status = const Value.absent(),
     this.description = const Value.absent(),
+    this.rawJson = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
   })  : lcp = Value(lcp),
@@ -2025,6 +2123,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     Expression<String>? city,
     Expression<String>? status,
     Expression<String>? description,
+    Expression<String>? rawJson,
     Expression<bool>? isSynced,
     Expression<DateTime>? updatedAt,
   }) {
@@ -2040,6 +2139,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
       if (city != null) 'city': city,
       if (status != null) 'status': status,
       if (description != null) 'description': description,
+      if (rawJson != null) 'raw_json': rawJson,
       if (isSynced != null) 'is_synced': isSynced,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -2057,6 +2157,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
       Value<String?>? city,
       Value<String>? status,
       Value<String?>? description,
+      Value<String?>? rawJson,
       Value<bool>? isSynced,
       Value<DateTime>? updatedAt}) {
     return LcpNapLocationsCompanion(
@@ -2071,6 +2172,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
       city: city ?? this.city,
       status: status ?? this.status,
       description: description ?? this.description,
+      rawJson: rawJson ?? this.rawJson,
       isSynced: isSynced ?? this.isSynced,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -2112,6 +2214,9 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
+    if (rawJson.present) {
+      map['raw_json'] = Variable<String>(rawJson.value);
+    }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
@@ -2135,6 +2240,7 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
           ..write('city: $city, ')
           ..write('status: $status, ')
           ..write('description: $description, ')
+          ..write('rawJson: $rawJson, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2184,6 +2290,7 @@ typedef $$JobOrdersTableCreateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> boxReadingImage,
   Value<String?> routerReadingImage,
   Value<String?> clientSignature,
+  Value<String?> rawJson,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
 });
@@ -2211,6 +2318,7 @@ typedef $$JobOrdersTableUpdateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> boxReadingImage,
   Value<String?> routerReadingImage,
   Value<String?> clientSignature,
+  Value<String?> rawJson,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
 });
@@ -2295,6 +2403,9 @@ class $$JobOrdersTableFilterComposer
   ColumnFilters<String> get clientSignature => $composableBuilder(
       column: $table.clientSignature,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get rawJson => $composableBuilder(
+      column: $table.rawJson, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get isSynced => $composableBuilder(
       column: $table.isSynced, builder: (column) => ColumnFilters(column));
@@ -2392,6 +2503,9 @@ class $$JobOrdersTableOrderingComposer
       column: $table.clientSignature,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get rawJson => $composableBuilder(
+      column: $table.rawJson, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get isSynced => $composableBuilder(
       column: $table.isSynced, builder: (column) => ColumnOrderings(column));
 
@@ -2477,6 +2591,9 @@ class $$JobOrdersTableAnnotationComposer
   GeneratedColumn<String> get clientSignature => $composableBuilder(
       column: $table.clientSignature, builder: (column) => column);
 
+  GeneratedColumn<String> get rawJson =>
+      $composableBuilder(column: $table.rawJson, builder: (column) => column);
+
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
@@ -2530,6 +2647,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> boxReadingImage = const Value.absent(),
             Value<String?> routerReadingImage = const Value.absent(),
             Value<String?> clientSignature = const Value.absent(),
+            Value<String?> rawJson = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -2557,6 +2675,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             boxReadingImage: boxReadingImage,
             routerReadingImage: routerReadingImage,
             clientSignature: clientSignature,
+            rawJson: rawJson,
             isSynced: isSynced,
             updatedAt: updatedAt,
           ),
@@ -2584,6 +2703,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> boxReadingImage = const Value.absent(),
             Value<String?> routerReadingImage = const Value.absent(),
             Value<String?> clientSignature = const Value.absent(),
+            Value<String?> rawJson = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -2611,6 +2731,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             boxReadingImage: boxReadingImage,
             routerReadingImage: routerReadingImage,
             clientSignature: clientSignature,
+            rawJson: rawJson,
             isSynced: isSynced,
             updatedAt: updatedAt,
           ),
@@ -2835,6 +2956,7 @@ typedef $$LcpNapLocationsTableCreateCompanionBuilder = LcpNapLocationsCompanion
   Value<String?> city,
   Value<String> status,
   Value<String?> description,
+  Value<String?> rawJson,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
 });
@@ -2851,6 +2973,7 @@ typedef $$LcpNapLocationsTableUpdateCompanionBuilder = LcpNapLocationsCompanion
   Value<String?> city,
   Value<String> status,
   Value<String?> description,
+  Value<String?> rawJson,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
 });
@@ -2896,6 +3019,9 @@ class $$LcpNapLocationsTableFilterComposer
 
   ColumnFilters<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get rawJson => $composableBuilder(
+      column: $table.rawJson, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get isSynced => $composableBuilder(
       column: $table.isSynced, builder: (column) => ColumnFilters(column));
@@ -2947,6 +3073,9 @@ class $$LcpNapLocationsTableOrderingComposer
   ColumnOrderings<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get rawJson => $composableBuilder(
+      column: $table.rawJson, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get isSynced => $composableBuilder(
       column: $table.isSynced, builder: (column) => ColumnOrderings(column));
 
@@ -2996,6 +3125,9 @@ class $$LcpNapLocationsTableAnnotationComposer
   GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
 
+  GeneratedColumn<String> get rawJson =>
+      $composableBuilder(column: $table.rawJson, builder: (column) => column);
+
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
@@ -3041,6 +3173,7 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             Value<String?> city = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<String?> description = const Value.absent(),
+            Value<String?> rawJson = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -3056,6 +3189,7 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             city: city,
             status: status,
             description: description,
+            rawJson: rawJson,
             isSynced: isSynced,
             updatedAt: updatedAt,
           ),
@@ -3071,6 +3205,7 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             Value<String?> city = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<String?> description = const Value.absent(),
+            Value<String?> rawJson = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -3086,6 +3221,7 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             city: city,
             status: status,
             description: description,
+            rawJson: rawJson,
             isSynced: isSynced,
             updatedAt: updatedAt,
           ),

@@ -35,12 +35,10 @@ void main() {
 
       expect(signals.allJobs.value.length, 4);
       expect(signals.totalCount.value, 4);
-      // Seeded onsiteStatus values: In-Progress, Dispatched, Completed x2.
+      // Seeded statuses: inprogress, pending, completed, activated.
       expect(signals.inProgressCount.value, 1);
-      expect(signals.dispatchedCount.value, 1);
-      expect(signals.doneCount.value, 2);
-      expect(signals.failedCount.value, 0);
-      expect(signals.rescheduleCount.value, 0);
+      expect(signals.completedCount.value, 1);
+      expect(signals.activatedCount.value, 1);
       expect(signals.unsyncedCount.value, 0);
     });
 
@@ -52,13 +50,9 @@ void main() {
       expect(signals.filteredJobs.value.length, 1);
       expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0801');
 
-      // Two seeded jobs carry onsiteStatus 'Completed', so both are Done.
-      signals.setFilter('done');
-      expect(signals.filteredJobs.value.length, 2);
-      expect(
-        signals.filteredJobs.value.map((j) => j.ticketNumber),
-        contains('SF-2026-0803'),
-      );
+      signals.setFilter('completed');
+      expect(signals.filteredJobs.value.length, 1);
+      expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0803');
 
       signals.setFilter('all');
       expect(signals.filteredJobs.value.length, 4);
@@ -81,15 +75,16 @@ void main() {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
+      // Seeded as 'pending', which is not one of the three workflow statuses.
       final firstJob = signals.allJobs.value.firstWhere((j) => j.id == 102);
-      expect(firstJob.fieldStatus, FieldStatus.dispatched);
+      expect(firstJob.jobStatus, isNull);
 
-      await signals.advanceFieldStatus(firstJob);
+      await signals.advanceJobStatus(firstJob);
       await Future.delayed(const Duration(milliseconds: 100));
 
       final updatedJob = signals.allJobs.value.firstWhere((j) => j.id == 102);
-      expect(updatedJob.fieldStatus, FieldStatus.inProgress);
-      expect(updatedJob.onsiteStatus, 'In Progress');
+      expect(updatedJob.jobStatus, JobStatus.inProgress);
+      expect(updatedJob.status, 'In Progress');
       expect(updatedJob.isSynced, false);
       expect(signals.unsyncedCount.value, 1);
     });

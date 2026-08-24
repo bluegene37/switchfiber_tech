@@ -1,49 +1,63 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
 
 /// Clean DTO representation of a Job Order from the API.
-/// The technician's on-site workflow state, using the vocabulary the Switch
-/// Fiber API actually returns in `onsiteStatus`.
+/// The three job order statuses the technician works with.
 ///
-/// This is distinct from [JobOrderDto.status], which is the office-side order
-/// state (`Applied`, `Confirmed`) and is not the technician's concern.
-enum FieldStatus {
-  dispatched('Dispatched', 'Dispatched'),
-  inProgress('In Progress', 'In Progress'),
-  done('Done', 'Done'),
-  failed('Failed', 'Failed'),
-  reschedule('Reschedule', 'Reschedule');
+/// These are the values the backend's `status` field carries once a job enters
+/// the field workflow. Records outside these three - the application-side
+/// `Applied` and `Confirmed` that make up almost the whole table today - have a
+/// null [JobOrderDto.jobStatus] and appear only under the "All" tab.
+enum JobStatus {
+  inProgress('In Progress'),
+  completed('Completed'),
+  activated('Activated');
 
-  const FieldStatus(this.label, this.wireValue);
+  const JobStatus(this.wireValue);
 
-  /// Text shown to the technician.
-  final String label;
-
-  /// Value sent back to the API in `onsiteStatus`.
+  /// Exact wording sent back to the API, and shown to the technician.
   final String wireValue;
 
-  /// The next state when the technician advances the job.
-  ///
-  /// [done] returns null: a finished visit must not roll back around a cycle,
-  /// which on live data would overwrite a real completed record.
-  FieldStatus? get next => switch (this) {
-        FieldStatus.dispatched => FieldStatus.inProgress,
-        FieldStatus.failed => FieldStatus.inProgress,
-        FieldStatus.reschedule => FieldStatus.inProgress,
-        FieldStatus.inProgress => FieldStatus.done,
-        FieldStatus.done => null,
+  String get label => wireValue;
+
+  /// The next status when the technician advances the job.
+  /// [activated] is terminal: it must not roll back around a cycle.
+  JobStatus? get next => switch (this) {
+        JobStatus.inProgress => JobStatus.completed,
+        JobStatus.completed => JobStatus.activated,
+        JobStatus.activated => null,
       };
 
-  /// Parse an API `onsiteStatus` value. Unknown or empty values fall back to
-  /// [dispatched] - work not yet started - rather than implying completion.
-  static FieldStatus parse(String? raw) {
+  /// Match a raw `status` value, or null when it is not one of the three.
+  static JobStatus? parse(String? raw) {
     final v = raw?.trim().toLowerCase().replaceAll(RegExp(r'[-_\s]+'), '');
     return switch (v) {
-      'done' || 'completed' || 'complete' => FieldStatus.done,
-      'inprogress' || 'ongoing' => FieldStatus.inProgress,
-      'failed' || 'cancelled' || 'canceled' => FieldStatus.failed,
-      'reschedule' || 'rescheduled' => FieldStatus.reschedule,
-      _ => FieldStatus.dispatched,
+      'inprogress' => JobStatus.inProgress,
+      'completed' => JobStatus.completed,
+      'activated' => JobStatus.activated,
+      _ => null,
+    };
+  }
+}
+
+/// An on-site outcome that needs the technician's attention, taken from
+/// `onsiteStatus`. Surfaced alongside the job status so a failed or postponed
+/// visit stays visible instead of hiding behind "Confirmed".
+enum SiteException {
+  failed('Failed'),
+  reschedule('Reschedule');
+
+  const SiteException(this.label);
+
+  final String label;
+
+  static SiteException? parse(String? raw) {
+    final v = raw?.trim().toLowerCase();
+    return switch (v) {
+      'failed' || 'cancelled' || 'canceled' => SiteException.failed,
+      'reschedule' || 'rescheduled' => SiteException.reschedule,
+      _ => null,
     };
   }
 }
@@ -60,6 +74,9 @@ class JobOrderDto {
   final int? planId;
   final String status;
   final String? onsiteStatus;
+
+  /// The untouched API record, replayed on update. Null for demo rows.
+  final String? rawJson;
 
   final String? onsiteRemarks;
   final double? opticalPower;
@@ -88,6 +105,7 @@ class JobOrderDto {
     this.planId,
     this.status = 'pending',
     this.onsiteStatus,
+    this.rawJson,
     this.onsiteRemarks,
     this.opticalPower,
     this.modemRouterSN,
@@ -104,8 +122,17 @@ class JobOrderDto {
     this.updatedAt,
   });
 
-  /// The technician's on-site workflow state for this job.
-  FieldStatus get fieldStatus => FieldStatus.parse(onsiteStatus);
+  /// This job's status, when it is one of the three the technician works with.
+  /// Null for any other backend status, such as `Applied` or `Confirmed`.
+  JobStatus? get jobStatus => JobStatus.parse(status);
+
+  /// The next status when the technician advances this job. A job that is not
+  /// yet in the field workflow starts at In Progress.
+  JobStatus? get nextStatus =>
+      jobStatus == null ? JobStatus.inProgress : jobStatus!.next;
+
+  /// A failed or postponed visit that must stay visible to the technician.
+  SiteException? get siteException => SiteException.parse(onsiteStatus);
 
   factory JobOrderDto.fromJson(Map<String, dynamic> json) {
     final firstName = json['firstName']?.toString() ?? '';
@@ -139,6 +166,7 @@ class JobOrderDto {
       // 'Confirmed', and lowercasing it silently broke every status comparison.
       status: json['status']?.toString().trim() ?? 'pending',
       onsiteStatus: json['onsiteStatus']?.toString(),
+      rawJson: jsonEncode(json),
       onsiteRemarks: json['onsiteRemarks']?.toString(),
       opticalPower: json['opticalPower'] is num
           ? (json['opticalPower'] as num).toDouble()
@@ -179,6 +207,7 @@ class JobOrderDto {
       planId: row.planId,
       status: row.status,
       onsiteStatus: row.onsiteStatus,
+      rawJson: row.rawJson,
       onsiteRemarks: row.onsiteRemarks,
       opticalPower: row.opticalPower,
       modemRouterSN: row.modemRouterSN,
@@ -209,6 +238,7 @@ class JobOrderDto {
       planId: Value(planId),
       status: Value(status),
       onsiteStatus: Value(onsiteStatus),
+      rawJson: Value(rawJson),
       onsiteRemarks: Value(onsiteRemarks),
       opticalPower: Value(opticalPower),
       modemRouterSN: Value(modemRouterSN),
@@ -226,37 +256,59 @@ class JobOrderDto {
     );
   }
 
-  Map<String, dynamic> toApiJson() {
-    final payload = <String, dynamic>{
-      'id': id,
-      'status': status,
-      // Report the actual on-site state. The previous fallback guessed
-      // 'In-Progress' for any job without one, which would have marked
-      // untouched jobs as started the first time they synced.
-      'onsiteStatus': fieldStatus.wireValue,
-      'onsiteRemarks': onsiteRemarks ?? '',
-      'modemRouterSN': modemRouterSN ?? '',
-      'routerModel': routerModel ?? '',
-      'portId': portId ?? '',
-      'dateInstalled': (dateInstalled ?? DateTime.now()).toIso8601String(),
-      'boxReadingImage': boxReadingImage ?? '',
-      'routerReadingImage': routerReadingImage ?? '',
-      'clientSignature': clientSignature ?? '',
-    };
+  /// Fields the technician's app is allowed to change on the server.
+  ///
+  /// Everything else in the record is echoed back untouched.
+  Map<String, dynamic> _technicianEdits() => {
+        'status': status,
+        'onsiteStatus': onsiteStatus ?? '',
+        'onsiteRemarks': onsiteRemarks ?? '',
+        'modemRouterSN': modemRouterSN ?? '',
+        'routerModel': routerModel ?? '',
+        'portId': portId ?? '',
+        'boxReadingImage': boxReadingImage ?? '',
+        'routerReadingImage': routerReadingImage ?? '',
+        'clientSignature': clientSignature ?? '',
+      };
 
-    // The API returns these as strings ("LCP 002", "SwitchLite - P699") which
-    // the integer columns cannot represent, so they parse to null. Sending that
-    // null back would erase the real assignment on the server, so omit any
-    // field we do not genuinely hold a value for.
-    void putIfPresent(String key, Object? value) {
-      if (value != null) payload[key] = value;
+  /// Body for `PUT /api/JobOrders/{id}`.
+  ///
+  /// The endpoint's UpdateJobOrderRequest marks all 86 of its fields required,
+  /// so a partial body is not an option: it would either fail validation or
+  /// blank out every field the app does not model. The original record is
+  /// therefore replayed in full with only the technician's edits applied on
+  /// top.
+  ///
+  /// [rawJson] is absent only for locally seeded demo rows, which have no
+  /// server record to preserve; those fall back to the modelled subset.
+  Map<String, dynamic> toApiJson() {
+    final original = rawJson;
+    if (original == null || original.trim().isEmpty) {
+      final fallback = <String, dynamic>{'id': id, ..._technicianEdits()};
+      // Never send a null over a value the server may already hold.
+      for (final e in <String, Object?>{
+        'opticalPower': opticalPower,
+        'lcpId': lcpId,
+        'napId': napId,
+        'vlanId': vlanId,
+        'dateInstalled': dateInstalled?.toIso8601String(),
+      }.entries) {
+        if (e.value != null) fallback[e.key] = e.value;
+      }
+      return fallback;
     }
 
-    putIfPresent('opticalPower', opticalPower);
-    putIfPresent('lcpId', lcpId);
-    putIfPresent('napId', napId);
-    putIfPresent('vlanId', vlanId);
+    final decoded = json.decode(original);
+    if (decoded is! Map<String, dynamic>) {
+      return <String, dynamic>{'id': id, ..._technicianEdits()};
+    }
 
-    return payload;
+    return <String, dynamic>{
+      ...decoded,
+      ..._technicianEdits(),
+      if (dateInstalled != null)
+        'dateInstalled': dateInstalled!.toIso8601String(),
+      if (opticalPower != null) 'opticalPower': opticalPower,
+    };
   }
 }

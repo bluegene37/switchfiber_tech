@@ -25,6 +25,14 @@ class JobOrders extends Table {
   TextColumn get boxReadingImage => text().nullable()();
   TextColumn get routerReadingImage => text().nullable()();
   TextColumn get clientSignature => text().nullable()();
+  /// The complete record exactly as the API returned it.
+  ///
+  /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,
+  /// but this table models only the subset the app uses. Keeping the original
+  /// JSON lets an update send the whole record back with just the changed
+  /// fields replaced, instead of blanking out everything it does not model.
+  TextColumn get rawJson => text().nullable()();
+
   BoolColumn get isSynced => boolean().withDefault(const Constant(true))();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
@@ -45,6 +53,14 @@ class LcpNapLocations extends Table {
   TextColumn get city => text().nullable()();
   TextColumn get status => text().withDefault(const Constant('Active'))(); // 'Active', 'Maintenance', 'Full'
   TextColumn get description => text().nullable()();
+  /// The complete record exactly as the API returned it.
+  ///
+  /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,
+  /// but this table models only the subset the app uses. Keeping the original
+  /// JSON lets an update send the whole record back with just the changed
+  /// fields replaced, instead of blanking out everything it does not model.
+  TextColumn get rawJson => text().nullable()();
+
   BoolColumn get isSynced => boolean().withDefault(const Constant(true))();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 

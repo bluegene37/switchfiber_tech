@@ -94,7 +94,8 @@ class JobCard extends StatelessWidget {
                                 ),
                               ),
                       ),
-                      StatusBadge(status: job.fieldStatus),
+                      StatusBadge(status: job.jobStatus, rawStatus: job.status,
+                        siteException: job.siteException),
                     ],
                   ),
                 ],
@@ -234,7 +235,7 @@ class JobCard extends StatelessWidget {
                       onPressed: onCycleStatus,
                       icon: const Icon(Icons.sync_alt_rounded, size: 16),
                       label: Text(
-                        _getNextStatusActionLabel(job.fieldStatus),
+                        _getNextStatusActionLabel(job.nextStatus),
                         style: const TextStyle(fontSize: 12),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -267,12 +268,12 @@ class JobCard extends StatelessWidget {
     );
   }
 
-  String _getNextStatusActionLabel(FieldStatus current) {
-    return switch (current) {
-      FieldStatus.dispatched => 'Start Work',
-      FieldStatus.failed || FieldStatus.reschedule => 'Retry Visit',
-      FieldStatus.inProgress => 'Mark Done',
-      FieldStatus.done => 'Completed',
+  String _getNextStatusActionLabel(JobStatus? next) {
+    return switch (next) {
+      JobStatus.inProgress => 'Start Work',
+      JobStatus.completed => 'Mark Completed',
+      JobStatus.activated => 'Mark Activated',
+      null => 'Activated',
     };
   }
 

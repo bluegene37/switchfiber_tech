@@ -14,12 +14,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // Stores the untouched API record so updates can round-trip every
+            // field the app does not model.
+            await m.addColumn(jobOrders, jobOrders.rawJson);
+          }
         },
       );
 }

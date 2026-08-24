@@ -15,7 +15,8 @@ class JobsSignals {
 
   // Raw State Signals
   final allJobs = signal<List<JobOrderDto>>([]);
-  // 'all' or a FieldStatus.name: dispatched, inProgress, done, failed, reschedule
+  // 'all' or a JobStatus.name: inProgress, completed, activated.
+  // Any job whose status is not one of the three appears only under 'all'.
   final activeFilter = signal<String>('all');
   final searchQuery = signal<String>('');
   final selectedJob = signal<JobOrderDto?>(null);
@@ -28,9 +29,10 @@ class JobsSignals {
     final query = searchQuery.value.trim().toLowerCase();
 
     return jobs.where((job) {
-      // 1. Field status filter (the technician's on-site workflow state)
+      // 1. Status filter. Only the three workflow statuses are selectable;
+      //    everything else is reachable through 'all'.
       if (filter != 'all' && filter.isNotEmpty) {
-        if (job.fieldStatus.name.toLowerCase() != filter) {
+        if (job.jobStatus?.name.toLowerCase() != filter) {
           return false;
         }
       }
@@ -50,23 +52,23 @@ class JobsSignals {
 
   late final ReadonlySignal<int> totalCount = computed(() => allJobs.value.length);
 
-  int _countOf(FieldStatus s) =>
-      allJobs.value.where((j) => j.fieldStatus == s).length;
-
-  late final ReadonlySignal<int> dispatchedCount =
-      computed(() => _countOf(FieldStatus.dispatched));
+  int _countOf(JobStatus s) =>
+      allJobs.value.where((j) => j.jobStatus == s).length;
 
   late final ReadonlySignal<int> inProgressCount =
-      computed(() => _countOf(FieldStatus.inProgress));
+      computed(() => _countOf(JobStatus.inProgress));
 
-  late final ReadonlySignal<int> doneCount =
-      computed(() => _countOf(FieldStatus.done));
+  late final ReadonlySignal<int> completedCount =
+      computed(() => _countOf(JobStatus.completed));
 
-  late final ReadonlySignal<int> failedCount =
-      computed(() => _countOf(FieldStatus.failed));
+  late final ReadonlySignal<int> activatedCount =
+      computed(() => _countOf(JobStatus.activated));
 
-  late final ReadonlySignal<int> rescheduleCount =
-      computed(() => _countOf(FieldStatus.reschedule));
+  /// Jobs whose on-site visit failed or needs rescheduling. Not a tab, but
+  /// surfaced so these stay visible rather than hiding under "All".
+  late final ReadonlySignal<int> siteExceptionCount = computed(
+    () => allJobs.value.where((j) => j.siteException != null).length,
+  );
 
   late final ReadonlySignal<int> unsyncedCount = computed(
     () => allJobs.value.where((j) => !j.isSynced).length,
@@ -100,15 +102,14 @@ class JobsSignals {
     searchQuery.value = query;
   }
 
-  /// Advance a job through the on-site workflow:
-  /// Dispatched -> In Progress -> Done.
+  /// Advance a job: In Progress -> Completed -> Activated.
   ///
-  /// A job already marked Done does not advance; rolling it around a cycle
-  /// would overwrite a genuinely completed record on the server.
-  Future<void> advanceFieldStatus(JobOrderDto job) async {
-    final next = job.fieldStatus.next;
+  /// A job already Activated does not advance; rolling it around a cycle would
+  /// overwrite a finished record on the server.
+  Future<void> advanceJobStatus(JobOrderDto job) async {
+    final next = job.nextStatus;
     if (next == null) return;
-    await repository.updateFieldStatus(job.id, next.wireValue);
+    await repository.updateJobStatus(job.id, next.wireValue);
   }
 
   /// Must be awaited: the Drift stream subscription has to be fully torn down
