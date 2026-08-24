@@ -16,7 +16,6 @@ class LcpNapSignals {
   final Signal<List<LcpNapDto>> allLocations = signal<List<LcpNapDto>>([]);
   final Signal<String> selectedLcpFilter = signal<String>('All');
   final Signal<String> searchQuery = signal<String>('');
-  final Signal<String> statusFilter = signal<String>('All');
   final Signal<LcpNapDto?> selectedLocation = signal<LcpNapDto?>(null);
   final Signal<bool> isLoading = signal<bool>(false);
   final Signal<String?> errorMessage = signal<String?>(null);
@@ -27,7 +26,6 @@ class LcpNapSignals {
   late final Computed<List<LcpNapDto>> filteredLocations = computed(() {
     final list = allLocations.value;
     final lcp = selectedLcpFilter.value;
-    final status = statusFilter.value;
     final query = searchQuery.value.trim().toLowerCase();
 
     return list.where((loc) {
@@ -35,9 +33,6 @@ class LcpNapSignals {
       if (lcp != 'All' && loc.lcp != lcp) return false;
 
       // Status filter
-      if (status != 'All' && loc.status.toLowerCase() != status.toLowerCase()) {
-        return false;
-      }
 
       // Search match
       if (query.isNotEmpty) {
@@ -48,7 +43,8 @@ class LcpNapSignals {
             loc.barangay?.toLowerCase().contains(query) ?? false;
         final matchesCity = loc.city?.toLowerCase().contains(query) ?? false;
         final matchesDesc =
-            loc.description?.toLowerCase().contains(query) ?? false;
+            (loc.street?.toLowerCase().contains(query) ?? false) ||
+            (loc.region?.toLowerCase().contains(query) ?? false);
 
         return matchesLcpNap ||
             matchesLcp ||
@@ -87,41 +83,6 @@ class LcpNapSignals {
   });
 
   /// Total occupied ports across all sites
-  late final Computed<int> totalOccupiedPorts = computed(() {
-    return allLocations.value.fold(0, (sum, loc) => sum + loc.portOccupied);
-  });
-
-  /// Overall fiber capacity utilization (0.0 to 1.0)
-  late final Computed<double> plantUtilization = computed(() {
-    final total = totalPortsCount.value;
-    final occupied = totalOccupiedPorts.value;
-    return total > 0 ? (occupied / total).clamp(0.0, 1.0) : 0.0;
-  });
-
-  /// Active sites count
-  late final Computed<int> activeCount = computed(() {
-    return allLocations.value
-        .where((loc) => loc.status.toLowerCase() == 'active')
-        .length;
-  });
-
-  /// Maintenance sites count
-  late final Computed<int> maintenanceCount = computed(() {
-    return allLocations.value
-        .where((loc) => loc.status.toLowerCase() == 'maintenance')
-        .length;
-  });
-
-  /// Full capacity sites count
-  late final Computed<int> fullCount = computed(() {
-    return allLocations.value
-        .where((loc) => loc.status.toLowerCase() == 'full')
-        .length;
-  });
-
-  /// Sites from [filteredLocations] that carry a usable GPS fix, i.e. the pins
-  /// the map can actually place. Derived from the same filtered list as the
-  /// list view, so search and filters apply to both without extra wiring.
   late final Computed<List<LcpNapDto>> mappableLocations = computed(
     () => filteredLocations.value.where((l) => l.isMappable).toList(),
   );
@@ -182,30 +143,13 @@ class LcpNapSignals {
     searchQuery.value = query;
   }
 
-  /// Update Status filter
-  void setStatusFilter(String status) {
-    statusFilter.value = status;
-  }
 
   /// Select a site for detail inspection
   void selectLocation(LcpNapDto location) {
     selectedLocation.value = location;
   }
 
-  /// Update site status in Drift (Active -> Maintenance -> Full -> Active)
-  Future<void> updateSiteStatus(int id, String newStatus) async {
-    await repository.updateLocationStatus(id, newStatus);
-  }
 
-  /// Cycle status quickly for technician testing
-  Future<void> cycleStatus(LcpNapDto loc) async {
-    final nextStatus = switch (loc.status.toLowerCase()) {
-      'active' => 'Maintenance',
-      'maintenance' => 'Full',
-      _ => 'Active',
-    };
-    await updateSiteStatus(loc.id, nextStatus);
-  }
 
   /// Must be awaited: the Drift stream subscription has to be fully torn down
   /// before the database can be closed, otherwise close() blocks forever.

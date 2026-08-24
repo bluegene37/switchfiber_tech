@@ -9,12 +9,17 @@ class LcpNapDto {
   final String nap;
   final String lcpNap;
   final int portTotal;
-  final int portOccupied;
   final String? coordinates;
+  final String? street;
   final String? barangay;
   final String? city;
-  final String status;
-  final String? description;
+  final String? region;
+  final String? image;
+  final String? image2;
+  final String? readingImage;
+  final String? modifiedBy;
+  final String? userEmail;
+  final DateTime? modifiedDate;
   final bool isSynced;
   final DateTime? updatedAt;
 
@@ -24,22 +29,22 @@ class LcpNapDto {
     required this.nap,
     required this.lcpNap,
     this.portTotal = 8,
-    this.portOccupied = 0,
     this.coordinates,
+    this.street,
     this.barangay,
     this.city,
-    this.status = 'Active',
-    this.description,
+    this.region,
+    this.image,
+    this.image2,
+    this.readingImage,
+    this.modifiedBy,
+    this.userEmail,
+    this.modifiedDate,
     this.isSynced = true,
     this.updatedAt,
   });
 
   /// Available ports remaining
-  int get portAvailable => (portTotal - portOccupied).clamp(0, portTotal);
-
-  /// Port utilization percentage (0.0 to 1.0)
-  double get utilizationRate =>
-      portTotal > 0 ? (portOccupied / portTotal).clamp(0.0, 1.0) : 0.0;
 
   /// Parsed GPS latitude
   double? get latitude => latLng?.latitude;
@@ -101,15 +106,18 @@ class LcpNapDto {
       portTotal: json['portTotal'] is int
           ? json['portTotal']
           : int.tryParse(json['portTotal']?.toString() ?? '8') ?? 8,
-      portOccupied: json['portOccupied'] is int
-          ? json['portOccupied']
-          : int.tryParse(json['portOccupied']?.toString() ?? '0') ?? 0,
       coordinates: json['coordinates']?.toString() ??
           json['addressCoordinates']?.toString(),
+      street: json['street']?.toString(),
       barangay: json['barangay']?.toString(),
       city: json['city']?.toString(),
-      status: json['status']?.toString() ?? 'Active',
-      description: json['description']?.toString() ?? json['remarks']?.toString(),
+      region: json['region']?.toString(),
+      image: json['image']?.toString(),
+      image2: json['image2']?.toString(),
+      readingImage: json['readingImage']?.toString(),
+      modifiedBy: json['modifiedBy']?.toString(),
+      userEmail: json['userEmail']?.toString(),
+      modifiedDate: DateTime.tryParse(json['modifiedDate']?.toString() ?? ''),
       isSynced: true,
       updatedAt: DateTime.now(),
     );
@@ -122,12 +130,17 @@ class LcpNapDto {
       nap: row.nap,
       lcpNap: row.lcpNap,
       portTotal: row.portTotal,
-      portOccupied: row.portOccupied,
       coordinates: row.coordinates,
+      street: row.street,
       barangay: row.barangay,
       city: row.city,
-      status: row.status,
-      description: row.description,
+      region: row.region,
+      image: row.image,
+      image2: row.image2,
+      readingImage: row.readingImage,
+      modifiedBy: row.modifiedBy,
+      userEmail: row.userEmail,
+      modifiedDate: row.modifiedDate,
       isSynced: row.isSynced,
       updatedAt: row.updatedAt,
     );
@@ -140,12 +153,17 @@ class LcpNapDto {
       nap: Value(nap),
       lcpNap: Value(lcpNap),
       portTotal: Value(portTotal),
-      portOccupied: Value(portOccupied),
       coordinates: Value(coordinates),
+      street: Value(street),
       barangay: Value(barangay),
       city: Value(city),
-      status: Value(status),
-      description: Value(description),
+      region: Value(region),
+      image: Value(image),
+      image2: Value(image2),
+      readingImage: Value(readingImage),
+      modifiedBy: Value(modifiedBy),
+      userEmail: Value(userEmail),
+      modifiedDate: Value(modifiedDate),
       isSynced: Value(synced),
       updatedAt: Value(updatedAt ?? DateTime.now()),
     );

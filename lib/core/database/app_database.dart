@@ -14,7 +14,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -26,6 +26,13 @@ class AppDatabase extends _$AppDatabase {
             // Stores the untouched API record so updates can round-trip every
             // field the app does not model.
             await m.addColumn(jobOrders, jobOrders.rawJson);
+          }
+          if (from < 3) {
+            // LCP NAP locations are a read-only mirror of the server, so the
+            // table is simply rebuilt to match the API's real field list and
+            // refilled on the next sync.
+            await m.drop(lcpNapLocations);
+            await m.createTable(lcpNapLocations);
           }
         },
       );

@@ -19,13 +19,30 @@ class LcpNapPinPopup extends StatelessWidget {
     this.onOpenDetails,
   });
 
-  // NOTE: the API also returns `street` and `region`, but LcpNapDto and the
-  // Drift table do not store them yet, so they cannot be shown here.
   String get _address {
-    final parts = <String?>[location.barangay, location.city]
-        .where((p) => p != null && p.trim().isNotEmpty)
-        .cast<String>();
+    final parts = <String?>[
+      location.street,
+      location.barangay,
+      location.city,
+      location.region,
+    ].where((p) => p != null && p.trim().isNotEmpty).cast<String>();
     return parts.isEmpty ? 'No address recorded' : parts.join(', ');
+  }
+
+  /// Who last touched the record on the server, so a technician knows how
+  /// current the pin is.
+  String? get _provenance {
+    final who = location.modifiedBy?.trim().isNotEmpty == true
+        ? location.modifiedBy!.trim()
+        : location.userEmail?.trim();
+    final when = location.modifiedDate;
+    if (when == null && (who == null || who.isEmpty)) return null;
+    final date = when == null
+        ? null
+        : '${when.year}-${when.month.toString().padLeft(2, '0')}'
+            '-${when.day.toString().padLeft(2, '0')}';
+    if (who == null || who.isEmpty) return 'Updated $date';
+    return date == null ? 'Updated by $who' : 'Updated by $who on $date';
   }
 
   @override
@@ -84,9 +101,10 @@ class LcpNapPinPopup extends StatelessWidget {
               spacing: 8,
               runSpacing: 6,
               children: [
+                // Total capacity only: the API does not report occupancy.
                 _Stat(
                   icon: Icons.hub_outlined,
-                  label: '${location.portOccupied}/${location.portTotal} ports',
+                  label: '${location.portTotal} ports',
                 ),
                 _Stat(
                   icon: Icons.my_location_rounded,
@@ -94,6 +112,17 @@ class LcpNapPinPopup extends StatelessWidget {
                 ),
               ],
             ),
+            if (_provenance != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _provenance!,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textMuted,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,

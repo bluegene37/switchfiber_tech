@@ -30,8 +30,6 @@ class LcpNapDetailScreen extends StatelessWidget {
           );
         }
 
-        final (statusBg, statusFg, statusBorder) =
-            _getStatusColors(location.status);
 
         return Scaffold(
           appBar: AppBar(
@@ -129,16 +127,17 @@ class LcpNapDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: statusBg,
+                              color: AppTheme.primarySubtleBg,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: statusBorder),
+                              border:
+                                  Border.all(color: AppTheme.primarySubtleBorder),
                             ),
                             child: Text(
-                              location.status,
-                              style: TextStyle(
+                              '${location.portTotal} ports',
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
-                                color: statusFg,
+                                color: AppTheme.primaryActive,
                               ),
                             ),
                           ),
@@ -163,75 +162,6 @@ class LcpNapDetailScreen extends StatelessWidget {
                                 color: AppTheme.darkSlate,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 2. Interactive Status Modifier (Demonstrates Drift -> Signals -> UI Reactivity)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.tune_rounded,
-                              size: 18, color: AppTheme.primary),
-                          SizedBox(width: 8),
-                          Text(
-                            'Field Status Control (Live Drift DB)',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Tap to update this site status. Notice how state updates immediately across the app via Signals and persists to Drift SQLite.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                      ),
-                      const SizedBox(height: 14),
-
-                      Row(
-                        children: [
-                          _buildStatusButton(
-                            context: context,
-                            label: 'Active',
-                            icon: Icons.check_circle_outline_rounded,
-                            isSelected: location.status.toLowerCase() == 'active',
-                            activeBg: AppTheme.successSubtle,
-                            activeFg: const Color(0xFF166534),
-                            onPressed: () => _updateStatus(context, 'Active'),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildStatusButton(
-                            context: context,
-                            label: 'Maintenance',
-                            icon: Icons.build_circle_outlined,
-                            isSelected:
-                                location.status.toLowerCase() == 'maintenance',
-                            activeBg: AppTheme.warningSubtle,
-                            activeFg: const Color(0xFF92400E),
-                            onPressed: () =>
-                                _updateStatus(context, 'Maintenance'),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildStatusButton(
-                            context: context,
-                            label: 'Full',
-                            icon: Icons.block_rounded,
-                            isSelected: location.status.toLowerCase() == 'full',
-                            activeBg: AppTheme.dangerSubtle,
-                            activeFg: const Color(0xFF8B1A25),
-                            onPressed: () => _updateStatus(context, 'Full'),
                           ),
                         ],
                       ),
@@ -266,7 +196,7 @@ class LcpNapDetailScreen extends StatelessWidget {
                             ],
                           ),
                           Text(
-                            '${location.portOccupied} of ${location.portTotal} Occupied',
+                            '${location.portTotal} ports',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -291,42 +221,30 @@ class LcpNapDetailScreen extends StatelessWidget {
                         itemCount: location.portTotal,
                         itemBuilder: (context, index) {
                           final portNumber = index + 1;
-                          final isOccupied = portNumber <= location.portOccupied;
-
+                          // The API reports total ports only; which are in use
+                          // is unknown, so no port is coloured as occupied.
                           return Container(
                             decoration: BoxDecoration(
-                              color: isOccupied
-                                  ? const Color(0xFFF3F4F6)
-                                  : AppTheme.successSubtle,
+                              color: AppTheme.lightBg,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isOccupied
-                                    ? AppTheme.borderLight
-                                    : const Color(0xFF86EFAC),
-                              ),
+                              border: Border.all(color: AppTheme.borderLight),
                             ),
                             child: Center(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    isOccupied
-                                        ? Icons.cable_rounded
-                                        : Icons.circle_outlined,
+                                  const Icon(
+                                    Icons.circle_outlined,
                                     size: 14,
-                                    color: isOccupied
-                                        ? AppTheme.textMuted
-                                        : const Color(0xFF166534),
+                                    color: AppTheme.textMuted,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'P$portNumber',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
-                                      color: isOccupied
-                                          ? AppTheme.textMuted
-                                          : const Color(0xFF166534),
+                                      color: AppTheme.textMuted,
                                     ),
                                   ),
                                 ],
@@ -335,23 +253,14 @@ class LcpNapDetailScreen extends StatelessWidget {
                           );
                         },
                       ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Port occupancy is not tracked by the backend, so no '
+                        'port is shown as used.',
+                        style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                      ),
                       const SizedBox(height: 12),
 
-                      // Port legend
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _LegendDot(
-                            color: Color(0xFF166534),
-                            label: 'Available Port',
-                          ),
-                          SizedBox(width: 20),
-                          _LegendDot(
-                            color: AppTheme.textMuted,
-                            label: 'Occupied Port',
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -441,43 +350,6 @@ class LcpNapDetailScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // 5. Remarks / Plant Notes
-              if (location.description != null &&
-                  location.description!.isNotEmpty) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.notes_rounded,
-                                size: 18, color: AppTheme.primary),
-                            SizedBox(width: 8),
-                            Text(
-                              'Plant Remarks & Mounting Info',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          location.description!,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            height: 1.4,
-                            color: AppTheme.darkSlate,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
             ],
           ),
         );
@@ -485,113 +357,7 @@ class LcpNapDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusButton({
-    required BuildContext context,
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required Color activeBg,
-    required Color activeFg,
-    required VoidCallback onPressed,
-  }) {
-    return Expanded(
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-          decoration: BoxDecoration(
-            color: isSelected ? activeBg : AppTheme.lightBg,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected ? activeFg : AppTheme.borderLight,
-              width: isSelected ? 1.5 : 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, size: 18, color: isSelected ? activeFg : AppTheme.textMuted),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? activeFg : AppTheme.textMuted,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  void _updateStatus(BuildContext context, String newStatus) async {
-    await signals.updateSiteStatus(locationId, newStatus);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Updated status to $newStatus in Drift SQLite'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.darkSlate,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
-  (Color, Color, Color) _getStatusColors(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return (
-          AppTheme.successSubtle,
-          const Color(0xFF166534),
-          const Color(0xFFBBF7D0)
-        );
-      case 'maintenance':
-        return (
-          AppTheme.warningSubtle,
-          const Color(0xFF92400E),
-          const Color(0xFFFDE68A)
-        );
-      case 'full':
-        return (
-          AppTheme.dangerSubtle,
-          const Color(0xFF8B1A25),
-          const Color(0xFFFCA5A5)
-        );
-      default:
-        return (
-          AppTheme.lightBg,
-          AppTheme.textMuted,
-          AppTheme.borderLight
-        );
-    }
-  }
 }
 
-class _LegendDot extends StatelessWidget {
-  final Color color;
-  final String label;
-
-  const _LegendDot({required this.color, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-        ),
-      ],
-    );
-  }
-}

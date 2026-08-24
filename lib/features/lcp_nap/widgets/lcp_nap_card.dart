@@ -6,19 +6,15 @@ import '../models/lcp_nap_model.dart';
 class LcpNapCard extends StatelessWidget {
   final LcpNapDto location;
   final VoidCallback onTap;
-  final VoidCallback onCycleStatus;
 
   const LcpNapCard({
     super.key,
     required this.location,
     required this.onTap,
-    required this.onCycleStatus,
   });
 
   @override
   Widget build(BuildContext context) {
-    final (badgeBg, badgeFg, badgeBorder) = _getStatusColors(location.status);
-    final utilization = location.utilizationRate;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -68,21 +64,22 @@ class LcpNapCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Status Badge
+                  // Port capacity. Occupancy is not reported by the API,
+                  // so only the total is shown.
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: badgeBg,
+                      color: AppTheme.primarySubtleBg,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: badgeBorder),
+                      border: Border.all(color: AppTheme.primarySubtleBorder),
                     ),
                     child: Text(
-                      location.status,
-                      style: TextStyle(
+                      '${location.portTotal} ports',
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: badgeFg,
+                        color: AppTheme.primaryActive,
                       ),
                     ),
                   ),
@@ -139,78 +136,10 @@ class LcpNapCard extends StatelessWidget {
               const Divider(height: 1, color: AppTheme.borderLight),
               const SizedBox(height: 10),
 
-              // Port Capacity Utilization Bar
+              // Bottom Actions Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Ports Occupancy (${location.portOccupied}/${location.portTotal})',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
-                  Text(
-                    '${(utilization * 100).toInt()}% utilized',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: utilization > 0.85
-                          ? AppTheme.danger
-                          : (utilization > 0.6
-                              ? AppTheme.warning
-                              : AppTheme.success),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: utilization,
-                  minHeight: 6,
-                  backgroundColor: AppTheme.borderLight,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    utilization >= 1.0
-                        ? AppTheme.danger
-                        : (utilization > 0.6
-                            ? AppTheme.warning
-                            : AppTheme.success),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Bottom Actions Row: Quick Status Cycle & Details prompt
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    onTap: onCycleStatus,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.change_circle_outlined,
-                              size: 14, color: AppTheme.primary),
-                          const SizedBox(width: 4),
-                          const Text(
-                            'Cycle Status',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -236,32 +165,4 @@ class LcpNapCard extends StatelessWidget {
     );
   }
 
-  (Color, Color, Color) _getStatusColors(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return (
-          AppTheme.successSubtle,
-          const Color(0xFF166534),
-          const Color(0xFFBBF7D0)
-        );
-      case 'maintenance':
-        return (
-          AppTheme.warningSubtle,
-          const Color(0xFF92400E),
-          const Color(0xFFFDE68A)
-        );
-      case 'full':
-        return (
-          AppTheme.dangerSubtle,
-          const Color(0xFF8B1A25),
-          const Color(0xFFFCA5A5)
-        );
-      default:
-        return (
-          AppTheme.lightBg,
-          AppTheme.textMuted,
-          AppTheme.borderLight
-        );
-    }
-  }
 }

@@ -35,13 +35,9 @@ void main() {
       expect(signals.allLocations.value.length, 5);
       expect(signals.totalSitesCount.value, 5);
       expect(signals.totalPortsCount.value, 48); // 8 + 8 + 16 + 8 + 8
-      expect(signals.totalOccupiedPorts.value, 32); // 7 + 4 + 16 + 3 + 2
-      expect(signals.activeCount.value, 3);
-      expect(signals.fullCount.value, 1);
-      expect(signals.maintenanceCount.value, 1);
     });
 
-    test('2. Changing cabinet and status filter updates computed filteredLocations', () async {
+    test('2. Changing cabinet filter updates computed filteredLocations', () async {
       await repository.seedSampleLocations();
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -53,11 +49,8 @@ void main() {
       signals.setLcpFilter('LCP 02');
       expect(signals.filteredLocations.value.length, 2);
 
-      // Filter by Status: Maintenance
       signals.setLcpFilter('All');
-      signals.setStatusFilter('Maintenance');
-      expect(signals.filteredLocations.value.length, 1);
-      expect(signals.filteredLocations.value.first.lcpNap, 'LCP 03 - NAP 01');
+      expect(signals.filteredLocations.value.length, 5);
     });
 
     test('3. Search query filters locations across name, barangay, and city', () async {
@@ -72,39 +65,34 @@ void main() {
       expect(signals.filteredLocations.value.first.city, 'Quezon City');
     });
 
-    test('4. Modifying status in Drift updates Signals and preserves reactive consistency', () async {
+    test('4. Street and region from the API are searchable', () async {
       await repository.seedSampleLocations();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final firstSite = signals.allLocations.value.first;
-      expect(firstSite.status, 'Active');
+      final site = signals.allLocations.value.first;
+      expect(site.street, isNotNull);
+      expect(site.region, isNotNull);
 
-      // Update in Drift SQLite
-      await signals.updateSiteStatus(firstSite.id, 'Maintenance');
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      final updated = signals.allLocations.value.firstWhere((l) => l.id == firstSite.id);
-      expect(updated.status, 'Maintenance');
-      expect(signals.maintenanceCount.value, 2);
+      signals.setSearch(site.region!);
+      expect(signals.filteredLocations.value, isNotEmpty);
     });
   });
 
   group('LCP NAP UI Widget & Navigation Tests', () {
-    testWidgets('LcpNapCard renders port utilization and triggers callbacks', (tester) async {
+    testWidgets('LcpNapCard renders port capacity and triggers callbacks', (tester) async {
       final sample = LcpNapDto(
         id: 99,
         lcp: 'LCP 10',
         nap: 'NAP 05',
         lcpNap: 'LCP 10 - NAP 05',
         portTotal: 8,
-        portOccupied: 6,
-        status: 'Active',
+        street: 'Mejorada Street',
         barangay: 'San Antonio',
         city: 'Pasig',
+        region: 'Rizal',
       );
 
       var tapped = false;
-      var cycled = false;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -112,7 +100,6 @@ void main() {
             body: LcpNapCard(
               location: sample,
               onTap: () => tapped = true,
-              onCycleStatus: () => cycled = true,
             ),
           ),
         ),
@@ -120,11 +107,9 @@ void main() {
 
       expect(find.text('LCP 10'), findsOneWidget);
       expect(find.text('NAP 05'), findsOneWidget);
-      expect(find.text('Active'), findsOneWidget);
-      expect(find.text('Ports Occupancy (6/8)'), findsOneWidget);
-
-      await tester.tap(find.text('Cycle Status'));
-      expect(cycled, isTrue);
+      // Capacity only: the API does not report how many ports are in use.
+      expect(find.text('8 ports'), findsOneWidget);
+      expect(find.textContaining('Occupancy'), findsNothing);
 
       await tester.tap(find.byType(LcpNapCard));
       expect(tapped, isTrue);

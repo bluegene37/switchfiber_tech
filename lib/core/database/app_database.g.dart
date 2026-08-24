@@ -1614,19 +1614,16 @@ class $LcpNapLocationsTable extends LcpNapLocations
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(8));
-  static const VerificationMeta _portOccupiedMeta =
-      const VerificationMeta('portOccupied');
-  @override
-  late final GeneratedColumn<int> portOccupied = GeneratedColumn<int>(
-      'port_occupied', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
   static const VerificationMeta _coordinatesMeta =
       const VerificationMeta('coordinates');
   @override
   late final GeneratedColumn<String> coordinates = GeneratedColumn<String>(
       'coordinates', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _streetMeta = const VerificationMeta('street');
+  @override
+  late final GeneratedColumn<String> street = GeneratedColumn<String>(
+      'street', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _barangayMeta =
       const VerificationMeta('barangay');
@@ -1639,25 +1636,45 @@ class $LcpNapLocationsTable extends LcpNapLocations
   late final GeneratedColumn<String> city = GeneratedColumn<String>(
       'city', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  static const VerificationMeta _regionMeta = const VerificationMeta('region');
   @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-      'status', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('Active'));
-  static const VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
-  @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'description', aliasedName, true,
+  late final GeneratedColumn<String> region = GeneratedColumn<String>(
+      'region', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _rawJsonMeta =
-      const VerificationMeta('rawJson');
+  static const VerificationMeta _imageMeta = const VerificationMeta('image');
   @override
-  late final GeneratedColumn<String> rawJson = GeneratedColumn<String>(
-      'raw_json', aliasedName, true,
+  late final GeneratedColumn<String> image = GeneratedColumn<String>(
+      'image', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _image2Meta = const VerificationMeta('image2');
+  @override
+  late final GeneratedColumn<String> image2 = GeneratedColumn<String>(
+      'image2', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _readingImageMeta =
+      const VerificationMeta('readingImage');
+  @override
+  late final GeneratedColumn<String> readingImage = GeneratedColumn<String>(
+      'reading_image', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _modifiedByMeta =
+      const VerificationMeta('modifiedBy');
+  @override
+  late final GeneratedColumn<String> modifiedBy = GeneratedColumn<String>(
+      'modified_by', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _userEmailMeta =
+      const VerificationMeta('userEmail');
+  @override
+  late final GeneratedColumn<String> userEmail = GeneratedColumn<String>(
+      'user_email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _modifiedDateMeta =
+      const VerificationMeta('modifiedDate');
+  @override
+  late final GeneratedColumn<DateTime> modifiedDate = GeneratedColumn<DateTime>(
+      'modified_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _isSyncedMeta =
       const VerificationMeta('isSynced');
   @override
@@ -1683,13 +1700,17 @@ class $LcpNapLocationsTable extends LcpNapLocations
         nap,
         lcpNap,
         portTotal,
-        portOccupied,
         coordinates,
+        street,
         barangay,
         city,
-        status,
-        description,
-        rawJson,
+        region,
+        image,
+        image2,
+        readingImage,
+        modifiedBy,
+        userEmail,
+        modifiedDate,
         isSynced,
         updatedAt
       ];
@@ -1728,17 +1749,15 @@ class $LcpNapLocationsTable extends LcpNapLocations
       context.handle(_portTotalMeta,
           portTotal.isAcceptableOrUnknown(data['port_total']!, _portTotalMeta));
     }
-    if (data.containsKey('port_occupied')) {
-      context.handle(
-          _portOccupiedMeta,
-          portOccupied.isAcceptableOrUnknown(
-              data['port_occupied']!, _portOccupiedMeta));
-    }
     if (data.containsKey('coordinates')) {
       context.handle(
           _coordinatesMeta,
           coordinates.isAcceptableOrUnknown(
               data['coordinates']!, _coordinatesMeta));
+    }
+    if (data.containsKey('street')) {
+      context.handle(_streetMeta,
+          street.isAcceptableOrUnknown(data['street']!, _streetMeta));
     }
     if (data.containsKey('barangay')) {
       context.handle(_barangayMeta,
@@ -1748,19 +1767,39 @@ class $LcpNapLocationsTable extends LcpNapLocations
       context.handle(
           _cityMeta, city.isAcceptableOrUnknown(data['city']!, _cityMeta));
     }
-    if (data.containsKey('status')) {
-      context.handle(_statusMeta,
-          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    if (data.containsKey('region')) {
+      context.handle(_regionMeta,
+          region.isAcceptableOrUnknown(data['region']!, _regionMeta));
     }
-    if (data.containsKey('description')) {
+    if (data.containsKey('image')) {
       context.handle(
-          _descriptionMeta,
-          description.isAcceptableOrUnknown(
-              data['description']!, _descriptionMeta));
+          _imageMeta, image.isAcceptableOrUnknown(data['image']!, _imageMeta));
     }
-    if (data.containsKey('raw_json')) {
-      context.handle(_rawJsonMeta,
-          rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta));
+    if (data.containsKey('image2')) {
+      context.handle(_image2Meta,
+          image2.isAcceptableOrUnknown(data['image2']!, _image2Meta));
+    }
+    if (data.containsKey('reading_image')) {
+      context.handle(
+          _readingImageMeta,
+          readingImage.isAcceptableOrUnknown(
+              data['reading_image']!, _readingImageMeta));
+    }
+    if (data.containsKey('modified_by')) {
+      context.handle(
+          _modifiedByMeta,
+          modifiedBy.isAcceptableOrUnknown(
+              data['modified_by']!, _modifiedByMeta));
+    }
+    if (data.containsKey('user_email')) {
+      context.handle(_userEmailMeta,
+          userEmail.isAcceptableOrUnknown(data['user_email']!, _userEmailMeta));
+    }
+    if (data.containsKey('modified_date')) {
+      context.handle(
+          _modifiedDateMeta,
+          modifiedDate.isAcceptableOrUnknown(
+              data['modified_date']!, _modifiedDateMeta));
     }
     if (data.containsKey('is_synced')) {
       context.handle(_isSyncedMeta,
@@ -1789,20 +1828,28 @@ class $LcpNapLocationsTable extends LcpNapLocations
           .read(DriftSqlType.string, data['${effectivePrefix}lcp_nap'])!,
       portTotal: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}port_total'])!,
-      portOccupied: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}port_occupied'])!,
       coordinates: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}coordinates']),
+      street: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}street']),
       barangay: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}barangay']),
       city: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}city']),
-      status: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}description']),
-      rawJson: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}raw_json']),
+      region: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}region']),
+      image: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image']),
+      image2: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image2']),
+      readingImage: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reading_image']),
+      modifiedBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}modified_by']),
+      userEmail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_email']),
+      modifiedDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}modified_date']),
       isSynced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -1822,20 +1869,22 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
   final String nap;
   final String lcpNap;
   final int portTotal;
-  final int portOccupied;
   final String? coordinates;
+  final String? street;
   final String? barangay;
   final String? city;
-  final String status;
-  final String? description;
+  final String? region;
 
-  /// The complete record exactly as the API returned it.
-  ///
-  /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,
-  /// but this table models only the subset the app uses. Keeping the original
-  /// JSON lets an update send the whole record back with just the changed
-  /// fields replaced, instead of blanking out everything it does not model.
-  final String? rawJson;
+  /// Photo paths as the API stores them. These are relative paths, not URLs,
+  /// and no public base URL is known yet, so they are persisted but not shown.
+  final String? image;
+  final String? image2;
+  final String? readingImage;
+
+  /// Who last touched the record on the server, and when.
+  final String? modifiedBy;
+  final String? userEmail;
+  final DateTime? modifiedDate;
   final bool isSynced;
   final DateTime updatedAt;
   const LcpNapLocation(
@@ -1844,13 +1893,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       required this.nap,
       required this.lcpNap,
       required this.portTotal,
-      required this.portOccupied,
       this.coordinates,
+      this.street,
       this.barangay,
       this.city,
-      required this.status,
-      this.description,
-      this.rawJson,
+      this.region,
+      this.image,
+      this.image2,
+      this.readingImage,
+      this.modifiedBy,
+      this.userEmail,
+      this.modifiedDate,
       required this.isSynced,
       required this.updatedAt});
   @override
@@ -1861,9 +1914,11 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
     map['nap'] = Variable<String>(nap);
     map['lcp_nap'] = Variable<String>(lcpNap);
     map['port_total'] = Variable<int>(portTotal);
-    map['port_occupied'] = Variable<int>(portOccupied);
     if (!nullToAbsent || coordinates != null) {
       map['coordinates'] = Variable<String>(coordinates);
+    }
+    if (!nullToAbsent || street != null) {
+      map['street'] = Variable<String>(street);
     }
     if (!nullToAbsent || barangay != null) {
       map['barangay'] = Variable<String>(barangay);
@@ -1871,12 +1926,26 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
     if (!nullToAbsent || city != null) {
       map['city'] = Variable<String>(city);
     }
-    map['status'] = Variable<String>(status);
-    if (!nullToAbsent || description != null) {
-      map['description'] = Variable<String>(description);
+    if (!nullToAbsent || region != null) {
+      map['region'] = Variable<String>(region);
     }
-    if (!nullToAbsent || rawJson != null) {
-      map['raw_json'] = Variable<String>(rawJson);
+    if (!nullToAbsent || image != null) {
+      map['image'] = Variable<String>(image);
+    }
+    if (!nullToAbsent || image2 != null) {
+      map['image2'] = Variable<String>(image2);
+    }
+    if (!nullToAbsent || readingImage != null) {
+      map['reading_image'] = Variable<String>(readingImage);
+    }
+    if (!nullToAbsent || modifiedBy != null) {
+      map['modified_by'] = Variable<String>(modifiedBy);
+    }
+    if (!nullToAbsent || userEmail != null) {
+      map['user_email'] = Variable<String>(userEmail);
+    }
+    if (!nullToAbsent || modifiedDate != null) {
+      map['modified_date'] = Variable<DateTime>(modifiedDate);
     }
     map['is_synced'] = Variable<bool>(isSynced);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1890,21 +1959,33 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       nap: Value(nap),
       lcpNap: Value(lcpNap),
       portTotal: Value(portTotal),
-      portOccupied: Value(portOccupied),
       coordinates: coordinates == null && nullToAbsent
           ? const Value.absent()
           : Value(coordinates),
+      street:
+          street == null && nullToAbsent ? const Value.absent() : Value(street),
       barangay: barangay == null && nullToAbsent
           ? const Value.absent()
           : Value(barangay),
       city: city == null && nullToAbsent ? const Value.absent() : Value(city),
-      status: Value(status),
-      description: description == null && nullToAbsent
+      region:
+          region == null && nullToAbsent ? const Value.absent() : Value(region),
+      image:
+          image == null && nullToAbsent ? const Value.absent() : Value(image),
+      image2:
+          image2 == null && nullToAbsent ? const Value.absent() : Value(image2),
+      readingImage: readingImage == null && nullToAbsent
           ? const Value.absent()
-          : Value(description),
-      rawJson: rawJson == null && nullToAbsent
+          : Value(readingImage),
+      modifiedBy: modifiedBy == null && nullToAbsent
           ? const Value.absent()
-          : Value(rawJson),
+          : Value(modifiedBy),
+      userEmail: userEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userEmail),
+      modifiedDate: modifiedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(modifiedDate),
       isSynced: Value(isSynced),
       updatedAt: Value(updatedAt),
     );
@@ -1919,13 +2000,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       nap: serializer.fromJson<String>(json['nap']),
       lcpNap: serializer.fromJson<String>(json['lcpNap']),
       portTotal: serializer.fromJson<int>(json['portTotal']),
-      portOccupied: serializer.fromJson<int>(json['portOccupied']),
       coordinates: serializer.fromJson<String?>(json['coordinates']),
+      street: serializer.fromJson<String?>(json['street']),
       barangay: serializer.fromJson<String?>(json['barangay']),
       city: serializer.fromJson<String?>(json['city']),
-      status: serializer.fromJson<String>(json['status']),
-      description: serializer.fromJson<String?>(json['description']),
-      rawJson: serializer.fromJson<String?>(json['rawJson']),
+      region: serializer.fromJson<String?>(json['region']),
+      image: serializer.fromJson<String?>(json['image']),
+      image2: serializer.fromJson<String?>(json['image2']),
+      readingImage: serializer.fromJson<String?>(json['readingImage']),
+      modifiedBy: serializer.fromJson<String?>(json['modifiedBy']),
+      userEmail: serializer.fromJson<String?>(json['userEmail']),
+      modifiedDate: serializer.fromJson<DateTime?>(json['modifiedDate']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1939,13 +2024,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       'nap': serializer.toJson<String>(nap),
       'lcpNap': serializer.toJson<String>(lcpNap),
       'portTotal': serializer.toJson<int>(portTotal),
-      'portOccupied': serializer.toJson<int>(portOccupied),
       'coordinates': serializer.toJson<String?>(coordinates),
+      'street': serializer.toJson<String?>(street),
       'barangay': serializer.toJson<String?>(barangay),
       'city': serializer.toJson<String?>(city),
-      'status': serializer.toJson<String>(status),
-      'description': serializer.toJson<String?>(description),
-      'rawJson': serializer.toJson<String?>(rawJson),
+      'region': serializer.toJson<String?>(region),
+      'image': serializer.toJson<String?>(image),
+      'image2': serializer.toJson<String?>(image2),
+      'readingImage': serializer.toJson<String?>(readingImage),
+      'modifiedBy': serializer.toJson<String?>(modifiedBy),
+      'userEmail': serializer.toJson<String?>(userEmail),
+      'modifiedDate': serializer.toJson<DateTime?>(modifiedDate),
       'isSynced': serializer.toJson<bool>(isSynced),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1957,13 +2046,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
           String? nap,
           String? lcpNap,
           int? portTotal,
-          int? portOccupied,
           Value<String?> coordinates = const Value.absent(),
+          Value<String?> street = const Value.absent(),
           Value<String?> barangay = const Value.absent(),
           Value<String?> city = const Value.absent(),
-          String? status,
-          Value<String?> description = const Value.absent(),
-          Value<String?> rawJson = const Value.absent(),
+          Value<String?> region = const Value.absent(),
+          Value<String?> image = const Value.absent(),
+          Value<String?> image2 = const Value.absent(),
+          Value<String?> readingImage = const Value.absent(),
+          Value<String?> modifiedBy = const Value.absent(),
+          Value<String?> userEmail = const Value.absent(),
+          Value<DateTime?> modifiedDate = const Value.absent(),
           bool? isSynced,
           DateTime? updatedAt}) =>
       LcpNapLocation(
@@ -1972,13 +2065,19 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
         nap: nap ?? this.nap,
         lcpNap: lcpNap ?? this.lcpNap,
         portTotal: portTotal ?? this.portTotal,
-        portOccupied: portOccupied ?? this.portOccupied,
         coordinates: coordinates.present ? coordinates.value : this.coordinates,
+        street: street.present ? street.value : this.street,
         barangay: barangay.present ? barangay.value : this.barangay,
         city: city.present ? city.value : this.city,
-        status: status ?? this.status,
-        description: description.present ? description.value : this.description,
-        rawJson: rawJson.present ? rawJson.value : this.rawJson,
+        region: region.present ? region.value : this.region,
+        image: image.present ? image.value : this.image,
+        image2: image2.present ? image2.value : this.image2,
+        readingImage:
+            readingImage.present ? readingImage.value : this.readingImage,
+        modifiedBy: modifiedBy.present ? modifiedBy.value : this.modifiedBy,
+        userEmail: userEmail.present ? userEmail.value : this.userEmail,
+        modifiedDate:
+            modifiedDate.present ? modifiedDate.value : this.modifiedDate,
         isSynced: isSynced ?? this.isSynced,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -1989,17 +2088,23 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       nap: data.nap.present ? data.nap.value : this.nap,
       lcpNap: data.lcpNap.present ? data.lcpNap.value : this.lcpNap,
       portTotal: data.portTotal.present ? data.portTotal.value : this.portTotal,
-      portOccupied: data.portOccupied.present
-          ? data.portOccupied.value
-          : this.portOccupied,
       coordinates:
           data.coordinates.present ? data.coordinates.value : this.coordinates,
+      street: data.street.present ? data.street.value : this.street,
       barangay: data.barangay.present ? data.barangay.value : this.barangay,
       city: data.city.present ? data.city.value : this.city,
-      status: data.status.present ? data.status.value : this.status,
-      description:
-          data.description.present ? data.description.value : this.description,
-      rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
+      region: data.region.present ? data.region.value : this.region,
+      image: data.image.present ? data.image.value : this.image,
+      image2: data.image2.present ? data.image2.value : this.image2,
+      readingImage: data.readingImage.present
+          ? data.readingImage.value
+          : this.readingImage,
+      modifiedBy:
+          data.modifiedBy.present ? data.modifiedBy.value : this.modifiedBy,
+      userEmail: data.userEmail.present ? data.userEmail.value : this.userEmail,
+      modifiedDate: data.modifiedDate.present
+          ? data.modifiedDate.value
+          : this.modifiedDate,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2013,13 +2118,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
           ..write('nap: $nap, ')
           ..write('lcpNap: $lcpNap, ')
           ..write('portTotal: $portTotal, ')
-          ..write('portOccupied: $portOccupied, ')
           ..write('coordinates: $coordinates, ')
+          ..write('street: $street, ')
           ..write('barangay: $barangay, ')
           ..write('city: $city, ')
-          ..write('status: $status, ')
-          ..write('description: $description, ')
-          ..write('rawJson: $rawJson, ')
+          ..write('region: $region, ')
+          ..write('image: $image, ')
+          ..write('image2: $image2, ')
+          ..write('readingImage: $readingImage, ')
+          ..write('modifiedBy: $modifiedBy, ')
+          ..write('userEmail: $userEmail, ')
+          ..write('modifiedDate: $modifiedDate, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2033,13 +2142,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
       nap,
       lcpNap,
       portTotal,
-      portOccupied,
       coordinates,
+      street,
       barangay,
       city,
-      status,
-      description,
-      rawJson,
+      region,
+      image,
+      image2,
+      readingImage,
+      modifiedBy,
+      userEmail,
+      modifiedDate,
       isSynced,
       updatedAt);
   @override
@@ -2051,13 +2164,17 @@ class LcpNapLocation extends DataClass implements Insertable<LcpNapLocation> {
           other.nap == this.nap &&
           other.lcpNap == this.lcpNap &&
           other.portTotal == this.portTotal &&
-          other.portOccupied == this.portOccupied &&
           other.coordinates == this.coordinates &&
+          other.street == this.street &&
           other.barangay == this.barangay &&
           other.city == this.city &&
-          other.status == this.status &&
-          other.description == this.description &&
-          other.rawJson == this.rawJson &&
+          other.region == this.region &&
+          other.image == this.image &&
+          other.image2 == this.image2 &&
+          other.readingImage == this.readingImage &&
+          other.modifiedBy == this.modifiedBy &&
+          other.userEmail == this.userEmail &&
+          other.modifiedDate == this.modifiedDate &&
           other.isSynced == this.isSynced &&
           other.updatedAt == this.updatedAt);
 }
@@ -2068,13 +2185,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
   final Value<String> nap;
   final Value<String> lcpNap;
   final Value<int> portTotal;
-  final Value<int> portOccupied;
   final Value<String?> coordinates;
+  final Value<String?> street;
   final Value<String?> barangay;
   final Value<String?> city;
-  final Value<String> status;
-  final Value<String?> description;
-  final Value<String?> rawJson;
+  final Value<String?> region;
+  final Value<String?> image;
+  final Value<String?> image2;
+  final Value<String?> readingImage;
+  final Value<String?> modifiedBy;
+  final Value<String?> userEmail;
+  final Value<DateTime?> modifiedDate;
   final Value<bool> isSynced;
   final Value<DateTime> updatedAt;
   const LcpNapLocationsCompanion({
@@ -2083,13 +2204,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     this.nap = const Value.absent(),
     this.lcpNap = const Value.absent(),
     this.portTotal = const Value.absent(),
-    this.portOccupied = const Value.absent(),
     this.coordinates = const Value.absent(),
+    this.street = const Value.absent(),
     this.barangay = const Value.absent(),
     this.city = const Value.absent(),
-    this.status = const Value.absent(),
-    this.description = const Value.absent(),
-    this.rawJson = const Value.absent(),
+    this.region = const Value.absent(),
+    this.image = const Value.absent(),
+    this.image2 = const Value.absent(),
+    this.readingImage = const Value.absent(),
+    this.modifiedBy = const Value.absent(),
+    this.userEmail = const Value.absent(),
+    this.modifiedDate = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -2099,13 +2224,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     required String nap,
     required String lcpNap,
     this.portTotal = const Value.absent(),
-    this.portOccupied = const Value.absent(),
     this.coordinates = const Value.absent(),
+    this.street = const Value.absent(),
     this.barangay = const Value.absent(),
     this.city = const Value.absent(),
-    this.status = const Value.absent(),
-    this.description = const Value.absent(),
-    this.rawJson = const Value.absent(),
+    this.region = const Value.absent(),
+    this.image = const Value.absent(),
+    this.image2 = const Value.absent(),
+    this.readingImage = const Value.absent(),
+    this.modifiedBy = const Value.absent(),
+    this.userEmail = const Value.absent(),
+    this.modifiedDate = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
   })  : lcp = Value(lcp),
@@ -2117,13 +2246,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     Expression<String>? nap,
     Expression<String>? lcpNap,
     Expression<int>? portTotal,
-    Expression<int>? portOccupied,
     Expression<String>? coordinates,
+    Expression<String>? street,
     Expression<String>? barangay,
     Expression<String>? city,
-    Expression<String>? status,
-    Expression<String>? description,
-    Expression<String>? rawJson,
+    Expression<String>? region,
+    Expression<String>? image,
+    Expression<String>? image2,
+    Expression<String>? readingImage,
+    Expression<String>? modifiedBy,
+    Expression<String>? userEmail,
+    Expression<DateTime>? modifiedDate,
     Expression<bool>? isSynced,
     Expression<DateTime>? updatedAt,
   }) {
@@ -2133,13 +2266,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
       if (nap != null) 'nap': nap,
       if (lcpNap != null) 'lcp_nap': lcpNap,
       if (portTotal != null) 'port_total': portTotal,
-      if (portOccupied != null) 'port_occupied': portOccupied,
       if (coordinates != null) 'coordinates': coordinates,
+      if (street != null) 'street': street,
       if (barangay != null) 'barangay': barangay,
       if (city != null) 'city': city,
-      if (status != null) 'status': status,
-      if (description != null) 'description': description,
-      if (rawJson != null) 'raw_json': rawJson,
+      if (region != null) 'region': region,
+      if (image != null) 'image': image,
+      if (image2 != null) 'image2': image2,
+      if (readingImage != null) 'reading_image': readingImage,
+      if (modifiedBy != null) 'modified_by': modifiedBy,
+      if (userEmail != null) 'user_email': userEmail,
+      if (modifiedDate != null) 'modified_date': modifiedDate,
       if (isSynced != null) 'is_synced': isSynced,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -2151,13 +2288,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
       Value<String>? nap,
       Value<String>? lcpNap,
       Value<int>? portTotal,
-      Value<int>? portOccupied,
       Value<String?>? coordinates,
+      Value<String?>? street,
       Value<String?>? barangay,
       Value<String?>? city,
-      Value<String>? status,
-      Value<String?>? description,
-      Value<String?>? rawJson,
+      Value<String?>? region,
+      Value<String?>? image,
+      Value<String?>? image2,
+      Value<String?>? readingImage,
+      Value<String?>? modifiedBy,
+      Value<String?>? userEmail,
+      Value<DateTime?>? modifiedDate,
       Value<bool>? isSynced,
       Value<DateTime>? updatedAt}) {
     return LcpNapLocationsCompanion(
@@ -2166,13 +2307,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
       nap: nap ?? this.nap,
       lcpNap: lcpNap ?? this.lcpNap,
       portTotal: portTotal ?? this.portTotal,
-      portOccupied: portOccupied ?? this.portOccupied,
       coordinates: coordinates ?? this.coordinates,
+      street: street ?? this.street,
       barangay: barangay ?? this.barangay,
       city: city ?? this.city,
-      status: status ?? this.status,
-      description: description ?? this.description,
-      rawJson: rawJson ?? this.rawJson,
+      region: region ?? this.region,
+      image: image ?? this.image,
+      image2: image2 ?? this.image2,
+      readingImage: readingImage ?? this.readingImage,
+      modifiedBy: modifiedBy ?? this.modifiedBy,
+      userEmail: userEmail ?? this.userEmail,
+      modifiedDate: modifiedDate ?? this.modifiedDate,
       isSynced: isSynced ?? this.isSynced,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -2196,11 +2341,11 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     if (portTotal.present) {
       map['port_total'] = Variable<int>(portTotal.value);
     }
-    if (portOccupied.present) {
-      map['port_occupied'] = Variable<int>(portOccupied.value);
-    }
     if (coordinates.present) {
       map['coordinates'] = Variable<String>(coordinates.value);
+    }
+    if (street.present) {
+      map['street'] = Variable<String>(street.value);
     }
     if (barangay.present) {
       map['barangay'] = Variable<String>(barangay.value);
@@ -2208,14 +2353,26 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
     if (city.present) {
       map['city'] = Variable<String>(city.value);
     }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
+    if (region.present) {
+      map['region'] = Variable<String>(region.value);
     }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
+    if (image.present) {
+      map['image'] = Variable<String>(image.value);
     }
-    if (rawJson.present) {
-      map['raw_json'] = Variable<String>(rawJson.value);
+    if (image2.present) {
+      map['image2'] = Variable<String>(image2.value);
+    }
+    if (readingImage.present) {
+      map['reading_image'] = Variable<String>(readingImage.value);
+    }
+    if (modifiedBy.present) {
+      map['modified_by'] = Variable<String>(modifiedBy.value);
+    }
+    if (userEmail.present) {
+      map['user_email'] = Variable<String>(userEmail.value);
+    }
+    if (modifiedDate.present) {
+      map['modified_date'] = Variable<DateTime>(modifiedDate.value);
     }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
@@ -2234,13 +2391,17 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
           ..write('nap: $nap, ')
           ..write('lcpNap: $lcpNap, ')
           ..write('portTotal: $portTotal, ')
-          ..write('portOccupied: $portOccupied, ')
           ..write('coordinates: $coordinates, ')
+          ..write('street: $street, ')
           ..write('barangay: $barangay, ')
           ..write('city: $city, ')
-          ..write('status: $status, ')
-          ..write('description: $description, ')
-          ..write('rawJson: $rawJson, ')
+          ..write('region: $region, ')
+          ..write('image: $image, ')
+          ..write('image2: $image2, ')
+          ..write('readingImage: $readingImage, ')
+          ..write('modifiedBy: $modifiedBy, ')
+          ..write('userEmail: $userEmail, ')
+          ..write('modifiedDate: $modifiedDate, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2950,13 +3111,17 @@ typedef $$LcpNapLocationsTableCreateCompanionBuilder = LcpNapLocationsCompanion
   required String nap,
   required String lcpNap,
   Value<int> portTotal,
-  Value<int> portOccupied,
   Value<String?> coordinates,
+  Value<String?> street,
   Value<String?> barangay,
   Value<String?> city,
-  Value<String> status,
-  Value<String?> description,
-  Value<String?> rawJson,
+  Value<String?> region,
+  Value<String?> image,
+  Value<String?> image2,
+  Value<String?> readingImage,
+  Value<String?> modifiedBy,
+  Value<String?> userEmail,
+  Value<DateTime?> modifiedDate,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
 });
@@ -2967,13 +3132,17 @@ typedef $$LcpNapLocationsTableUpdateCompanionBuilder = LcpNapLocationsCompanion
   Value<String> nap,
   Value<String> lcpNap,
   Value<int> portTotal,
-  Value<int> portOccupied,
   Value<String?> coordinates,
+  Value<String?> street,
   Value<String?> barangay,
   Value<String?> city,
-  Value<String> status,
-  Value<String?> description,
-  Value<String?> rawJson,
+  Value<String?> region,
+  Value<String?> image,
+  Value<String?> image2,
+  Value<String?> readingImage,
+  Value<String?> modifiedBy,
+  Value<String?> userEmail,
+  Value<DateTime?> modifiedDate,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
 });
@@ -3002,11 +3171,11 @@ class $$LcpNapLocationsTableFilterComposer
   ColumnFilters<int> get portTotal => $composableBuilder(
       column: $table.portTotal, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get portOccupied => $composableBuilder(
-      column: $table.portOccupied, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get coordinates => $composableBuilder(
       column: $table.coordinates, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get street => $composableBuilder(
+      column: $table.street, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get barangay => $composableBuilder(
       column: $table.barangay, builder: (column) => ColumnFilters(column));
@@ -3014,14 +3183,26 @@ class $$LcpNapLocationsTableFilterComposer
   ColumnFilters<String> get city => $composableBuilder(
       column: $table.city, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get region => $composableBuilder(
+      column: $table.region, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get image => $composableBuilder(
+      column: $table.image, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get rawJson => $composableBuilder(
-      column: $table.rawJson, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get image2 => $composableBuilder(
+      column: $table.image2, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get readingImage => $composableBuilder(
+      column: $table.readingImage, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get modifiedBy => $composableBuilder(
+      column: $table.modifiedBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userEmail => $composableBuilder(
+      column: $table.userEmail, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get modifiedDate => $composableBuilder(
+      column: $table.modifiedDate, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get isSynced => $composableBuilder(
       column: $table.isSynced, builder: (column) => ColumnFilters(column));
@@ -3054,12 +3235,11 @@ class $$LcpNapLocationsTableOrderingComposer
   ColumnOrderings<int> get portTotal => $composableBuilder(
       column: $table.portTotal, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get portOccupied => $composableBuilder(
-      column: $table.portOccupied,
-      builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get coordinates => $composableBuilder(
       column: $table.coordinates, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get street => $composableBuilder(
+      column: $table.street, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get barangay => $composableBuilder(
       column: $table.barangay, builder: (column) => ColumnOrderings(column));
@@ -3067,14 +3247,28 @@ class $$LcpNapLocationsTableOrderingComposer
   ColumnOrderings<String> get city => $composableBuilder(
       column: $table.city, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get region => $composableBuilder(
+      column: $table.region, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get image => $composableBuilder(
+      column: $table.image, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get rawJson => $composableBuilder(
-      column: $table.rawJson, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get image2 => $composableBuilder(
+      column: $table.image2, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get readingImage => $composableBuilder(
+      column: $table.readingImage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get modifiedBy => $composableBuilder(
+      column: $table.modifiedBy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userEmail => $composableBuilder(
+      column: $table.userEmail, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get modifiedDate => $composableBuilder(
+      column: $table.modifiedDate,
+      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<bool> get isSynced => $composableBuilder(
       column: $table.isSynced, builder: (column) => ColumnOrderings(column));
@@ -3107,11 +3301,11 @@ class $$LcpNapLocationsTableAnnotationComposer
   GeneratedColumn<int> get portTotal =>
       $composableBuilder(column: $table.portTotal, builder: (column) => column);
 
-  GeneratedColumn<int> get portOccupied => $composableBuilder(
-      column: $table.portOccupied, builder: (column) => column);
-
   GeneratedColumn<String> get coordinates => $composableBuilder(
       column: $table.coordinates, builder: (column) => column);
+
+  GeneratedColumn<String> get street =>
+      $composableBuilder(column: $table.street, builder: (column) => column);
 
   GeneratedColumn<String> get barangay =>
       $composableBuilder(column: $table.barangay, builder: (column) => column);
@@ -3119,14 +3313,26 @@ class $$LcpNapLocationsTableAnnotationComposer
   GeneratedColumn<String> get city =>
       $composableBuilder(column: $table.city, builder: (column) => column);
 
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
+  GeneratedColumn<String> get region =>
+      $composableBuilder(column: $table.region, builder: (column) => column);
 
-  GeneratedColumn<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => column);
+  GeneratedColumn<String> get image =>
+      $composableBuilder(column: $table.image, builder: (column) => column);
 
-  GeneratedColumn<String> get rawJson =>
-      $composableBuilder(column: $table.rawJson, builder: (column) => column);
+  GeneratedColumn<String> get image2 =>
+      $composableBuilder(column: $table.image2, builder: (column) => column);
+
+  GeneratedColumn<String> get readingImage => $composableBuilder(
+      column: $table.readingImage, builder: (column) => column);
+
+  GeneratedColumn<String> get modifiedBy => $composableBuilder(
+      column: $table.modifiedBy, builder: (column) => column);
+
+  GeneratedColumn<String> get userEmail =>
+      $composableBuilder(column: $table.userEmail, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get modifiedDate => $composableBuilder(
+      column: $table.modifiedDate, builder: (column) => column);
 
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
@@ -3167,13 +3373,17 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             Value<String> nap = const Value.absent(),
             Value<String> lcpNap = const Value.absent(),
             Value<int> portTotal = const Value.absent(),
-            Value<int> portOccupied = const Value.absent(),
             Value<String?> coordinates = const Value.absent(),
+            Value<String?> street = const Value.absent(),
             Value<String?> barangay = const Value.absent(),
             Value<String?> city = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<String?> description = const Value.absent(),
-            Value<String?> rawJson = const Value.absent(),
+            Value<String?> region = const Value.absent(),
+            Value<String?> image = const Value.absent(),
+            Value<String?> image2 = const Value.absent(),
+            Value<String?> readingImage = const Value.absent(),
+            Value<String?> modifiedBy = const Value.absent(),
+            Value<String?> userEmail = const Value.absent(),
+            Value<DateTime?> modifiedDate = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -3183,13 +3393,17 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             nap: nap,
             lcpNap: lcpNap,
             portTotal: portTotal,
-            portOccupied: portOccupied,
             coordinates: coordinates,
+            street: street,
             barangay: barangay,
             city: city,
-            status: status,
-            description: description,
-            rawJson: rawJson,
+            region: region,
+            image: image,
+            image2: image2,
+            readingImage: readingImage,
+            modifiedBy: modifiedBy,
+            userEmail: userEmail,
+            modifiedDate: modifiedDate,
             isSynced: isSynced,
             updatedAt: updatedAt,
           ),
@@ -3199,13 +3413,17 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             required String nap,
             required String lcpNap,
             Value<int> portTotal = const Value.absent(),
-            Value<int> portOccupied = const Value.absent(),
             Value<String?> coordinates = const Value.absent(),
+            Value<String?> street = const Value.absent(),
             Value<String?> barangay = const Value.absent(),
             Value<String?> city = const Value.absent(),
-            Value<String> status = const Value.absent(),
-            Value<String?> description = const Value.absent(),
-            Value<String?> rawJson = const Value.absent(),
+            Value<String?> region = const Value.absent(),
+            Value<String?> image = const Value.absent(),
+            Value<String?> image2 = const Value.absent(),
+            Value<String?> readingImage = const Value.absent(),
+            Value<String?> modifiedBy = const Value.absent(),
+            Value<String?> userEmail = const Value.absent(),
+            Value<DateTime?> modifiedDate = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -3215,13 +3433,17 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             nap: nap,
             lcpNap: lcpNap,
             portTotal: portTotal,
-            portOccupied: portOccupied,
             coordinates: coordinates,
+            street: street,
             barangay: barangay,
             city: city,
-            status: status,
-            description: description,
-            rawJson: rawJson,
+            region: region,
+            image: image,
+            image2: image2,
+            readingImage: readingImage,
+            modifiedBy: modifiedBy,
+            userEmail: userEmail,
+            modifiedDate: modifiedDate,
             isSynced: isSynced,
             updatedAt: updatedAt,
           ),

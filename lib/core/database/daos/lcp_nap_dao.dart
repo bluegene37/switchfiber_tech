@@ -52,16 +52,6 @@ class LcpNapLocationsDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  /// Update location status (Active / Maintenance / Full)
-  Future<void> updateStatus(int id, String newStatus, {bool isSynced = false}) {
-    return (update(lcpNapLocations)..where((t) => t.id.equals(id))).write(
-      LcpNapLocationsCompanion(
-        status: Value(newStatus),
-        isSynced: Value(isSynced),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-  }
 
   /// Delete a location
   Future<void> deleteLocation(int id) {
