@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../models/lcp_nap_model.dart';
 import '../signals/lcp_nap_signals.dart';
 import '../widgets/lcp_nap_card.dart';
+import '../widgets/lcp_nap_map_view.dart';
 import 'lcp_nap_detail_screen.dart';
 
 /// Screen displaying the list of all LCP NAP distribution points with live search,
@@ -19,8 +21,23 @@ class LcpNapListScreen extends StatefulWidget {
   State<LcpNapListScreen> createState() => _LcpNapListScreenState();
 }
 
+enum _LcpNapView { list, map }
+
 class _LcpNapListScreenState extends State<LcpNapListScreen> {
   final TextEditingController _searchController = TextEditingController();
+  _LcpNapView _view = _LcpNapView.list;
+
+  void _openDetails(LcpNapDto location) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LcpNapDetailScreen(
+          locationId: location.id,
+          signals: widget.signals,
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -125,6 +142,27 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                     ),
                     const SizedBox(height: 10),
 
+                    // List / Map view toggle - both views share this search box
+                    // and the filters below it.
+                    SegmentedButton<_LcpNapView>(
+                      segments: const [
+                        ButtonSegment(
+                          value: _LcpNapView.list,
+                          icon: Icon(Icons.view_list_rounded, size: 18),
+                          label: Text('List'),
+                        ),
+                        ButtonSegment(
+                          value: _LcpNapView.map,
+                          icon: Icon(Icons.map_rounded, size: 18),
+                          label: Text('Map'),
+                        ),
+                      ],
+                      selected: {_view},
+                      onSelectionChanged: (sel) =>
+                          setState(() => _view = sel.first),
+                    ),
+                    const SizedBox(height: 10),
+
                     // Horizontal LCP Cabinet Filter Chips
                     _buildLcpCabinetChips(signals),
                     const SizedBox(height: 8),
@@ -137,7 +175,15 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
             },
           ),
 
-          // 2. Reactive Locations List
+          // 2. Reactive body: list or map, both fed by the same filters
+          if (_view == _LcpNapView.map)
+            Expanded(
+              child: LcpNapMapView(
+                signals: signals,
+                onOpenDetails: _openDetails,
+              ),
+            )
+          else
           Expanded(
             child: SignalBuilder(
               builder: (context) {
@@ -164,18 +210,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                       final item = locations[index];
                       return LcpNapCard(
                         location: item,
-                        onTap: () {
-                          // Navigate to detail screen
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => LcpNapDetailScreen(
-                                locationId: item.id,
-                                signals: signals,
-                              ),
-                            ),
-                          );
-                        },
+                        onTap: () => _openDetails(item),
                         onCycleStatus: () async {
                           await signals.cycleStatus(item);
                           if (!context.mounted) return;

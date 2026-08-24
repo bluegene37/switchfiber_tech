@@ -119,6 +119,19 @@ class LcpNapSignals {
         .length;
   });
 
+  /// Sites from [filteredLocations] that carry a usable GPS fix, i.e. the pins
+  /// the map can actually place. Derived from the same filtered list as the
+  /// list view, so search and filters apply to both without extra wiring.
+  late final Computed<List<LcpNapDto>> mappableLocations = computed(
+    () => filteredLocations.value.where((l) => l.isMappable).toList(),
+  );
+
+  /// How many currently-filtered sites have no usable coordinates. Surfaced in
+  /// the UI so records without a GPS fix are visibly missing, not silently lost.
+  late final Computed<int> unmappedCount = computed(
+    () => filteredLocations.value.length - mappableLocations.value.length,
+  );
+
   // --- Initialization & Methods ---
 
   void _init() {

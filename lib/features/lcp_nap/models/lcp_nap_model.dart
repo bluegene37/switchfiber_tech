@@ -1,3 +1,4 @@
+import 'package:latlong2/latlong.dart';
 import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
 
@@ -41,20 +42,36 @@ class LcpNapDto {
       portTotal > 0 ? (portOccupied / portTotal).clamp(0.0, 1.0) : 0.0;
 
   /// Parsed GPS latitude
-  double? get latitude {
-    if (coordinates == null) return null;
-    final parts = coordinates!.split(',');
-    if (parts.length >= 2) return double.tryParse(parts[0].trim());
-    return null;
-  }
+  double? get latitude => latLng?.latitude;
 
   /// Parsed GPS longitude
-  double? get longitude {
-    if (coordinates == null) return null;
-    final parts = coordinates!.split(',');
-    if (parts.length >= 2) return double.tryParse(parts[1].trim());
-    return null;
+  double? get longitude => latLng?.longitude;
+
+  /// The site's position, or null when the record carries no usable fix.
+  ///
+  /// The API stores this as a single string such as `"14.469586, 121.195615"`.
+  /// Anything that is not a real position - malformed text, out-of-range
+  /// values, or the 0,0 placeholder the backend uses for "no fix recorded" -
+  /// returns null so the site is left off the map rather than plotted somewhere
+  /// misleading.
+  LatLng? get latLng {
+    final raw = coordinates;
+    if (raw == null || raw.trim().isEmpty) return null;
+
+    final parts = raw.split(',');
+    if (parts.length < 2) return null;
+
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    if (lat.abs() > 90 || lng.abs() > 180) return null;
+    if (lat == 0 && lng == 0) return null;
+
+    return LatLng(lat, lng);
   }
+
+  /// Whether this site can be shown as a pin on the map.
+  bool get isMappable => latLng != null;
 
   factory LcpNapDto.fromJson(Map<String, dynamic> json) {
     final lcpStr = json['lcp']?.toString() ?? 'LCP 01';

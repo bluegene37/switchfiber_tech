@@ -65,6 +65,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
           });
         },
       ),
+      LcpNapListScreen(signals: widget.lcpNapSignals),
       SettingsScreen(
         authSignals: auth,
         jobsSignals: jobs,
@@ -106,7 +107,24 @@ class _TechnicianShellState extends State<TechnicianShell> {
             label: 'Create Report',
           ),
 
-          // 3. Settings
+          // 3. LCP NAP plant records and map
+          NavigationDestination(
+            icon: SignalBuilder(
+              builder: (context) {
+                final sites = widget.lcpNapSignals.totalSitesCount.value;
+                return Badge(
+                  isLabelVisible: sites > 0,
+                  label: Text('$sites'),
+                  backgroundColor: AppTheme.primary,
+                  child: const Icon(Icons.share_location_outlined),
+                );
+              },
+            ),
+            selectedIcon: const Icon(Icons.share_location_rounded),
+            label: 'LCP NAP',
+          ),
+
+          // 4. Settings
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
@@ -229,15 +247,10 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 );
               },
             ),
+            selected: _currentIndex == 2,
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      LcpNapListScreen(signals: widget.lcpNapSignals),
-                ),
-              );
+              setState(() => _currentIndex = 2);
             },
           ),
 
@@ -267,7 +280,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             ),
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = 3);
             },
           ),
 
@@ -276,10 +289,10 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ListTile(
             leading: const Icon(Icons.settings_rounded),
             title: const Text('Terminal Settings'),
-            selected: _currentIndex == 2,
+            selected: _currentIndex == 3,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = 3);
             },
           ),
 
