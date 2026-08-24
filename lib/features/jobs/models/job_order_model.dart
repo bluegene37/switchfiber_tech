@@ -227,22 +227,36 @@ class JobOrderDto {
   }
 
   Map<String, dynamic> toApiJson() {
-    return {
+    final payload = <String, dynamic>{
       'id': id,
       'status': status,
-      'onsiteStatus': onsiteStatus ?? (status == 'completed' ? 'Completed' : 'In-Progress'),
+      // Report the actual on-site state. The previous fallback guessed
+      // 'In-Progress' for any job without one, which would have marked
+      // untouched jobs as started the first time they synced.
+      'onsiteStatus': fieldStatus.wireValue,
       'onsiteRemarks': onsiteRemarks ?? '',
-      'opticalPower': opticalPower,
       'modemRouterSN': modemRouterSN ?? '',
       'routerModel': routerModel ?? '',
-      'lcpId': lcpId,
-      'napId': napId,
       'portId': portId ?? '',
-      'vlanId': vlanId,
       'dateInstalled': (dateInstalled ?? DateTime.now()).toIso8601String(),
       'boxReadingImage': boxReadingImage ?? '',
       'routerReadingImage': routerReadingImage ?? '',
       'clientSignature': clientSignature ?? '',
     };
+
+    // The API returns these as strings ("LCP 002", "SwitchLite - P699") which
+    // the integer columns cannot represent, so they parse to null. Sending that
+    // null back would erase the real assignment on the server, so omit any
+    // field we do not genuinely hold a value for.
+    void putIfPresent(String key, Object? value) {
+      if (value != null) payload[key] = value;
+    }
+
+    putIfPresent('opticalPower', opticalPower);
+    putIfPresent('lcpId', lcpId);
+    putIfPresent('napId', napId);
+    putIfPresent('vlanId', vlanId);
+
+    return payload;
   }
 }
