@@ -13,16 +13,31 @@ import 'package:path_provider/path_provider.dart';
 class MapTiles {
   MapTiles._();
 
-  /// Public OpenStreetMap tiles.
+  /// Base layers, matching the Switch Fiber web console so both clients show
+  /// the same plant on the same cartography.
   ///
-  /// NOTE: the OSM Foundation's tile usage policy does not permit heavy or
-  /// commercial app traffic against this server. It is fine for development,
-  /// but a production rollout needs a dedicated tile server or a paid provider.
-  /// Swapping that is a one-line change here.
-  static const String urlTemplate =
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  /// CARTO rather than raw OSM tiles: the OSM Foundation's usage policy does
+  /// not permit app traffic against their servers. Esri World Imagery backs the
+  /// satellite view, which technicians use to find an actual pole or wall.
+  static const String streetLightUrl =
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+  static const String streetDarkUrl =
+      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+  static const String satelliteUrl =
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/'
+      'MapServer/tile/{z}/{y}/{x}';
 
-  /// Sent so OSM can identify this client, as their policy requires.
+  static const List<String> cartoSubdomains = ['a', 'b', 'c', 'd'];
+
+  static const String streetAttribution = '© OpenStreetMap © CARTO';
+  static const String satelliteAttribution =
+      'Imagery © Esri — Source: Esri, Maxar, Earthstar Geographics';
+
+  /// Esri's imagery service does not serve tiles past zoom 19.
+  static const double satelliteMaxZoom = 19;
+  static const double streetMaxZoom = 20;
+
+  /// Identifies this client to the tile providers.
   static const String userAgentPackageName = 'ph.switchfiber.tech';
 
   /// How long a cached tile stays usable offline before it is refetched.

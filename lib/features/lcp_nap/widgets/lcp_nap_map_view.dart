@@ -5,6 +5,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../models/lcp_nap_model.dart';
+import '../services/map_clustering.dart';
 import '../services/map_tiles.dart';
 import '../signals/lcp_nap_signals.dart';
 import 'lcp_nap_pin_popup.dart';
@@ -39,6 +40,8 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
   TileProvider? _tiles;
   LcpNapDto? _selected;
   bool _didInitialFit = false;
+  bool _satellite = false;
+  double _zoom = 14;
 
   @override
   void initState() {
@@ -80,9 +83,21 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
     });
   }
 
+  /// Zoom to a cluster's members so they separate into individual pins.
+  void _zoomInto(MapCluster cluster) {
+    final points = cluster.sites.map((s) => s.latLng!).toList();
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: LatLngBounds.fromPoints(points),
+        padding: const EdgeInsets.all(64),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tiles = _tiles;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (tiles == null) {
       return const Center(
         child: CircularProgressIndicator(color: AppTheme.primary),
@@ -92,7 +107,8 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
     return SignalBuilder(
       builder: (context) {
         final sites = widget.signals.mappableLocations.value;
-        final unmapped = widget.signals.unmappedCount.value;
+        final unmappedSites = widget.signals.unmappedLocations.value;
+        final unmapped = unmappedSites.length;
         _fitOnFirstLoad(sites);
 
         // A site can disappear from the filtered set while its popup is open.
@@ -111,29 +127,52 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                     : _fallbackCentre,
                 initialZoom: sites.isEmpty ? 11 : 14,
                 onTap: (_, __) => setState(() => _selected = null),
+                onPositionChanged: (camera, _) {
+                  // Re-cluster as the technician zooms.
+                  if ((camera.zoom - _zoom).abs() >= 0.5) {
+                    setState(() => _zoom = camera.zoom);
+                  }
+                },
               ),
               children: [
                 TileLayer(
-                  urlTemplate: MapTiles.urlTemplate,
+                  urlTemplate: _satellite
+                      ? MapTiles.satelliteUrl
+                      : (isDark
+                          ? MapTiles.streetDarkUrl
+                          : MapTiles.streetLightUrl),
+                  subdomains:
+                      _satellite ? const [] : MapTiles.cartoSubdomains,
+                  maxZoom: _satellite
+                      ? MapTiles.satelliteMaxZoom
+                      : MapTiles.streetMaxZoom,
                   userAgentPackageName: MapTiles.userAgentPackageName,
                   tileProvider: tiles,
                 ),
                 MarkerLayer(
                   markers: [
-                    for (final site in sites)
+                    for (final cluster in clusterSites(sites, zoom: _zoom))
                       Marker(
-                        point: site.latLng!,
-                        width: 40,
-                        height: 40,
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selected = site),
-                          child: _Pin(
-                            selected: selected?.id == site.id,
-                            // Full site name: NAP numbers repeat across
-                            // cabinets, so 'NAP 01' alone identifies nothing.
-                            label: site.lcpNap,
-                          ),
-                        ),
+                        point: cluster.center,
+                        width: 44,
+                        height: 44,
+                        child: cluster.isCluster
+                            ? GestureDetector(
+                                key: const Key('lcpNapCluster'),
+                                onTap: () => _zoomInto(cluster),
+                                child: _ClusterPin(count: cluster.count),
+                              )
+                            : GestureDetector(
+                                key: Key('lcpNapPin_${cluster.site.id}'),
+                                onTap: () =>
+                                    setState(() => _selected = cluster.site),
+                                child: _Pin(
+                                  selected: selected?.id == cluster.site.id,
+                                  label: cluster.site.lcpNap,
+                                  nap: cluster.site.nap,
+                                  hue: lcpColorSeed(cluster.site.lcp),
+                                ),
+                              ),
                       ),
                   ],
                 ),
@@ -146,8 +185,17 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                 top: 8,
                 left: 8,
                 right: 8,
-                child: _UnmappedNotice(count: unmapped),
+                child: _UnmappedNotice(sites: unmappedSites),
               ),
+
+            Positioned(
+              top: unmapped > 0 ? 52 : 8,
+              right: 8,
+              child: _BaseLayerToggle(
+                satellite: _satellite,
+                onChanged: (v) => setState(() => _satellite = v),
+              ),
+            ),
 
             if (sites.isNotEmpty)
               Positioned(
@@ -184,30 +232,179 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
 class _Pin extends StatelessWidget {
   final bool selected;
   final String label;
+  final String nap;
+  final double hue;
 
-  const _Pin({required this.selected, required this.label});
+  const _Pin({
+    required this.selected,
+    required this.label,
+    required this.nap,
+    required this.hue,
+  });
+
+  /// The NAP number alone; the cabinet is conveyed by the pin's colour.
+  String get _shortLabel {
+    final digits = nap.replaceAll(RegExp(r'\D'), '');
+    return digits.isEmpty ? '?' : int.parse(digits).toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colour = HSLColor.fromAHSL(1, hue, 0.62, 0.44).toColor();
+    return Semantics(
+      label: 'Site $label',
+      button: true,
+      child: Center(
+        child: Container(
+          width: selected ? 34 : 28,
+          height: selected ? 34 : 28,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: colour,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected ? Colors.white : Colors.white70,
+              width: selected ? 3 : 2,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0x55000000),
+                  blurRadius: 4,
+                  offset: Offset(0, 2)),
+            ],
+          ),
+          child: Text(
+            _shortLabel,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: selected ? 13 : 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Several sites merged because they would overlap at this zoom.
+class _ClusterPin extends StatelessWidget {
+  final int count;
+
+  const _ClusterPin({required this.count});
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Site $label',
+      label: '$count sites, zoom in to separate',
       button: true,
-      child: Icon(
-        Icons.location_on_rounded,
-        size: selected ? 40 : 32,
-        color: selected ? AppTheme.primaryActive : AppTheme.primary,
-        shadows: const [
-          Shadow(color: Color(0x55000000), blurRadius: 4, offset: Offset(0, 2)),
-        ],
+      child: Center(
+        child: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 3),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0x55000000),
+                  blurRadius: 6,
+                  offset: Offset(0, 2)),
+            ],
+          ),
+          child: Text(
+            '$count',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Street / Satellite switch. Satellite is what technicians use to find the
+/// actual pole or wall a NAP box is mounted on.
+class _BaseLayerToggle extends StatelessWidget {
+  final bool satellite;
+  final ValueChanged<bool> onChanged;
+
+  const _BaseLayerToggle({required this.satellite, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(8),
+      color: Theme.of(context).cardTheme.color ?? Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _seg(context, 'Street', Icons.map_rounded, !satellite,
+                () => onChanged(false)),
+            _seg(context, 'Satellite', Icons.satellite_alt_rounded, satellite,
+                () => onChanged(true)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _seg(BuildContext context, String label, IconData icon, bool active,
+      VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? AppTheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 14,
+                color: active ? Colors.white : AppTheme.textMuted),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: active ? Colors.white : AppTheme.textMuted,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _UnmappedNotice extends StatelessWidget {
-  final int count;
+  final List<LcpNapDto> sites;
 
-  const _UnmappedNotice({required this.count});
+  const _UnmappedNotice({required this.sites});
+
+  /// Names the records so a technician can go fix their coordinates, rather
+  /// than only being told a number is missing.
+  String get _summary {
+    final names = sites
+        .take(3)
+        .map((s) => s.lcpNap.trim().isEmpty ? 'record #${s.id}' : s.lcpNap)
+        .join(', ');
+    final rest = sites.length - 3;
+    return rest > 0 ? '$names and $rest more' : names;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -219,13 +416,15 @@ class _UnmappedNotice extends StatelessWidget {
         border: Border.all(color: const Color(0xFFFDE68A)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.location_off_outlined,
               size: 16, color: Color(0xFF92400E)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '$count site${count == 1 ? '' : 's'} not mapped (no GPS fix)',
+              '${sites.length} site${sites.length == 1 ? '' : 's'} '
+              'without a GPS fix: $_summary',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

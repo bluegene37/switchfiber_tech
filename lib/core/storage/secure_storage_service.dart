@@ -55,6 +55,13 @@ class SecureStorageService {
     await _storage.write(key: AppConstants.keyApiBaseUrl, value: url);
   }
 
+  /// Read an arbitrary preference key.
+  Future<String?> read(String key) => _storage.read(key: key);
+
+  /// Write an arbitrary preference key.
+  Future<void> write(String key, String value) =>
+      _storage.write(key: key, value: value);
+
   /// Clear only the technician's credentials, preserving device configuration
   /// such as the API base URL, which is not a credential and must survive a
   /// logout or an expired-token 401.

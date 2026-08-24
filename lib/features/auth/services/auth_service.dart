@@ -66,6 +66,24 @@ class AuthService {
     return null;
   }
 
+  /// Fetch the technician's full profile.
+  ///
+  /// The login response carries only name, username and access level; contact
+  /// number, address and email live on this endpoint.
+  ///
+  /// NOTE: this endpoint also returns the account password in plaintext.
+  /// [UserModel] deliberately ignores that field so it never reaches storage.
+  Future<UserModel> fetchProfile(int userId) async {
+    final response = await _api.get('/Users/$userId');
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw Exception('Unexpected profile response from server.');
+    }
+    final user = UserModel.fromJson(data);
+    await _storage.saveUserSession(user.toRawJson());
+    return user;
+  }
+
   /// Request password reset link
   Future<void> requestPasswordReset(String email) async {
     await _api.post(

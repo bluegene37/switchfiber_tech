@@ -58,11 +58,22 @@ class LcpNapDto {
     final raw = coordinates;
     if (raw == null || raw.trim().isEmpty) return null;
 
-    final parts = raw.split(',');
-    if (parts.length < 2) return null;
+    // Accepts the separators and labelled forms the web console accepts, so
+    // both clients plot exactly the same rows.
+    final clean = raw
+        .replaceAll(RegExp(r'lat:|latitude:|lng:|longitude:|lon:',
+            caseSensitive: false), '')
+        .trim();
+    if (clean.isEmpty) return null;
 
-    final lat = double.tryParse(parts[0].trim());
-    final lng = double.tryParse(parts[1].trim());
+    final parts = clean
+        .split(RegExp(r'[,;\s]+'))
+        .map((p) => double.tryParse(p.trim()))
+        .toList();
+    if (parts.length != 2) return null;
+
+    final lat = parts[0];
+    final lng = parts[1];
     if (lat == null || lng == null) return null;
     if (lat.abs() > 90 || lng.abs() > 180) return null;
     if (lat == 0 && lng == 0) return null;

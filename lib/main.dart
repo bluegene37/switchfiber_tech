@@ -11,6 +11,7 @@ import 'features/jobs/repositories/job_repository.dart';
 import 'features/jobs/signals/jobs_signals.dart';
 import 'features/lcp_nap/repositories/lcp_nap_repository.dart';
 import 'features/lcp_nap/signals/lcp_nap_signals.dart';
+import 'features/settings/signals/settings_signals.dart';
 import 'features/shell/technician_shell.dart';
 import 'features/splash/screens/splash_screen.dart';
 
@@ -38,7 +39,8 @@ void main() async {
     authSignals.logout();
   };
 
-  // 5. Restore active technician session from secure storage
+  // 5. Restore display preferences and the active technician session
+  await SettingsSignals.instance.restore();
   await authSignals.restoreSession();
 
   runApp(
@@ -67,18 +69,22 @@ class SwitchFiberTechApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Switch Fiber Tech',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
-      home: _RootView(
-        authSignals: authSignals,
-        jobsSignals: jobsSignals,
-        lcpNapSignals: lcpNapSignals,
-        showSplash: showSplash,
-      ),
+    return SignalBuilder(
+      builder: (context) {
+        return MaterialApp(
+          title: 'Switch Fiber Tech',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: SettingsSignals.instance.themeMode.value,
+          home: _RootView(
+            authSignals: authSignals,
+            jobsSignals: jobsSignals,
+            lcpNapSignals: lcpNapSignals,
+            showSplash: showSplash,
+          ),
+        );
+      },
     );
   }
 }

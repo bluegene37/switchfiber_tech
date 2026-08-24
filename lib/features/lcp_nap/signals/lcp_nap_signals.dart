@@ -126,11 +126,15 @@ class LcpNapSignals {
     () => filteredLocations.value.where((l) => l.isMappable).toList(),
   );
 
+  /// Sites the map cannot place because they carry no usable GPS fix.
+  late final Computed<List<LcpNapDto>> unmappedLocations = computed(
+    () => filteredLocations.value.where((l) => !l.isMappable).toList(),
+  );
+
   /// How many currently-filtered sites have no usable coordinates. Surfaced in
   /// the UI so records without a GPS fix are visibly missing, not silently lost.
-  late final Computed<int> unmappedCount = computed(
-    () => filteredLocations.value.length - mappableLocations.value.length,
-  );
+  late final Computed<int> unmappedCount =
+      computed(() => unmappedLocations.value.length);
 
   // --- Initialization & Methods ---
 

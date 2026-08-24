@@ -33,6 +33,21 @@ void main() {
           const LatLng(-33.8688, 151.2093));
     });
 
+    test('accepts the same separators the web console accepts', () {
+      expect(site('14.469586; 121.195615').latLng,
+          const LatLng(14.469586, 121.195615));
+      expect(site('14.469586 121.195615').latLng,
+          const LatLng(14.469586, 121.195615));
+      expect(site('lat: 14.469586, lng: 121.195615').latLng,
+          const LatLng(14.469586, 121.195615));
+      expect(site('latitude:14.469586 longitude:121.195615').latLng,
+          const LatLng(14.469586, 121.195615));
+    });
+
+    test('rejects a value with more than two numbers', () {
+      expect(site('14.4, 121.1, 55').isMappable, isFalse);
+    });
+
     test('a location with no coordinates is not mappable', () {
       expect(site(null).latLng, isNull);
       expect(site(null).isMappable, isFalse);

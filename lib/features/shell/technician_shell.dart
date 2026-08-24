@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/signals/auth_signals.dart';
+import '../jobs/models/job_order_model.dart';
 import '../jobs/screens/job_orders_screen.dart';
 import '../jobs/signals/jobs_signals.dart';
 import '../lcp_nap/screens/lcp_nap_list_screen.dart';
@@ -41,6 +42,21 @@ class _TechnicianShellState extends State<TechnicianShell> {
     widget.lcpNapSignals.fetchRemote();
   }
 
+  /// Opens the on-site report for a job order as its own page, rather than a
+  /// separate tab: a report only ever belongs to a job.
+  void _openReportForJob(JobOrderDto job) {
+    _reportSignals.setJobOrder(job);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateReportScreen(
+          jobsSignals: widget.jobsSignals,
+          reportSignals: _reportSignals,
+          onReportSubmitted: () => Navigator.of(context).maybePop(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final jobs = widget.jobsSignals;
@@ -49,21 +65,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
     final screens = [
       JobOrdersScreen(
         jobsSignals: jobs,
-        onSelectJobForReport: (job) {
-          _reportSignals.setJobOrder(job);
-          setState(() {
-            _currentIndex = 1; // Switch to Create Report tab
-          });
-        },
-      ),
-      CreateReportScreen(
-        jobsSignals: jobs,
-        reportSignals: _reportSignals,
-        onReportSubmitted: () {
-          setState(() {
-            _currentIndex = 0; // Switch back to Job Orders
-          });
-        },
+        onSelectJobForReport: _openReportForJob,
       ),
       LcpNapListScreen(signals: widget.lcpNapSignals),
       SettingsScreen(
@@ -100,14 +102,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             label: 'Job Orders',
           ),
 
-          // 2. Create Report
-          const NavigationDestination(
-            icon: Icon(Icons.assignment_turned_in_outlined),
-            selectedIcon: Icon(Icons.assignment_turned_in_rounded),
-            label: 'Create Report',
-          ),
-
-          // 3. LCP NAP plant records and map
+          // 2. LCP NAP plant records and map
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
@@ -124,7 +119,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             label: 'LCP NAP',
           ),
 
-          // 4. Settings
+          // 3. Settings
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
@@ -215,16 +210,6 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ),
 
           ListTile(
-            leading: const Icon(Icons.assignment_turned_in_rounded, color: AppTheme.primary),
-            title: const Text('On-Site Completion Report'),
-            selected: _currentIndex == 1,
-            onTap: () {
-              Navigator.pop(context);
-              setState(() => _currentIndex = 1);
-            },
-          ),
-
-          ListTile(
             leading: const Icon(Icons.share_location_rounded, color: AppTheme.primary),
             title: const Text('LCP NAP Locations'),
             trailing: SignalBuilder(
@@ -247,10 +232,10 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 );
               },
             ),
-            selected: _currentIndex == 2,
+            selected: _currentIndex == 1,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = 1);
             },
           ),
 
@@ -280,7 +265,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             ),
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 3);
+              setState(() => _currentIndex = 2);
             },
           ),
 
@@ -289,10 +274,10 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ListTile(
             leading: const Icon(Icons.settings_rounded),
             title: const Text('Terminal Settings'),
-            selected: _currentIndex == 3,
+            selected: _currentIndex == 2,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 3);
+              setState(() => _currentIndex = 2);
             },
           ),
 

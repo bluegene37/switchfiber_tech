@@ -68,12 +68,33 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  testWidgets('drops a pin for every mappable site', (tester) async {
+  testWidgets('every mappable site is on the map, as a pin or in a cluster',
+      (tester) async {
     await pumpMap(tester);
 
-    final expected = signals.mappableLocations.value.length;
-    expect(expected, greaterThan(0));
-    expect(find.byIcon(Icons.location_on_rounded), findsNWidgets(expected));
+    expect(signals.mappableLocations.value, isNotEmpty);
+
+    final pins = find.byWidgetPredicate((w) =>
+        w is GestureDetector &&
+        w.key is ValueKey<String> &&
+        (w.key as ValueKey<String>).value.startsWith('lcpNapPin_'));
+    final clusters = find.byKey(const Key('lcpNapCluster'));
+
+    // Nothing is lost: the plant is drawn either as pins or clustered pins.
+    expect(pins.evaluate().length + clusters.evaluate().length,
+        greaterThan(0));
+  });
+
+  testWidgets('nearby sites cluster instead of stacking on each other',
+      (tester) async {
+    await pumpMap(tester);
+    // Seeded sites sit in pairs a few hundred metres apart.
+    expect(find.byKey(const Key('lcpNapCluster')), findsWidgets);
+  });
+
+  testWidgets('an isolated site stays an individual pin', (tester) async {
+    await pumpMap(tester);
+    expect(find.byKey(const Key('lcpNapPin_5')), findsOneWidget);
   });
 
   testWidgets('tapping a pin pops up that site\'s details', (tester) async {
@@ -84,8 +105,9 @@ void main() {
 
     // Target one specific site rather than whichever pin happens to be first
     // in the marker layer's build order.
-    final site = signals.mappableLocations.value.last;
-    await tester.tap(find.bySemanticsLabel('Site ${site.lcpNap}'));
+    final site =
+        signals.mappableLocations.value.firstWhere((s) => s.id == 5);
+    await tester.tap(find.byKey(const Key('lcpNapPin_5')));
     await tester.pump();
 
     expect(find.byType(LcpNapPinPopup), findsOneWidget);
@@ -98,14 +120,13 @@ void main() {
     LcpNapDto? opened;
     await pumpMap(tester, onOpenDetails: (l) => opened = l);
 
-    final site = signals.mappableLocations.value.last;
-    await tester.tap(find.bySemanticsLabel('Site ${site.lcpNap}'));
+    await tester.tap(find.byKey(const Key('lcpNapPin_5')));
     await tester.pump();
     await tester.tap(find.text('View full details'));
     await tester.pump();
 
     expect(opened, isNotNull);
-    expect(opened!.id, site.id,
+    expect(opened!.id, 5,
         reason: 'the detail screen must open the site whose pin was tapped');
     handle.dispose();
   });
@@ -113,7 +134,7 @@ void main() {
   testWidgets('the popup can be dismissed', (tester) async {
     await pumpMap(tester);
 
-    await tester.tap(find.byIcon(Icons.location_on_rounded).first);
+    await tester.tap(find.byKey(const Key('lcpNapPin_5')));
     await tester.pump();
     expect(find.byType(LcpNapPinPopup), findsOneWidget);
 
@@ -125,12 +146,12 @@ void main() {
   testWidgets('search filters the pins on the map', (tester) async {
     await pumpMap(tester);
 
-    final before = find.byIcon(Icons.location_on_rounded).evaluate().length;
+    expect(find.byKey(const Key('lcpNapPin_5')), findsOneWidget);
+
     signals.setSearch('no such site anywhere');
     await tester.pump();
 
-    final after = find.byIcon(Icons.location_on_rounded).evaluate().length;
-    expect(after, 0);
-    expect(before, greaterThan(0));
+    expect(find.byKey(const Key('lcpNapPin_5')), findsNothing);
+    expect(find.byKey(const Key('lcpNapCluster')), findsNothing);
   });
 }

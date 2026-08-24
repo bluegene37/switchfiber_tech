@@ -10,6 +10,8 @@ class UserModel {
   final int accessLevelId;
   final bool active;
   final List<String> menus;
+  final String contactNumber;
+  final String address;
 
   UserModel({
     required this.id,
@@ -20,11 +22,28 @@ class UserModel {
     this.accessLevelId = 1,
     this.active = true,
     this.menus = const [],
+    this.contactNumber = '',
+    this.address = '',
   });
 
   String get fullName {
     final name = '$fname $lname'.trim();
     return name.isNotEmpty ? name : username;
+  }
+
+  /// Initials for the profile avatar. The API has no avatar field, so the
+  /// technician's initials stand in for a photo.
+  String get initials {
+    final first = fname.trim();
+    final last = lname.trim();
+    if (first.isEmpty && last.isEmpty) {
+      final u = username.trim();
+      return u.isEmpty ? '?' : u[0].toUpperCase();
+    }
+    final buffer = StringBuffer();
+    if (first.isNotEmpty) buffer.write(first[0].toUpperCase());
+    if (last.isNotEmpty) buffer.write(last[0].toUpperCase());
+    return buffer.toString();
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -52,7 +71,13 @@ class UserModel {
       menus: json['menus'] is List
           ? (json['menus'] as List).map((e) => e.toString()).toList()
           : [],
+      contactNumber: json['contactnumber']?.toString() ??
+          json['contactNumber']?.toString() ??
+          '',
+      address: json['address']?.toString() ?? '',
     );
+    // NOTE: `password` is deliberately not read. GET /api/Users/{id} returns it
+    // in plaintext; it must never enter the model or the stored session.
   }
 
   Map<String, dynamic> toJson() {
@@ -65,6 +90,8 @@ class UserModel {
       'accesslevel_id': accessLevelId,
       'active': active,
       'menus': menus,
+      'contactnumber': contactNumber,
+      'address': address,
     };
   }
 

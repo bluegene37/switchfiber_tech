@@ -56,6 +56,18 @@ class AuthSignals {
     }
   }
 
+  /// Refresh the signed-in technician's profile from the server.
+  /// Silently keeps the cached profile when offline.
+  Future<void> refreshProfile() async {
+    final current = currentUser.value;
+    if (current == null) return;
+    try {
+      currentUser.value = await _authService.fetchProfile(current.id);
+    } catch (_) {
+      // Offline or endpoint unavailable: the cached session stays valid.
+    }
+  }
+
   /// Perform technician logout
   Future<void> logout() async {
     await _authService.logout();
