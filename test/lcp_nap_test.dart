@@ -105,8 +105,7 @@ void main() {
         ),
       );
 
-      expect(find.text('LCP 10'), findsOneWidget);
-      expect(find.text('NAP 05'), findsOneWidget);
+      expect(find.text('LCP 10 - NAP 05'), findsOneWidget);
       // Capacity only: the API does not report how many ports are in use.
       expect(find.text('8 ports'), findsOneWidget);
       expect(find.textContaining('Occupancy'), findsNothing);
@@ -130,12 +129,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('LCP NAP Locations'), findsOneWidget);
-      expect(find.text('5 Sites'), findsOneWidget);
+      expect(find.text('LCP NAP Plant Network'), findsOneWidget);
+      expect(find.text('5 NAP Sites'), findsOneWidget);
 
       // Tap first card to open detail view
-      // The card renders `lcp` and `nap` as separate Text widgets, so the
-      // combined "LCP 01 - NAP 01" label is never rendered; tap the card itself.
       await tester.tap(find.byType(LcpNapCard).first);
       await tester.pumpAndSettle();
 
