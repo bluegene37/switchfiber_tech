@@ -132,9 +132,15 @@ void main() {
       expect(find.text('LCP NAP Plant Network'), findsOneWidget);
       expect(find.text('5 NAP Sites'), findsOneWidget);
 
-      // Tap first card to open detail view
+      // Tap first card to open detail view.
+      //
+      // Explicit pumps, not pumpAndSettle: the detail screen shows a
+      // CircularProgressIndicator while its map tiles are null, which they
+      // stay in a test, and that spinner animates forever - so the tree never
+      // settles. Same reason login_navigation_test avoids pumpAndSettle.
       await tester.tap(find.byType(LcpNapCard).first);
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verify Detail Screen rendered
       expect(find.text('Port Matrix & Capacity'), findsOneWidget);
