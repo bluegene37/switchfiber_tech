@@ -78,29 +78,32 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'THEORETICAL ONT RX POWER',
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'THEORETICAL ONT RX POWER',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
-                            color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${budget.expectedRxPower.toStringAsFixed(2)} dBm',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            color: status.color,
+                          const SizedBox(height: 4),
+                          Text(
+                            '${budget.expectedRxPower.toStringAsFixed(2)} dBm',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: status.color,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
@@ -124,9 +127,9 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatPill('Total Loss', '-${budget.totalCalculatedLoss.toStringAsFixed(2)} dB', isDark),
-                    _buildStatPill('OLT Tx', '+${_oltTxPower.toStringAsFixed(1)} dBm', isDark),
-                    _buildStatPill('Optics Margin', '${(budget.expectedRxPower - (-27.0)).toStringAsFixed(1)} dB', isDark),
+                    Expanded(child: _buildStatPill('Total Loss', '-${budget.totalCalculatedLoss.toStringAsFixed(2)} dB', isDark)),
+                    Expanded(child: _buildStatPill('OLT Tx', '+${_oltTxPower.toStringAsFixed(1)} dBm', isDark)),
+                    Expanded(child: _buildStatPill('Optics Margin', '${(budget.expectedRxPower - (-27.0)).toStringAsFixed(1)} dB', isDark)),
                   ],
                 ),
               ],
@@ -145,9 +148,11 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                     children: [
                       Icon(Icons.speed_rounded, size: 18, color: AppTheme.primary),
                       SizedBox(width: 8),
-                      Text(
-                        'Compare with Actual Meter Reading',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      Expanded(
+                        child: Text(
+                          'Compare with Actual Meter Reading',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ],
                   ),
@@ -224,7 +229,8 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('OLT Port Tx Power (Class B+/C+):', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      const Expanded(child: Text('OLT Port Tx Power (Class B+/C+):', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                      const SizedBox(width: 8),
                       Text('+${_oltTxPower.toStringAsFixed(1)} dBm', style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primary)),
                     ],
                   ),
@@ -241,7 +247,8 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Fiber Route Distance:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      const Expanded(child: Text('Fiber Route Distance:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                      const SizedBox(width: 8),
                       Text('${_fiberDistanceKm.toStringAsFixed(1)} km (${(_fiberDistanceKm * 0.35).toStringAsFixed(2)} dB)', style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primary)),
                     ],
                   ),
@@ -258,6 +265,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
 
                   // LCP Splitter Dropdown
                   DropdownButtonFormField<SplitterRatio>(
+                    isExpanded: true,
                     value: _lcpSplitter,
                     decoration: const InputDecoration(labelText: 'LCP Cabinet Splitter (Stage 1)'),
                     items: SplitterRatio.values.map((r) => DropdownMenuItem(value: r, child: Text('${r.label} (-${r.insertionLossDb} dB)'))).toList(),
@@ -269,6 +277,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
 
                   // NAP Splitter Dropdown
                   DropdownButtonFormField<SplitterRatio?>(
+                    isExpanded: true,
                     value: _napSplitter,
                     decoration: const InputDecoration(labelText: 'NAP Box Splitter (Stage 2)'),
                     items: [
@@ -284,6 +293,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<int>(
+                          isExpanded: true,
                           value: _spliceCount,
                           decoration: const InputDecoration(labelText: 'Fusion Splices'),
                           items: List.generate(10, (i) => DropdownMenuItem(value: i, child: Text('$i splices (${(i * 0.05).toStringAsFixed(2)} dB)'))),
@@ -295,6 +305,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<int>(
+                          isExpanded: true,
                           value: _connectorCount,
                           decoration: const InputDecoration(labelText: 'SC/APC Pairs'),
                           items: List.generate(6, (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1} pairs (${((i + 1) * 0.3).toStringAsFixed(1)} dB)'))),
