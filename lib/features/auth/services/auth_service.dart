@@ -33,6 +33,21 @@ class AuthService {
     return session.user;
   }
 
+  /// Exchange a Google ID token for a Switch Fiber session.
+  ///
+  /// The backend verifies the token against Google, maps the verified email to
+  /// a technician record, and returns the same `{token, user}` envelope
+  /// `/Users/login` returns - which is why both paths share [AuthSession] and
+  /// [_persist].
+  Future<UserModel> loginWithGoogle(String idToken) async {
+    final response = await _api.post(
+      '/Auth/google',
+      data: {'idToken': idToken},
+    );
+
+    return _persist(AuthSession.fromResponse(response.data));
+  }
+
   /// Restore active technician session from local storage on app start
   Future<UserModel?> restoreSession() async {
     try {
