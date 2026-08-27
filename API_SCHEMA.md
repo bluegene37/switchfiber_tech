@@ -87,6 +87,43 @@ This document provides the extracted API endpoints, payload schemas, authenticat
 
 ---
 
+### 2.3 Google Sign-In
+
+- **Endpoint:** `POST /api/Auth/google`
+- **Request:** `{ "idToken": "<Google OpenID Connect ID token>" }`
+- **Success:** `200` with a body **byte-identical** to `POST /api/Users/login`
+  (`{ "token": ..., "user": { ... } }`). The client shares one parser between
+  both endpoints, so any divergence breaks Google sign-in.
+
+The server MUST perform all of the following before issuing a token:
+
+1. Verify the RS256 signature against Google's JWKS
+   (`https://www.googleapis.com/oauth2/v3/certs`), cached per `Cache-Control`.
+2. `iss` is `accounts.google.com` or `https://accounts.google.com`.
+3. `aud` is one of our own OAuth client IDs (the Web client ID the app passes as
+   `serverClientId`). This is what prevents replay of a token minted for a
+   different application.
+4. `exp` is in the future.
+5. `email_verified` is `true`.
+6. Match `Users.email` case-insensitively, trimmed.
+
+Then:
+
+| Condition | Response |
+|---|---|
+| No matching `Users` row | `403` `{"code": "ACCOUNT_NOT_PROVISIONED"}` |
+| Row exists but `active` is false | `403` `{"code": "ACCOUNT_INACTIVE"}` |
+| Row has no `google_sub` | store the token's `sub`, return `200` |
+| Row's `google_sub` matches the token's `sub` | return `200` |
+| Row's `google_sub` differs | `403` `{"code": "ACCOUNT_MISMATCH"}` |
+
+Error bodies are `{ "message": <human readable>, "code": <CODE> }`. The client
+keys its copy on `code` and falls back to `message` for unknown codes.
+
+Requires a new nullable `Users.google_sub` column with a unique index. The
+endpoint accepts any verified Google account: there is no domain restriction, so
+the accuracy of `Users.email` is what secures a first sign-in.
+
 ## 3. Job Orders Specification
 
 ### 3.1 List Job Orders

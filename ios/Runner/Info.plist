@@ -66,5 +66,22 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Google Sign-In callback.
+	     Replace REVERSED_CLIENT_ID below with the reversed iOS OAuth client ID
+	     (the iOS client ID with its dot-separated parts reversed, e.g.
+	     com.googleusercontent.apps.123456-abcdef). It must match
+	     AppConstants.googleIosClientId. See docs/google-sign-in-setup.md.
+	     Google sign-in on iOS will not return to the app until this is set. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- <string>com.googleusercontent.apps.REVERSED_CLIENT_ID</string> -->
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -9,7 +9,11 @@ import '../signals/auth_signals.dart';
 
 /// Technician Login Screen with official Switch Fiber branding.
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  /// Overrides [AppConstants.googleSignInEnabled]. Tests use it to render both
+  /// states; production leaves it null and follows the build flag.
+  final bool? googleEnabled;
+
+  const LoginScreen({super.key, this.googleEnabled});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -74,6 +78,95 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    FocusScope.of(context).unfocus();
+
+    final success = await authSignals.loginWithGoogle();
+
+    if (!mounted) return;
+
+    // A dismissed account chooser returns false with no error: stay quiet.
+    if (!success && authSignals.authError.value != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  authSignals.authError.value!,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
+  }
+
+  /// The "or" rule plus the Google button, or nothing at all when the feature
+  /// is off.
+  Widget _buildGoogleSection() {
+    final enabled =
+        widget.googleEnabled ?? AppConstants.googleSignInEnabled;
+    if (!enabled) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            const Expanded(child: Divider(color: AppTheme.textMuted, height: 1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'or',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textMuted,
+                ),
+              ),
+            ),
+            const Expanded(child: Divider(color: AppTheme.textMuted, height: 1)),
+          ],
+        ),
+        const SizedBox(height: 18),
+        SignalBuilder(
+          builder: (context) {
+            final loading = authSignals.authLoading.value;
+            return OutlinedButton(
+              onPressed: loading ? null : _handleGoogleLogin,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                side: const BorderSide(color: AppTheme.textMuted, width: 1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.account_circle_outlined, size: 20),
+                  SizedBox(width: 10),
+                  Text(
+                    'Continue with Google',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
   }
 
   void _showHelpModal() {
@@ -456,6 +549,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   );
                                 },
                               ),
+                              _buildGoogleSection(),
                               const SizedBox(height: 14),
 
                               // Need help / Contact Dispatch Link
