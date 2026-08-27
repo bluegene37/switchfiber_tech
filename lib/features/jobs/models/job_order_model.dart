@@ -129,6 +129,13 @@ class JobOrderDto {
   /// Null for any other backend status, such as `Applied` or `Confirmed`.
   JobStatus? get jobStatus => JobStatus.parse(status);
 
+  /// Convenient status helpers
+  bool get isScheduled => jobStatus == JobStatus.scheduled;
+  bool get isInProgress => jobStatus == JobStatus.inProgress;
+  bool get isCompleted => jobStatus == JobStatus.completed;
+  bool get isActivated => jobStatus == JobStatus.activated;
+  bool get canGrab => isScheduled;
+
   /// The next status when the technician advances this job. A job that is not
   /// yet in the field workflow starts at In Progress.
   JobStatus? get nextStatus =>

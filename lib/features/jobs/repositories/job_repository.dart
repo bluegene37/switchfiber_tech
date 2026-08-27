@@ -23,9 +23,12 @@ class JobRepository {
   }
 
   /// Fetch remote job orders from backend and persist locally
-  Future<void> fetchRemoteJobs() async {
+  Future<void> fetchRemoteJobs({String? statusFilter}) async {
     try {
-      final response = await _api.get('/JobOrders');
+      final endpoint = statusFilter != null && statusFilter.isNotEmpty
+          ? '/JobOrders/status/$statusFilter'
+          : '/JobOrders';
+      final response = await _api.get(endpoint);
       final rawList = response.data;
 
       if (rawList is List) {
@@ -48,6 +51,14 @@ class JobRepository {
         await seedSampleJobs();
       }
     }
+  }
+
+  /// Grab a scheduled job: transitions status to In Progress for the technician.
+  Future<void> grabScheduledJob(int id) async {
+    await _dao.updateJobStatus(id, 'inprogress', isSynced: false);
+    await _dao.updateFieldStatus(id, 'In-Progress', isSynced: false);
+    await syncWorker.refreshPendingCount();
+    unawaited(syncWorker.syncPendingJobs());
   }
 
   /// Update the technician's on-site status locally and queue it for sync.
@@ -186,6 +197,44 @@ class JobRepository {
         napId: 12,
         portId: 'Port 5',
         dateInstalled: now.subtract(const Duration(days: 2)),
+        isSynced: true,
+        updatedAt: now,
+      ),
+      JobOrderDto(
+        id: 105,
+        ticketNumber: 'SF-2026-0805',
+        customerName: 'Jasmine Alcantara',
+        contactNumber: '+63 918 777 3322',
+        address: 'Blk 4 Lot 19, Camella Homes, Manila East Rd',
+        barangay: 'San Juan',
+        city: 'Taytay',
+        planName: 'Fiber Blast 100 Mbps',
+        planId: 2,
+        status: 'scheduled',
+        onsiteStatus: 'Scheduled',
+        onsiteRemarks: 'New installation scheduled. Near Guard House Gate 2.',
+        lcpId: 1,
+        napId: 2,
+        portId: 'Port 3',
+        isSynced: true,
+        updatedAt: now,
+      ),
+      JobOrderDto(
+        id: 106,
+        ticketNumber: 'SF-2026-0806',
+        customerName: 'Rafael De Silva',
+        contactNumber: '+63 920 111 9988',
+        address: 'Unit 1204, Mega Plaza, Ortigas Ave.',
+        barangay: 'San Antonio',
+        city: 'Pasig',
+        planName: 'Fiber Giga 200 Mbps',
+        planId: 3,
+        status: 'scheduled',
+        onsiteStatus: 'Scheduled',
+        onsiteRemarks: 'Scheduled afternoon dispatch. Customer requested PM slot.',
+        lcpId: 2,
+        napId: 5,
+        portId: 'Port 7',
         isSynced: true,
         updatedAt: now,
       ),

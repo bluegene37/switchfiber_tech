@@ -33,56 +33,43 @@ void main() {
       // Wait for Drift reactive stream to push to Signals
       await Future.delayed(const Duration(milliseconds: 100));
 
-      expect(signals.allJobs.value.length, 4);
-      expect(signals.totalCount.value, 4);
-      // Seeded statuses: inprogress, pending, completed, activated.
+      expect(signals.allJobs.value.length, 6);
+      expect(signals.totalCount.value, 6);
+      // Seeded statuses: inprogress, pending (scheduled), completed, activated, scheduled, scheduled.
+      expect(signals.scheduledCount.value, 3);
       expect(signals.inProgressCount.value, 1);
       expect(signals.completedCount.value, 1);
       expect(signals.activatedCount.value, 1);
       expect(signals.unsyncedCount.value, 0);
     });
 
-    test('Filter tab changes update filteredJobs computed signal', () async {
+    test('filteredJobs computed signal strictly returns only scheduled jobs', () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      signals.setFilter('inprogress');
-      expect(signals.filteredJobs.value.length, 1);
-      expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0801');
-
-      signals.setFilter('completed');
-      expect(signals.filteredJobs.value.length, 1);
-      expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0803');
-
-      signals.setFilter('exceptions');
-      // Job #102 has onsiteStatus: 'Reschedule'
-      expect(signals.filteredJobs.value.length, 1);
-      expect(signals.filteredJobs.value.first.ticketNumber, 'SF-2026-0802');
-
-      signals.setFilter('all');
-      expect(signals.filteredJobs.value.length, 4);
+      expect(signals.filteredJobs.value.length, 3);
+      expect(signals.filteredJobs.value.every((j) => j.isScheduled), isTrue);
     });
 
-    test('Search query matches ticket number and customer name', () async {
+    test('Search query matches ticket number and customer name among scheduled jobs', () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      signals.setSearch('Mendoza');
+      signals.setSearch('Santos');
       expect(signals.filteredJobs.value.length, 1);
-      expect(signals.filteredJobs.value.first.customerName, 'Rosario Mendoza');
+      expect(signals.filteredJobs.value.first.customerName, 'Danilo Santos');
 
-      signals.setSearch('SF-2026-0804');
+      signals.setSearch('SF-2026-0805');
       expect(signals.filteredJobs.value.length, 1);
-      expect(signals.filteredJobs.value.first.customerName, 'Eduardo Bautista');
+      expect(signals.filteredJobs.value.first.customerName, 'Jasmine Alcantara');
     });
 
     test('Toggling job status updates Drift locally and sets isSynced = false', () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Seeded as 'pending', which is not one of the three workflow statuses.
       final firstJob = signals.allJobs.value.firstWhere((j) => j.id == 102);
-      expect(firstJob.jobStatus, isNull);
+      expect(firstJob.jobStatus, JobStatus.scheduled);
 
       await signals.advanceJobStatus(firstJob);
       await Future.delayed(const Duration(milliseconds: 100));

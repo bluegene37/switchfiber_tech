@@ -4,6 +4,10 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../toolkit/screens/fiber_color_code_tool.dart';
+import '../../toolkit/screens/optical_budget_tool.dart';
+import '../../toolkit/screens/drop_cable_tool.dart';
+import '../../toolkit/screens/network_diagnostic_tool.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/status_badge.dart';
@@ -147,13 +151,17 @@ class JobOrderDetailScreen extends StatelessWidget {
               _buildPlantAndHardwareCard(context, job, isDark),
               const SizedBox(height: 14),
 
-              // 5. Optical Reading & Calibration
+              // 5. Tech Toolkit & Field Utilities
+              _buildToolkitShortcutsCard(context, job, isDark),
+              const SizedBox(height: 14),
+
+              // 6. Optical Reading & Calibration
               if (job.opticalPower != null) ...[
                 _buildOpticalPowerCard(job, isDark),
                 const SizedBox(height: 14),
               ],
 
-              // 6. Onsite Notes & Completion Proofs
+              // 7. Onsite Notes & Completion Proofs
               _buildOnsiteRecordsCard(context, job, isDark),
             ],
           ),
@@ -166,6 +174,7 @@ class JobOrderDetailScreen extends StatelessWidget {
   Widget _buildWorkflowCard(BuildContext context, JobOrderDto job, bool isDark) {
     final currentStatus = job.jobStatus;
     final nextStatus = job.nextStatus;
+    final isScheduled = job.isScheduled;
 
     return Card(
       child: Padding(
@@ -197,8 +206,32 @@ class JobOrderDetailScreen extends StatelessWidget {
             _buildStepper(job, isDark),
             const SizedBox(height: 16),
 
-            // Status Advance Button (if not terminal)
-            if (nextStatus != null)
+            // Grab or Status Advance Button
+            if (isScheduled)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await jobsSignals.grabJob(job);
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('⚡ Grabbed ${job.ticketNumber}! Moved to In-Progress.'),
+                        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.flash_on_rounded, size: 18),
+                  label: const Text('⚡ Grab This Job Order (Start Dispatch)', style: TextStyle(fontWeight: FontWeight.w800)),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              )
+            else if (nextStatus != null)
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -505,6 +538,69 @@ class JobOrderDetailScreen extends StatelessWidget {
             _buildSpecRow('Modem / ONT SN', job.modemRouterSN ?? 'Pending Installation', Icons.qr_code_rounded, isDark),
             if (job.routerModel != null && job.routerModel!.isNotEmpty)
               _buildSpecRow('ONT Model', job.routerModel!, Icons.devices_rounded, isDark),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolkitShortcutsCard(BuildContext context, JobOrderDto job, bool isDark) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.handyman_rounded, size: 18, color: AppTheme.primary),
+                SizedBox(width: 8),
+                Text(
+                  'ISP Field Skills & Utilities',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.palette_rounded, size: 16, color: Color(0xFF0070BA)),
+                  label: const Text('Fiber Color Code', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FiberColorCodeTool()),
+                  ),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.speed_rounded, size: 16, color: AppTheme.primary),
+                  label: const Text('Link Budget Calc', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OpticalBudgetTool()),
+                  ),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.cable_rounded, size: 16, color: Color(0xFF10B981)),
+                  label: const Text('Drop Cable BOM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DropCableTool()),
+                  ),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.network_ping_rounded, size: 16, color: Color(0xFF8B5CF6)),
+                  label: const Text('Ping / Diagnostics', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NetworkDiagnosticTool()),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
