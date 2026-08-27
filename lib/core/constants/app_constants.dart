@@ -19,6 +19,37 @@ class AppConstants {
       '3C:5F:C8:D3:27:79:0C:D6:F3:D6:CC:56:70:45:37:C5:'
       '95:D3:16:B4:32:78:3D:72:78:6A:83:95:26:2B:7C:33';
 
+  // Google Sign-In
+  //
+  // An alternate way to establish the same technician session: the Google ID
+  // token is exchanged at POST /api/Auth/google for the identical {token, user}
+  // envelope POST /api/Users/login returns.
+  //
+  // Defaults to on. Build with --dart-define=GOOGLE_SIGN_IN=false to drop the
+  // button entirely; the plugin is then never initialised.
+  static const bool googleSignInEnabled =
+      bool.fromEnvironment('GOOGLE_SIGN_IN', defaultValue: true);
+
+  /// OAuth Web client ID. This is the value the backend must accept as the
+  /// `aud` claim, so it has to match what the API verifies.
+  ///
+  /// OAuth client IDs are public identifiers, not secrets.
+  /// Empty until the Google Cloud project exists - see
+  /// docs/google-sign-in-setup.md.
+  static const String googleServerClientId = '';
+
+  /// OAuth iOS client ID. Must match the reversed URL scheme in
+  /// ios/Runner/Info.plist. Empty until the Cloud project exists.
+  static const String googleIosClientId = '';
+
+  /// Whether Google sign-in can actually be attempted in this build.
+  ///
+  /// The flag being on is not enough: without a server client ID the chooser
+  /// could open but never produce a usable token, so the UI reports an
+  /// unconfigured build instead.
+  static bool get googleSignInConfigured =>
+      googleSignInEnabled && googleServerClientId.trim().isNotEmpty;
+
   // Storage Keys
   static const String keyJwtToken = 'jwt_token';
   static const String keyUserSession = 'user_session';
