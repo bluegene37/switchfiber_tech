@@ -10,8 +10,9 @@ import '../lcp_nap/signals/lcp_nap_signals.dart';
 import '../reports/screens/create_report_screen.dart';
 import '../reports/signals/report_signals.dart';
 import '../settings/screens/settings_screen.dart';
+import '../toolkit/screens/toolkit_screen.dart';
 
-/// Main Technician Navigation Shell containing Bottom Navigation and Drawer.
+/// Main Technician Navigation Shell containing 4 bottom tabs and drawer.
 class TechnicianShell extends StatefulWidget {
   final AuthSignals authSignals;
   final JobsSignals jobsSignals;
@@ -68,6 +69,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
         onSelectJobForReport: _openReportForJob,
       ),
       LcpNapListScreen(signals: widget.lcpNapSignals),
+      const ToolkitScreen(),
       SettingsScreen(
         authSignals: auth,
         jobsSignals: jobs,
@@ -85,21 +87,22 @@ class _TechnicianShellState extends State<TechnicianShell> {
           });
         },
         destinations: [
-          // 1. Job Orders with pending badge
+          // 1. Scheduled Job Orders with scheduled badge
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
-                final inProgress = jobs.inProgressCount.value;
+                final scheduled = jobs.scheduledCount.value;
+
                 return Badge(
-                  isLabelVisible: inProgress > 0,
-                  label: Text('$inProgress'),
+                  isLabelVisible: scheduled > 0,
+                  label: Text('$scheduled'),
                   backgroundColor: AppTheme.primary,
-                  child: const Icon(Icons.receipt_long_outlined),
+                  child: const Icon(Icons.calendar_today_outlined),
                 );
               },
             ),
-            selectedIcon: const Icon(Icons.receipt_long_rounded),
-            label: 'Job Orders',
+            selectedIcon: const Icon(Icons.calendar_today_rounded),
+            label: 'Scheduled',
           ),
 
           // 2. LCP NAP plant records and map
@@ -110,7 +113,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 return Badge(
                   isLabelVisible: sites > 0,
                   label: Text('$sites'),
-                  backgroundColor: AppTheme.primary,
+                  backgroundColor: const Color(0xFF0EA5E9),
                   child: const Icon(Icons.share_location_outlined),
                 );
               },
@@ -119,7 +122,14 @@ class _TechnicianShellState extends State<TechnicianShell> {
             label: 'LCP NAP',
           ),
 
-          // 3. Settings
+          // 3. Technician Field Toolkit
+          const NavigationDestination(
+            icon: Icon(Icons.handyman_outlined),
+            selectedIcon: Icon(Icons.handyman_rounded),
+            label: 'Tech Toolkit',
+          ),
+
+          // 4. Settings & Terminal Diagnostics
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
@@ -171,8 +181,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 ),
                 accountEmail: Text(
                   user?.email.isNotEmpty == true
-                    ? user!.email
-                    : 'Switch Fiber Dispatch Tech',
+                      ? user!.email
+                      : 'Switch Fiber Dispatch Tech',
                   style: const TextStyle(fontSize: 13),
                 ),
               );
@@ -184,7 +194,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             title: const Text('Job Orders'),
             trailing: SignalBuilder(
               builder: (context) {
-                final total = jobs.totalCount.value;
+                final scheduled = jobs.scheduledCount.value;
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -192,9 +202,9 @@ class _TechnicianShellState extends State<TechnicianShell> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '$total',
+                    '$scheduled scheduled',
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.primaryActive,
                     ),
@@ -240,14 +250,28 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ),
 
           ListTile(
+            leading: const Icon(Icons.handyman_rounded, color: AppTheme.primary),
+            title: const Text('Tech Toolkit & Calculators'),
+            selected: _currentIndex == 2,
+            onTap: () {
+              Navigator.pop(context);
+              setState(() => _currentIndex = 2);
+            },
+          ),
+
+          ListTile(
             leading: const Icon(Icons.sync_rounded, color: AppTheme.primary),
             title: const Text('Offline Sync Queue'),
             trailing: SignalBuilder(
               builder: (context) {
                 final pending = jobs.unsyncedCount.value;
-                if (pending == 0) return const Icon(Icons.check_circle_rounded, size: 18, color: AppTheme.success);
+                if (pending == 0) {
+                  return const Icon(Icons.check_circle_rounded,
+                      size: 18, color: AppTheme.success);
+                }
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppTheme.warningSubtle,
                     borderRadius: BorderRadius.circular(10),
@@ -265,7 +289,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             ),
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = 3);
             },
           ),
 
@@ -274,16 +298,17 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ListTile(
             leading: const Icon(Icons.settings_rounded),
             title: const Text('Terminal Settings'),
-            selected: _currentIndex == 2,
+            selected: _currentIndex == 3,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = 3);
             },
           ),
 
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: AppTheme.danger),
-            title: const Text('Sign Out', style: TextStyle(color: AppTheme.danger)),
+            title:
+                const Text('Sign Out', style: TextStyle(color: AppTheme.danger)),
             onTap: () async {
               Navigator.pop(context);
               await auth.logout();

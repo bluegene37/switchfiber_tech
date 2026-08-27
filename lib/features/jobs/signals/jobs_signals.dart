@@ -15,9 +15,8 @@ class JobsSignals {
 
   // Raw State Signals
   final allJobs = signal<List<JobOrderDto>>([]);
-  // 'all' or a JobStatus.name: inProgress, completed, activated.
-  // Any job whose status is not one of the three appears only under 'all'.
-  final activeFilter = signal<String>('all');
+  // Defaults to 'scheduled' so technicians immediately see their scheduled work orders.
+  final activeFilter = signal<String>(JobStatus.scheduled.name);
   final searchQuery = signal<String>('');
   final selectedJob = signal<JobOrderDto?>(null);
   final isRefreshing = signal<bool>(false);
@@ -25,20 +24,15 @@ class JobsSignals {
   // Computeds
   late final ReadonlySignal<List<JobOrderDto>> filteredJobs = computed(() {
     final jobs = allJobs.value;
-    final filter = activeFilter.value.toLowerCase();
     final query = searchQuery.value.trim().toLowerCase();
 
     return jobs.where((job) {
-      // 1. Status filter. Handles workflow statuses, site exceptions, and 'all'.
-      if (filter != 'all' && filter.isNotEmpty) {
-        if (filter == 'exceptions') {
-          if (job.siteException == null) return false;
-        } else if (job.jobStatus?.name.toLowerCase() != filter) {
-          return false;
-        }
+      // Strictly filter and show only Scheduled jobs
+      if (!job.isScheduled) {
+        return false;
       }
 
-      // 2. Search Query (Ticket #, Customer Name, Address, Barangay)
+      // Search Query (Ticket #, Customer Name, Address, Barangay)
       if (query.isNotEmpty) {
         final matchesTicket = job.ticketNumber.toLowerCase().contains(query);
         final matchesCustomer = job.customerName.toLowerCase().contains(query);
@@ -86,14 +80,19 @@ class JobsSignals {
     });
   }
 
-  /// Initial load and remote fetch
-  Future<void> fetchRemote() async {
+  /// Initial load and remote fetch (optionally filtered by status)
+  Future<void> fetchRemote({String? statusFilter}) async {
     isRefreshing.value = true;
     try {
-      await repository.fetchRemoteJobs();
+      await repository.fetchRemoteJobs(statusFilter: statusFilter);
     } finally {
       isRefreshing.value = false;
     }
+  }
+
+  /// Grab / Accept a scheduled job and immediately put it In Progress
+  Future<void> grabJob(JobOrderDto job) async {
+    await repository.grabScheduledJob(job.id);
   }
 
   /// Update tab filter
