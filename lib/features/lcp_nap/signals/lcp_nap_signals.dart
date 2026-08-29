@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/lcp_nap_model.dart';
 import '../repositories/lcp_nap_repository.dart';
 
@@ -31,6 +32,10 @@ class LcpNapSignals {
   final Signal<LcpNapDto?> selectedLocation = signal<LcpNapDto?>(null);
   final Signal<bool> isLoading = signal<bool>(false);
   final Signal<String?> errorMessage = signal<String?>(null);
+  // First-load presentation: downloading -> skeleton -> ready. Stays ready for
+  // pull-to-refresh and manual syncs so existing data is never hidden.
+  final Signal<DataLoadPhase> loadPhase =
+      signal<DataLoadPhase>(DataLoadPhase.ready);
 
   // --- Computed Signals (Reactive Derived State) ---
 
@@ -149,8 +154,14 @@ class LcpNapSignals {
     });
   }
 
-  /// Trigger remote API synchronization
-  Future<void> fetchRemote() async {
+  /// Trigger remote API synchronization.
+  ///
+  /// With [initial] set, and only when Drift holds nothing yet, the screen is
+  /// walked through the download indicator and a brief skeleton pass before
+  /// the hydrated Drift rows are revealed.
+  Future<void> fetchRemote({bool initial = false}) async {
+    final showPhases = initial && allLocations.value.isEmpty;
+    if (showPhases) loadPhase.value = DataLoadPhase.downloading;
     try {
       isLoading.value = true;
       errorMessage.value = null;
@@ -159,6 +170,11 @@ class LcpNapSignals {
       errorMessage.value = e.toString();
     } finally {
       isLoading.value = false;
+      if (showPhases) {
+        loadPhase.value = DataLoadPhase.skeleton;
+        await Future<void>.delayed(const Duration(milliseconds: 900));
+        loadPhase.value = DataLoadPhase.ready;
+      }
     }
   }
 

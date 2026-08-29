@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/job_order_model.dart';
 import '../repositories/job_repository.dart';
 
@@ -20,6 +21,9 @@ class JobsSignals {
   final searchQuery = signal<String>('');
   final selectedJob = signal<JobOrderDto?>(null);
   final isRefreshing = signal<bool>(false);
+  // First-load presentation: downloading -> skeleton -> ready. Stays ready for
+  // pull-to-refresh and manual syncs so existing data is never hidden.
+  final loadPhase = signal<DataLoadPhase>(DataLoadPhase.ready);
 
   // Computeds
   late final ReadonlySignal<List<JobOrderDto>> filteredJobs = computed(() {
@@ -80,13 +84,24 @@ class JobsSignals {
     });
   }
 
-  /// Initial load and remote fetch (optionally filtered by status)
-  Future<void> fetchRemote({String? statusFilter}) async {
+  /// Initial load and remote fetch (optionally filtered by status).
+  ///
+  /// With [initial] set, and only when Drift holds nothing yet, the screen is
+  /// walked through the download indicator and a brief skeleton pass before
+  /// the hydrated Drift rows are revealed.
+  Future<void> fetchRemote({String? statusFilter, bool initial = false}) async {
+    final showPhases = initial && allJobs.value.isEmpty;
+    if (showPhases) loadPhase.value = DataLoadPhase.downloading;
     isRefreshing.value = true;
     try {
       await repository.fetchRemoteJobs(statusFilter: statusFilter);
     } finally {
       isRefreshing.value = false;
+      if (showPhases) {
+        loadPhase.value = DataLoadPhase.skeleton;
+        await Future<void>.delayed(const Duration(milliseconds: 900));
+        loadPhase.value = DataLoadPhase.ready;
+      }
     }
   }
 

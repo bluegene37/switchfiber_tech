@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/lcp_nap_model.dart';
 import '../signals/lcp_nap_signals.dart';
 import '../widgets/lcp_nap_card.dart';
@@ -250,11 +251,19 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                 builder: (context) {
                   final grouped = signals.groupedByLcp.value;
                   final isLoading = signals.isLoading.value;
+                  final phase = signals.loadPhase.value;
 
-                  if (isLoading && grouped.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: AppTheme.primary),
+                  if (phase == DataLoadPhase.downloading) {
+                    return const DownloadingIndicator(
+                      title: 'Downloading Plant Records',
+                      subtitle:
+                          'Fetching LCP NAP cabinets and sites from the server...',
                     );
+                  }
+
+                  if (phase == DataLoadPhase.skeleton ||
+                      (isLoading && grouped.isEmpty)) {
+                    return const SkeletonCardList();
                   }
 
                   if (grouped.isEmpty) {

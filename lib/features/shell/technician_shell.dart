@@ -39,8 +39,9 @@ class _TechnicianShellState extends State<TechnicianShell> {
     _reportSignals = ReportSignals();
     // Initial fetch / Drift seed. Runs here rather than at construction time so
     // that requests are only made once the technician is authenticated.
-    widget.jobsSignals.fetchRemote();
-    widget.lcpNapSignals.fetchRemote();
+    // `initial` walks each screen through downloading -> skeleton -> data.
+    widget.jobsSignals.fetchRemote(initial: true);
+    widget.lcpNapSignals.fetchRemote(initial: true);
   }
 
   /// Opens the on-site report for a job order as its own page, rather than a

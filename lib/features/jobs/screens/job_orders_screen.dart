@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_card.dart';
@@ -309,6 +310,19 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             child: SignalBuilder(
               builder: (context) {
                 final jobs = signals.filteredJobs.value;
+                final phase = signals.loadPhase.value;
+
+                if (phase == DataLoadPhase.downloading) {
+                  return const DownloadingIndicator(
+                    title: 'Downloading Job Orders',
+                    subtitle:
+                        'Fetching your scheduled dispatches from the server...',
+                  );
+                }
+
+                if (phase == DataLoadPhase.skeleton) {
+                  return const SkeletonCardList();
+                }
 
                 if (jobs.isEmpty) {
                   return _buildEmptyState(signals, isDark);
