@@ -6,7 +6,7 @@ class AppConstants {
   static const String appTagline = 'Distributed Fiber Network Management';
 
   // API Config
-  static const String defaultBaseUrl = 'https://103.249.198.43:8090/api';
+  static const String defaultBaseUrl = 'https://103.249.198.50:8090/api';
   static const int connectTimeout = 30000; // 30s
   // GET /JobOrders currently returns the entire unpaginated table (~10.8 MB,
   // ~55 s), which sits right on the old 60 s ceiling. Raised until the endpoint
@@ -16,8 +16,8 @@ class AppConstants {
   /// SHA-256 fingerprint of the API server's self-signed certificate.
   /// Update this whenever the server certificate is reissued.
   static const String pinnedApiCertSha256 =
-      '3C:5F:C8:D3:27:79:0C:D6:F3:D6:CC:56:70:45:37:C5:'
-      '95:D3:16:B4:32:78:3D:72:78:6A:83:95:26:2B:7C:33';
+      'E8:4A:39:61:FB:BC:68:C4:21:38:8A:71:D7:41:2C:8E:'
+      '14:CB:BA:2A:BC:F5:E9:E4:03:65:F6:A7:D5:2E:FA:CC';
 
   // Storage Keys
   static const String keyJwtToken = 'jwt_token';
