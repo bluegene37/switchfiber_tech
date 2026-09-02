@@ -28,6 +28,10 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Take photos of the NAP box reading, ONT reading, installed setup, speed test, port label, signed contract and house front for the job order's completion report.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Attach existing photos to a job order's completion report.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

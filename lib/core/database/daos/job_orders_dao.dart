@@ -79,6 +79,29 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase>
     );
   }
 
+  /// Mark a job Activated: the technician's terminal stage.
+  ///
+  /// Records who activated it in [assignedEmail] (kept as-is when null) and
+  /// the install date, so the job lands in that technician's history.
+  Future<void> activateJob(
+    int id, {
+    String? assignedEmail,
+    required DateTime installedAt,
+    bool isSynced = false,
+  }) {
+    return (update(jobOrders)..where((t) => t.id.equals(id))).write(
+      JobOrdersCompanion(
+        status: const Value('Activated'),
+        onsiteStatus: const Value('Done'),
+        assignedEmail:
+            assignedEmail == null ? const Value.absent() : Value(assignedEmail),
+        dateInstalled: Value(installedAt),
+        isSynced: Value(isSynced),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// Update completion report details locally
   Future<void> updateJobCompletion({
     required int id,
@@ -91,12 +114,20 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase>
     String? boxReadingImage,
     String? routerReadingImage,
     String? clientSignature,
+    String? setupImage,
+    String? speedtestImage,
+    String? portLabelImage,
+    String? signedContractImage,
+    String? houseFront,
+    String? assignedEmail,
     bool isSynced = false,
   }) {
     return (update(jobOrders)..where((t) => t.id.equals(id))).write(
       JobOrdersCompanion(
         status: Value(status),
         onsiteStatus: Value(onsiteStatus),
+        assignedEmail:
+            assignedEmail == null ? const Value.absent() : Value(assignedEmail),
         onsiteRemarks: Value(onsiteRemarks),
         opticalPower: Value(opticalPower),
         modemRouterSN: Value(modemRouterSN),
@@ -105,6 +136,11 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase>
         boxReadingImage: Value(boxReadingImage),
         routerReadingImage: Value(routerReadingImage),
         clientSignature: Value(clientSignature),
+        setupImage: Value(setupImage),
+        speedtestImage: Value(speedtestImage),
+        portLabelImage: Value(portLabelImage),
+        signedContractImage: Value(signedContractImage),
+        houseFront: Value(houseFront),
         isSynced: Value(isSynced),
         updatedAt: Value(DateTime.now()),
       ),
@@ -114,6 +150,15 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase>
   /// Get all pending unsynced records
   Future<List<JobOrder>> getUnsyncedJobs() {
     return (select(jobOrders)..where((t) => t.isSynced.equals(false))).get();
+  }
+
+  /// Ids of rows carrying a local edit that has not reached the server.
+  Future<Set<int>> getUnsyncedIds() async {
+    final query = selectOnly(jobOrders)
+      ..addColumns([jobOrders.id])
+      ..where(jobOrders.isSynced.equals(false));
+    final rows = await query.map((r) => r.read(jobOrders.id)!).get();
+    return rows.toSet();
   }
 
   /// Count unsynced items
@@ -134,6 +179,14 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase>
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  /// Drop cached rows the server no longer returns, keeping any row with a
+  /// local edit still waiting to sync so nothing the technician did is lost.
+  Future<int> deleteSyncedJobsNotIn(Set<int> keepIds) {
+    return (delete(jobOrders)
+          ..where((t) => t.isSynced.equals(true) & t.id.isNotIn(keepIds)))
+        .go();
   }
 
   /// Delete a job

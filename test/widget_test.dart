@@ -26,8 +26,6 @@ void main() {
           body: Column(
             children: [
               StatusBadge(status: JobStatus.scheduled),
-              StatusBadge(status: JobStatus.inProgress),
-              StatusBadge(status: JobStatus.completed),
               StatusBadge(status: JobStatus.activated),
               // An unrecognised backend status shows verbatim rather than
               // being mislabelled: a technician seeing 'Cancelled' is better
@@ -48,8 +46,6 @@ void main() {
 
     // One from JobStatus.scheduled, one from the empty-rawStatus fallback.
     expect(find.text('Scheduled'), findsNWidgets(2));
-    expect(find.text('In Progress'), findsOneWidget);
-    expect(find.text('Completed'), findsOneWidget);
     expect(find.text('Activated'), findsOneWidget);
     expect(find.text('Failed'), findsOneWidget);
     // Twice: the plain badge, and the one that also carries the Failed chip.

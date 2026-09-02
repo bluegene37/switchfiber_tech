@@ -19,7 +19,7 @@
 ---
 
 Switch Fiber Tech puts a technician's day on one screen: the scheduled
-installations waiting to be grabbed, the job orders assigned to them, the
+installations waiting to be activated, the jobs they have already done, the
 LCP/NAP plant on a map, and the calculators they reach for on a pole. Every
 record is cached in SQLite, so the app keeps working in a basement with no
 signal and syncs when the connection returns.
@@ -28,10 +28,10 @@ signal and syncs when the connection returns.
 
 | Area | What it does |
 |---|---|
-| **Scheduled queue** | Lists scheduled work orders with search. One tap on *Grab Job* moves a ticket to In Progress and syncs it. |
-| **My Job History** | Every job order assigned to the signed-in technician's email, newest first, with status filter chips (In Progress, Completed, Activated, Needs Attention), search, and summary counts. |
-| **Work-order detail** | Workflow stepper, subscriber and location details, plant and hardware allocation, optical power reading, on-site records, and one-tap navigation in Google Maps, Waze, or Apple Maps. |
-| **Completion report** | Optical power gauge against GPON thresholds, ONT serial and model, NAP port, remarks, photo and signature fields. |
+| **Scheduled queue** | Lists scheduled work orders with search. Tapping a ticket opens its details, where it is marked *Activated* once the subscriber is online. |
+| **My Job History** | Every *Activated* job order assigned to the signed-in technician's email, newest first. View-only, with date range (today, week, month, custom), area, and text filters plus weekly and monthly counts. |
+| **Work-order detail** | Two-step workflow (Scheduled, Activated) with a confirmed *Mark as Activated* action, subscriber and location details, plant and hardware allocation, optical power reading, a zoomable gallery of attached photos, and one-tap navigation in Google Maps, Waze, or Apple Maps. |
+| **Completion report** | Optical power gauge against GPON thresholds, ONT serial and model, NAP port, remarks, seven photo proofs taken with the camera or picked from the gallery (NAP box reading, ONT reading, installed setup, speed test, port label, signed contract, house front), and a drawn subscriber signature. Submitting it activates the job. |
 | **LCP / NAP plant** | Cabinet and NAP records from the API on a clustered map with a satellite layer, cabinet grouping, filters, and cached tiles for offline use. |
 | **Tech toolkit** | Optical link budget calculator, drop cable estimator, fiber color code reference, network diagnostic pings, and a field troubleshooting guide. |
 | **Offline sync** | Edits are written to SQLite first and queued; a background worker replays them to the API and shows pending counts across the app. |
@@ -75,14 +75,20 @@ Each feature follows the same shape: `models/` (DTOs), `repositories/`
 
 ### Data flow
 
-1. On sign-in the shell pulls job orders and plant records from the API and
-   upserts them into SQLite.
+1. On sign-in the shell pulls job orders through
+   `GET /api/JobOrders/status/{status}`: every *Scheduled* job, plus the
+   *Activated* jobs assigned to the technician's email for the history. Plant
+   records come from the LCP/NAP endpoint. Everything is upserted into
+   SQLite, and synced rows the server no longer returns are dropped.
 2. Screens watch Drift streams through signals, so any local write repaints
    the UI immediately.
-3. Technician edits (grab, status change, completion report) are written
-   locally with `isSynced = false`, then the sync worker replays them with
-   `PUT /api/JobOrders/{id}`, marking each record synced on success and
-   retrying on the next cycle otherwise.
+3. Technician edits (activation, completion report) are written locally
+   with `isSynced = false`, then the sync worker replays them with
+   `PUT /api/JobOrders/{id}`. On success the local row is replaced by the
+   server's own copy of the record; if the server answers 404 the job was
+   deleted by the office and the local row is dropped; any other failure is
+   retried on the next cycle. A refresh never overwrites a row whose edit is
+   still pending.
 
 ## Getting started
 
@@ -148,12 +154,17 @@ builds a signed App Bundle and APK and attaches them to a GitHub Release.
 
 ## Project conventions
 
-- Job statuses the technician works with are exactly *In Progress*,
-  *Completed*, and *Activated*; any other backend status is shown verbatim.
+- A job has exactly two field stages, *Scheduled* and *Activated*. The
+  office's `Applied` / `Confirmed` count as Scheduled; anything else the
+  backend sends is shown verbatim. Activation stamps the technician's email
+  and is final: activated jobs are view-only in the history.
 - `onsiteStatus` values *Failed* and *Reschedule* are surfaced as an extra
   badge so problem visits stay visible.
 - Job orders never send a partial update: the original record is replayed
   with only the technician's edits applied.
+- Photos and the signature are stored in the job order's string fields as
+  base64 data URLs, the same format the web console writes, compressed to
+  1600 px at 80 % quality on the phone. There is no separate upload endpoint.
 - Sensitive profile fields returned by the API are deliberately not modelled
   and never reach storage.
 

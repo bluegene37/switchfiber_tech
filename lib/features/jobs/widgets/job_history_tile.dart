@@ -169,8 +169,6 @@ class _StatusDot extends StatelessWidget {
               const Color(0xFF4F46E5),
               Icons.verified_rounded
             ),
-          JobStatus.completed => (AppTheme.success, Icons.check_rounded),
-          JobStatus.inProgress => (AppTheme.warning, Icons.build_rounded),
           JobStatus.scheduled || null => (
               AppTheme.info,
               Icons.calendar_today_rounded

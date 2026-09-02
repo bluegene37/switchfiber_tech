@@ -36,11 +36,9 @@ void main() {
 
       expect(signals.allJobs.value.length, 6);
       expect(signals.totalCount.value, 6);
-      // Seeded statuses: inprogress, pending (scheduled), completed, activated, scheduled, scheduled.
-      expect(signals.scheduledCount.value, 3);
-      expect(signals.inProgressCount.value, 1);
-      expect(signals.completedCount.value, 1);
-      expect(signals.activatedCount.value, 1);
+      // Seeded statuses: four Scheduled, two Activated.
+      expect(signals.scheduledCount.value, 4);
+      expect(signals.activatedCount.value, 2);
       expect(signals.unsyncedCount.value, 0);
     });
 
@@ -49,7 +47,7 @@ void main() {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      expect(signals.filteredJobs.value.length, 3);
+      expect(signals.filteredJobs.value.length, 4);
       expect(signals.filteredJobs.value.every((j) => j.isScheduled), isTrue);
     });
 
@@ -69,7 +67,7 @@ void main() {
           signals.filteredJobs.value.first.customerName, 'Jasmine Alcantara');
     });
 
-    test('Toggling job status updates Drift locally and sets isSynced = false',
+    test('Activating a job updates Drift locally and sets isSynced = false',
         () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
@@ -77,12 +75,12 @@ void main() {
       final firstJob = signals.allJobs.value.firstWhere((j) => j.id == 102);
       expect(firstJob.jobStatus, JobStatus.scheduled);
 
-      await signals.advanceJobStatus(firstJob);
+      await signals.activateJob(firstJob);
       await Future.delayed(const Duration(milliseconds: 100));
 
       final updatedJob = signals.allJobs.value.firstWhere((j) => j.id == 102);
-      expect(updatedJob.jobStatus, JobStatus.inProgress);
-      expect(updatedJob.status, 'In Progress');
+      expect(updatedJob.jobStatus, JobStatus.activated);
+      expect(updatedJob.status, 'Activated');
       expect(updatedJob.isSynced, false);
       expect(signals.unsyncedCount.value, 1);
     });

@@ -48,9 +48,17 @@ class _TechnicianShellState extends State<TechnicianShell> {
     // The job history is scoped to the signed-in technician's email. Kept in
     // sync reactively so a profile refresh that fills in the email (the login
     // response does not carry it) immediately unlocks the history.
+    String? lastEmail;
     _disposeEmailSync = effect(() {
-      widget.jobsSignals
-          .setTechnicianEmail(widget.authSignals.currentUser.value?.email);
+      final email = widget.authSignals.currentUser.value?.email.trim();
+      widget.jobsSignals.setTechnicianEmail(email);
+      // The activated history is fetched per technician, so the first time
+      // the email becomes known (the login response lacks it) the jobs are
+      // pulled again to fill it in.
+      final becameKnown =
+          (email?.isNotEmpty ?? false) && (lastEmail?.isEmpty ?? true);
+      lastEmail = email;
+      if (becameKnown) widget.jobsSignals.fetchRemote();
     });
     // Initial fetch / Drift seed. Runs here rather than at construction time so
     // that requests are only made once the technician is authenticated.
@@ -97,7 +105,6 @@ class _TechnicianShellState extends State<TechnicianShell> {
       JobHistoryScreen(
         jobsSignals: jobs,
         authSignals: auth,
-        onSelectJobForReport: _openReportForJob,
       ),
       LcpNapListScreen(signals: widget.lcpNapSignals),
       const ToolkitScreen(),
@@ -285,7 +292,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '$mine assigned',
+                    '$mine activated',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,

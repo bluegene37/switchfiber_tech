@@ -144,6 +144,36 @@ class $JobOrdersTable extends JobOrders
   late final GeneratedColumn<String> clientSignature = GeneratedColumn<String>(
       'client_signature', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _setupImageMeta =
+      const VerificationMeta('setupImage');
+  @override
+  late final GeneratedColumn<String> setupImage = GeneratedColumn<String>(
+      'setup_image', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _speedtestImageMeta =
+      const VerificationMeta('speedtestImage');
+  @override
+  late final GeneratedColumn<String> speedtestImage = GeneratedColumn<String>(
+      'speedtest_image', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _portLabelImageMeta =
+      const VerificationMeta('portLabelImage');
+  @override
+  late final GeneratedColumn<String> portLabelImage = GeneratedColumn<String>(
+      'port_label_image', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _signedContractImageMeta =
+      const VerificationMeta('signedContractImage');
+  @override
+  late final GeneratedColumn<String> signedContractImage =
+      GeneratedColumn<String>('signed_contract_image', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _houseFrontMeta =
+      const VerificationMeta('houseFront');
+  @override
+  late final GeneratedColumn<String> houseFront = GeneratedColumn<String>(
+      'house_front', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _assignedEmailMeta =
       const VerificationMeta('assignedEmail');
   @override
@@ -205,6 +235,11 @@ class $JobOrdersTable extends JobOrders
         boxReadingImage,
         routerReadingImage,
         clientSignature,
+        setupImage,
+        speedtestImage,
+        portLabelImage,
+        signedContractImage,
+        houseFront,
         assignedEmail,
         modifiedDate,
         rawJson,
@@ -342,6 +377,36 @@ class $JobOrdersTable extends JobOrders
           clientSignature.isAcceptableOrUnknown(
               data['client_signature']!, _clientSignatureMeta));
     }
+    if (data.containsKey('setup_image')) {
+      context.handle(
+          _setupImageMeta,
+          setupImage.isAcceptableOrUnknown(
+              data['setup_image']!, _setupImageMeta));
+    }
+    if (data.containsKey('speedtest_image')) {
+      context.handle(
+          _speedtestImageMeta,
+          speedtestImage.isAcceptableOrUnknown(
+              data['speedtest_image']!, _speedtestImageMeta));
+    }
+    if (data.containsKey('port_label_image')) {
+      context.handle(
+          _portLabelImageMeta,
+          portLabelImage.isAcceptableOrUnknown(
+              data['port_label_image']!, _portLabelImageMeta));
+    }
+    if (data.containsKey('signed_contract_image')) {
+      context.handle(
+          _signedContractImageMeta,
+          signedContractImage.isAcceptableOrUnknown(
+              data['signed_contract_image']!, _signedContractImageMeta));
+    }
+    if (data.containsKey('house_front')) {
+      context.handle(
+          _houseFrontMeta,
+          houseFront.isAcceptableOrUnknown(
+              data['house_front']!, _houseFrontMeta));
+    }
     if (data.containsKey('assigned_email')) {
       context.handle(
           _assignedEmailMeta,
@@ -421,6 +486,16 @@ class $JobOrdersTable extends JobOrders
           DriftSqlType.string, data['${effectivePrefix}router_reading_image']),
       clientSignature: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}client_signature']),
+      setupImage: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}setup_image']),
+      speedtestImage: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}speedtest_image']),
+      portLabelImage: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}port_label_image']),
+      signedContractImage: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}signed_contract_image']),
+      houseFront: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}house_front']),
       assignedEmail: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}assigned_email']),
       modifiedDate: attachedDatabase.typeMapping
@@ -464,6 +539,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
   final String? boxReadingImage;
   final String? routerReadingImage;
   final String? clientSignature;
+  final String? setupImage;
+  final String? speedtestImage;
+  final String? portLabelImage;
+  final String? signedContractImage;
+  final String? houseFront;
 
   /// Email of the technician the office assigned this job to. This is the
   /// column the technician's job history is filtered on.
@@ -506,6 +586,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       this.boxReadingImage,
       this.routerReadingImage,
       this.clientSignature,
+      this.setupImage,
+      this.speedtestImage,
+      this.portLabelImage,
+      this.signedContractImage,
+      this.houseFront,
       this.assignedEmail,
       this.modifiedDate,
       this.rawJson,
@@ -572,6 +657,21 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
     }
     if (!nullToAbsent || clientSignature != null) {
       map['client_signature'] = Variable<String>(clientSignature);
+    }
+    if (!nullToAbsent || setupImage != null) {
+      map['setup_image'] = Variable<String>(setupImage);
+    }
+    if (!nullToAbsent || speedtestImage != null) {
+      map['speedtest_image'] = Variable<String>(speedtestImage);
+    }
+    if (!nullToAbsent || portLabelImage != null) {
+      map['port_label_image'] = Variable<String>(portLabelImage);
+    }
+    if (!nullToAbsent || signedContractImage != null) {
+      map['signed_contract_image'] = Variable<String>(signedContractImage);
+    }
+    if (!nullToAbsent || houseFront != null) {
+      map['house_front'] = Variable<String>(houseFront);
     }
     if (!nullToAbsent || assignedEmail != null) {
       map['assigned_email'] = Variable<String>(assignedEmail);
@@ -641,6 +741,21 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       clientSignature: clientSignature == null && nullToAbsent
           ? const Value.absent()
           : Value(clientSignature),
+      setupImage: setupImage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(setupImage),
+      speedtestImage: speedtestImage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(speedtestImage),
+      portLabelImage: portLabelImage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(portLabelImage),
+      signedContractImage: signedContractImage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(signedContractImage),
+      houseFront: houseFront == null && nullToAbsent
+          ? const Value.absent()
+          : Value(houseFront),
       assignedEmail: assignedEmail == null && nullToAbsent
           ? const Value.absent()
           : Value(assignedEmail),
@@ -683,6 +798,12 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       routerReadingImage:
           serializer.fromJson<String?>(json['routerReadingImage']),
       clientSignature: serializer.fromJson<String?>(json['clientSignature']),
+      setupImage: serializer.fromJson<String?>(json['setupImage']),
+      speedtestImage: serializer.fromJson<String?>(json['speedtestImage']),
+      portLabelImage: serializer.fromJson<String?>(json['portLabelImage']),
+      signedContractImage:
+          serializer.fromJson<String?>(json['signedContractImage']),
+      houseFront: serializer.fromJson<String?>(json['houseFront']),
       assignedEmail: serializer.fromJson<String?>(json['assignedEmail']),
       modifiedDate: serializer.fromJson<DateTime?>(json['modifiedDate']),
       rawJson: serializer.fromJson<String?>(json['rawJson']),
@@ -717,6 +838,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       'boxReadingImage': serializer.toJson<String?>(boxReadingImage),
       'routerReadingImage': serializer.toJson<String?>(routerReadingImage),
       'clientSignature': serializer.toJson<String?>(clientSignature),
+      'setupImage': serializer.toJson<String?>(setupImage),
+      'speedtestImage': serializer.toJson<String?>(speedtestImage),
+      'portLabelImage': serializer.toJson<String?>(portLabelImage),
+      'signedContractImage': serializer.toJson<String?>(signedContractImage),
+      'houseFront': serializer.toJson<String?>(houseFront),
       'assignedEmail': serializer.toJson<String?>(assignedEmail),
       'modifiedDate': serializer.toJson<DateTime?>(modifiedDate),
       'rawJson': serializer.toJson<String?>(rawJson),
@@ -749,6 +875,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           Value<String?> boxReadingImage = const Value.absent(),
           Value<String?> routerReadingImage = const Value.absent(),
           Value<String?> clientSignature = const Value.absent(),
+          Value<String?> setupImage = const Value.absent(),
+          Value<String?> speedtestImage = const Value.absent(),
+          Value<String?> portLabelImage = const Value.absent(),
+          Value<String?> signedContractImage = const Value.absent(),
+          Value<String?> houseFront = const Value.absent(),
           Value<String?> assignedEmail = const Value.absent(),
           Value<DateTime?> modifiedDate = const Value.absent(),
           Value<String?> rawJson = const Value.absent(),
@@ -790,6 +921,15 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         clientSignature: clientSignature.present
             ? clientSignature.value
             : this.clientSignature,
+        setupImage: setupImage.present ? setupImage.value : this.setupImage,
+        speedtestImage:
+            speedtestImage.present ? speedtestImage.value : this.speedtestImage,
+        portLabelImage:
+            portLabelImage.present ? portLabelImage.value : this.portLabelImage,
+        signedContractImage: signedContractImage.present
+            ? signedContractImage.value
+            : this.signedContractImage,
+        houseFront: houseFront.present ? houseFront.value : this.houseFront,
         assignedEmail:
             assignedEmail.present ? assignedEmail.value : this.assignedEmail,
         modifiedDate:
@@ -846,6 +986,19 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       clientSignature: data.clientSignature.present
           ? data.clientSignature.value
           : this.clientSignature,
+      setupImage:
+          data.setupImage.present ? data.setupImage.value : this.setupImage,
+      speedtestImage: data.speedtestImage.present
+          ? data.speedtestImage.value
+          : this.speedtestImage,
+      portLabelImage: data.portLabelImage.present
+          ? data.portLabelImage.value
+          : this.portLabelImage,
+      signedContractImage: data.signedContractImage.present
+          ? data.signedContractImage.value
+          : this.signedContractImage,
+      houseFront:
+          data.houseFront.present ? data.houseFront.value : this.houseFront,
       assignedEmail: data.assignedEmail.present
           ? data.assignedEmail.value
           : this.assignedEmail,
@@ -884,6 +1037,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           ..write('boxReadingImage: $boxReadingImage, ')
           ..write('routerReadingImage: $routerReadingImage, ')
           ..write('clientSignature: $clientSignature, ')
+          ..write('setupImage: $setupImage, ')
+          ..write('speedtestImage: $speedtestImage, ')
+          ..write('portLabelImage: $portLabelImage, ')
+          ..write('signedContractImage: $signedContractImage, ')
+          ..write('houseFront: $houseFront, ')
           ..write('assignedEmail: $assignedEmail, ')
           ..write('modifiedDate: $modifiedDate, ')
           ..write('rawJson: $rawJson, ')
@@ -918,6 +1076,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         boxReadingImage,
         routerReadingImage,
         clientSignature,
+        setupImage,
+        speedtestImage,
+        portLabelImage,
+        signedContractImage,
+        houseFront,
         assignedEmail,
         modifiedDate,
         rawJson,
@@ -951,6 +1114,11 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           other.boxReadingImage == this.boxReadingImage &&
           other.routerReadingImage == this.routerReadingImage &&
           other.clientSignature == this.clientSignature &&
+          other.setupImage == this.setupImage &&
+          other.speedtestImage == this.speedtestImage &&
+          other.portLabelImage == this.portLabelImage &&
+          other.signedContractImage == this.signedContractImage &&
+          other.houseFront == this.houseFront &&
           other.assignedEmail == this.assignedEmail &&
           other.modifiedDate == this.modifiedDate &&
           other.rawJson == this.rawJson &&
@@ -982,6 +1150,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
   final Value<String?> boxReadingImage;
   final Value<String?> routerReadingImage;
   final Value<String?> clientSignature;
+  final Value<String?> setupImage;
+  final Value<String?> speedtestImage;
+  final Value<String?> portLabelImage;
+  final Value<String?> signedContractImage;
+  final Value<String?> houseFront;
   final Value<String?> assignedEmail;
   final Value<DateTime?> modifiedDate;
   final Value<String?> rawJson;
@@ -1011,6 +1184,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.boxReadingImage = const Value.absent(),
     this.routerReadingImage = const Value.absent(),
     this.clientSignature = const Value.absent(),
+    this.setupImage = const Value.absent(),
+    this.speedtestImage = const Value.absent(),
+    this.portLabelImage = const Value.absent(),
+    this.signedContractImage = const Value.absent(),
+    this.houseFront = const Value.absent(),
     this.assignedEmail = const Value.absent(),
     this.modifiedDate = const Value.absent(),
     this.rawJson = const Value.absent(),
@@ -1041,6 +1219,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.boxReadingImage = const Value.absent(),
     this.routerReadingImage = const Value.absent(),
     this.clientSignature = const Value.absent(),
+    this.setupImage = const Value.absent(),
+    this.speedtestImage = const Value.absent(),
+    this.portLabelImage = const Value.absent(),
+    this.signedContractImage = const Value.absent(),
+    this.houseFront = const Value.absent(),
     this.assignedEmail = const Value.absent(),
     this.modifiedDate = const Value.absent(),
     this.rawJson = const Value.absent(),
@@ -1073,6 +1256,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     Expression<String>? boxReadingImage,
     Expression<String>? routerReadingImage,
     Expression<String>? clientSignature,
+    Expression<String>? setupImage,
+    Expression<String>? speedtestImage,
+    Expression<String>? portLabelImage,
+    Expression<String>? signedContractImage,
+    Expression<String>? houseFront,
     Expression<String>? assignedEmail,
     Expression<DateTime>? modifiedDate,
     Expression<String>? rawJson,
@@ -1104,6 +1292,12 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       if (routerReadingImage != null)
         'router_reading_image': routerReadingImage,
       if (clientSignature != null) 'client_signature': clientSignature,
+      if (setupImage != null) 'setup_image': setupImage,
+      if (speedtestImage != null) 'speedtest_image': speedtestImage,
+      if (portLabelImage != null) 'port_label_image': portLabelImage,
+      if (signedContractImage != null)
+        'signed_contract_image': signedContractImage,
+      if (houseFront != null) 'house_front': houseFront,
       if (assignedEmail != null) 'assigned_email': assignedEmail,
       if (modifiedDate != null) 'modified_date': modifiedDate,
       if (rawJson != null) 'raw_json': rawJson,
@@ -1136,6 +1330,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       Value<String?>? boxReadingImage,
       Value<String?>? routerReadingImage,
       Value<String?>? clientSignature,
+      Value<String?>? setupImage,
+      Value<String?>? speedtestImage,
+      Value<String?>? portLabelImage,
+      Value<String?>? signedContractImage,
+      Value<String?>? houseFront,
       Value<String?>? assignedEmail,
       Value<DateTime?>? modifiedDate,
       Value<String?>? rawJson,
@@ -1165,6 +1364,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       boxReadingImage: boxReadingImage ?? this.boxReadingImage,
       routerReadingImage: routerReadingImage ?? this.routerReadingImage,
       clientSignature: clientSignature ?? this.clientSignature,
+      setupImage: setupImage ?? this.setupImage,
+      speedtestImage: speedtestImage ?? this.speedtestImage,
+      portLabelImage: portLabelImage ?? this.portLabelImage,
+      signedContractImage: signedContractImage ?? this.signedContractImage,
+      houseFront: houseFront ?? this.houseFront,
       assignedEmail: assignedEmail ?? this.assignedEmail,
       modifiedDate: modifiedDate ?? this.modifiedDate,
       rawJson: rawJson ?? this.rawJson,
@@ -1245,6 +1449,22 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     if (clientSignature.present) {
       map['client_signature'] = Variable<String>(clientSignature.value);
     }
+    if (setupImage.present) {
+      map['setup_image'] = Variable<String>(setupImage.value);
+    }
+    if (speedtestImage.present) {
+      map['speedtest_image'] = Variable<String>(speedtestImage.value);
+    }
+    if (portLabelImage.present) {
+      map['port_label_image'] = Variable<String>(portLabelImage.value);
+    }
+    if (signedContractImage.present) {
+      map['signed_contract_image'] =
+          Variable<String>(signedContractImage.value);
+    }
+    if (houseFront.present) {
+      map['house_front'] = Variable<String>(houseFront.value);
+    }
     if (assignedEmail.present) {
       map['assigned_email'] = Variable<String>(assignedEmail.value);
     }
@@ -1289,6 +1509,11 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
           ..write('boxReadingImage: $boxReadingImage, ')
           ..write('routerReadingImage: $routerReadingImage, ')
           ..write('clientSignature: $clientSignature, ')
+          ..write('setupImage: $setupImage, ')
+          ..write('speedtestImage: $speedtestImage, ')
+          ..write('portLabelImage: $portLabelImage, ')
+          ..write('signedContractImage: $signedContractImage, ')
+          ..write('houseFront: $houseFront, ')
           ..write('assignedEmail: $assignedEmail, ')
           ..write('modifiedDate: $modifiedDate, ')
           ..write('rawJson: $rawJson, ')
@@ -2547,6 +2772,11 @@ typedef $$JobOrdersTableCreateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> boxReadingImage,
   Value<String?> routerReadingImage,
   Value<String?> clientSignature,
+  Value<String?> setupImage,
+  Value<String?> speedtestImage,
+  Value<String?> portLabelImage,
+  Value<String?> signedContractImage,
+  Value<String?> houseFront,
   Value<String?> assignedEmail,
   Value<DateTime?> modifiedDate,
   Value<String?> rawJson,
@@ -2577,6 +2807,11 @@ typedef $$JobOrdersTableUpdateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> boxReadingImage,
   Value<String?> routerReadingImage,
   Value<String?> clientSignature,
+  Value<String?> setupImage,
+  Value<String?> speedtestImage,
+  Value<String?> portLabelImage,
+  Value<String?> signedContractImage,
+  Value<String?> houseFront,
   Value<String?> assignedEmail,
   Value<DateTime?> modifiedDate,
   Value<String?> rawJson,
@@ -2664,6 +2899,24 @@ class $$JobOrdersTableFilterComposer
   ColumnFilters<String> get clientSignature => $composableBuilder(
       column: $table.clientSignature,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get setupImage => $composableBuilder(
+      column: $table.setupImage, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get speedtestImage => $composableBuilder(
+      column: $table.speedtestImage,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get portLabelImage => $composableBuilder(
+      column: $table.portLabelImage,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get signedContractImage => $composableBuilder(
+      column: $table.signedContractImage,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get houseFront => $composableBuilder(
+      column: $table.houseFront, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get assignedEmail => $composableBuilder(
       column: $table.assignedEmail, builder: (column) => ColumnFilters(column));
@@ -2770,6 +3023,24 @@ class $$JobOrdersTableOrderingComposer
       column: $table.clientSignature,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get setupImage => $composableBuilder(
+      column: $table.setupImage, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get speedtestImage => $composableBuilder(
+      column: $table.speedtestImage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get portLabelImage => $composableBuilder(
+      column: $table.portLabelImage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get signedContractImage => $composableBuilder(
+      column: $table.signedContractImage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get houseFront => $composableBuilder(
+      column: $table.houseFront, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get assignedEmail => $composableBuilder(
       column: $table.assignedEmail,
       builder: (column) => ColumnOrderings(column));
@@ -2866,6 +3137,21 @@ class $$JobOrdersTableAnnotationComposer
   GeneratedColumn<String> get clientSignature => $composableBuilder(
       column: $table.clientSignature, builder: (column) => column);
 
+  GeneratedColumn<String> get setupImage => $composableBuilder(
+      column: $table.setupImage, builder: (column) => column);
+
+  GeneratedColumn<String> get speedtestImage => $composableBuilder(
+      column: $table.speedtestImage, builder: (column) => column);
+
+  GeneratedColumn<String> get portLabelImage => $composableBuilder(
+      column: $table.portLabelImage, builder: (column) => column);
+
+  GeneratedColumn<String> get signedContractImage => $composableBuilder(
+      column: $table.signedContractImage, builder: (column) => column);
+
+  GeneratedColumn<String> get houseFront => $composableBuilder(
+      column: $table.houseFront, builder: (column) => column);
+
   GeneratedColumn<String> get assignedEmail => $composableBuilder(
       column: $table.assignedEmail, builder: (column) => column);
 
@@ -2928,6 +3214,11 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> boxReadingImage = const Value.absent(),
             Value<String?> routerReadingImage = const Value.absent(),
             Value<String?> clientSignature = const Value.absent(),
+            Value<String?> setupImage = const Value.absent(),
+            Value<String?> speedtestImage = const Value.absent(),
+            Value<String?> portLabelImage = const Value.absent(),
+            Value<String?> signedContractImage = const Value.absent(),
+            Value<String?> houseFront = const Value.absent(),
             Value<String?> assignedEmail = const Value.absent(),
             Value<DateTime?> modifiedDate = const Value.absent(),
             Value<String?> rawJson = const Value.absent(),
@@ -2958,6 +3249,11 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             boxReadingImage: boxReadingImage,
             routerReadingImage: routerReadingImage,
             clientSignature: clientSignature,
+            setupImage: setupImage,
+            speedtestImage: speedtestImage,
+            portLabelImage: portLabelImage,
+            signedContractImage: signedContractImage,
+            houseFront: houseFront,
             assignedEmail: assignedEmail,
             modifiedDate: modifiedDate,
             rawJson: rawJson,
@@ -2988,6 +3284,11 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> boxReadingImage = const Value.absent(),
             Value<String?> routerReadingImage = const Value.absent(),
             Value<String?> clientSignature = const Value.absent(),
+            Value<String?> setupImage = const Value.absent(),
+            Value<String?> speedtestImage = const Value.absent(),
+            Value<String?> portLabelImage = const Value.absent(),
+            Value<String?> signedContractImage = const Value.absent(),
+            Value<String?> houseFront = const Value.absent(),
             Value<String?> assignedEmail = const Value.absent(),
             Value<DateTime?> modifiedDate = const Value.absent(),
             Value<String?> rawJson = const Value.absent(),
@@ -3018,6 +3319,11 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             boxReadingImage: boxReadingImage,
             routerReadingImage: routerReadingImage,
             clientSignature: clientSignature,
+            setupImage: setupImage,
+            speedtestImage: speedtestImage,
+            portLabelImage: portLabelImage,
+            signedContractImage: signedContractImage,
+            houseFront: houseFront,
             assignedEmail: assignedEmail,
             modifiedDate: modifiedDate,
             rawJson: rawJson,

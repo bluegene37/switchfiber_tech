@@ -10,19 +10,27 @@ import '../../toolkit/screens/drop_cable_tool.dart';
 import '../../toolkit/screens/network_diagnostic_tool.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
+import '../widgets/job_photo_gallery.dart';
 import '../widgets/status_badge.dart';
 
-/// Comprehensive details screen for an assigned Job Order with full Dark Mode support and responsive flex layouts.
+/// Comprehensive details screen for a Job Order with full Dark Mode support
+/// and responsive flex layouts.
+///
+/// With [readOnly] set (the job history) every action that changes the record
+/// is hidden: no activation, no completion report. Navigation, calling and
+/// copying stay available since they do not touch the job.
 class JobOrderDetailScreen extends StatelessWidget {
   final int jobId;
   final JobsSignals jobsSignals;
   final void Function(JobOrderDto job)? onOpenReport;
+  final bool readOnly;
 
   const JobOrderDetailScreen({
     super.key,
     required this.jobId,
     required this.jobsSignals,
     this.onOpenReport,
+    this.readOnly = false,
   });
 
   @override
@@ -129,11 +137,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                 ),
               ),
               // Completion Report Quick Access
-              IconButton(
-                icon: const Icon(Icons.assignment_turned_in_outlined, size: 20),
-                tooltip: 'Field Completion Report',
-                onPressed: () => _handleOpenReport(context, job),
-              ),
+              if (!readOnly)
+                IconButton(
+                  icon:
+                      const Icon(Icons.assignment_turned_in_outlined, size: 20),
+                  tooltip: 'Field Completion Report',
+                  onPressed: () => _handleOpenReport(context, job),
+                ),
               // Copy Ticket Summary Button
               IconButton(
                 icon: const Icon(Icons.share_outlined, size: 20),
@@ -186,8 +196,6 @@ class JobOrderDetailScreen extends StatelessWidget {
   Widget _buildWorkflowCard(
       BuildContext context, JobOrderDto job, bool isDark) {
     final currentStatus = job.jobStatus;
-    final nextStatus = job.nextStatus;
-    final isScheduled = job.isScheduled;
 
     return Card(
       child: Padding(
@@ -225,26 +233,16 @@ class JobOrderDetailScreen extends StatelessWidget {
             _buildAssignmentRow(job, isDark),
             const SizedBox(height: 12),
 
-            // Grab or Status Advance Button
-            if (isScheduled)
+            // The one field action: Scheduled -> Activated.
+            if (readOnly)
+              _buildViewOnlyNote(isDark)
+            else if (job.canActivate)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await jobsSignals.grabJob(job);
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                            '⚡ Grabbed ${job.ticketNumber}! Moved to In-Progress.'),
-                        backgroundColor:
-                            isDark ? AppTheme.darkCard : AppTheme.darkSlate,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.flash_on_rounded, size: 18),
-                  label: const Text('⚡ Grab This Job Order (Start Dispatch)',
+                  onPressed: () => _handleActivate(context, job, isDark),
+                  icon: const Icon(Icons.verified_rounded, size: 18),
+                  label: const Text('Mark as Activated',
                       style: TextStyle(fontWeight: FontWeight.w800)),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -253,18 +251,8 @@ class JobOrderDetailScreen extends StatelessWidget {
                   ),
                 ),
               )
-            else if (nextStatus != null)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _handleAdvanceStatus(context, job, isDark),
-                  icon: const Icon(Icons.arrow_circle_right_outlined, size: 18),
-                  label: Text(_getAdvanceButtonLabel(nextStatus)),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
+            else
+              _buildActivatedNote(job, isDark),
           ],
         ),
       ),
@@ -302,17 +290,6 @@ class JobOrderDetailScreen extends StatelessWidget {
     final status = job.jobStatus;
     final steps = [
       {'label': 'Scheduled', 'active': true},
-      {
-        'label': 'In Progress',
-        'active': status == JobStatus.inProgress ||
-            status == JobStatus.completed ||
-            status == JobStatus.activated,
-      },
-      {
-        'label': 'Completed',
-        'active':
-            status == JobStatus.completed || status == JobStatus.activated,
-      },
       {'label': 'Activated', 'active': status == JobStatus.activated},
     ];
 
@@ -859,113 +836,38 @@ class JobOrderDetailScreen extends StatelessWidget {
               const SizedBox(height: 12),
             ],
 
-            // Photo attachments row (Safe non-overflow flex items)
-            Row(
-              children: [
-                Expanded(
-                  child: _buildProofChip(
-                    label: 'Box Reading Photo',
-                    attached: job.boxReadingImage != null &&
-                        job.boxReadingImage!.isNotEmpty,
-                    isDark: isDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildProofChip(
-                    label: 'ONT Rx Photo',
-                    attached: job.routerReadingImage != null &&
-                        job.routerReadingImage!.isNotEmpty,
-                    isDark: isDark,
-                  ),
-                ),
-              ],
+            // Photo proofs and signature, tap to zoom
+            Text(
+              'Photo Proofs:',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+              ),
             ),
-            const SizedBox(height: 8),
-            _buildProofChip(
-              label: 'Subscriber Digital Sign-Off',
-              attached: job.clientSignature != null &&
-                  job.clientSignature!.isNotEmpty,
-              isDark: isDark,
-            ),
+            const SizedBox(height: 6),
+            JobPhotoGallery(job: job),
             const SizedBox(height: 14),
 
             // Inline action to fill/update the completion report
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _handleOpenReport(context, job),
-                icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
-                label: const Text(
-                  'Fill / Update Completion Report',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            if (!readOnly)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _handleOpenReport(context, job),
+                  icon:
+                      const Icon(Icons.assignment_turned_in_rounded, size: 16),
+                  label: const Text(
+                    'Fill / Update Completion Report',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildProofChip({
-    required String label,
-    required bool attached,
-    required bool isDark,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: attached
-            ? (isDark
-                ? const Color(0xFF059669).withValues(alpha: 0.25)
-                : AppTheme.successSubtle)
-            : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: attached
-              ? (isDark
-                  ? const Color(0xFF059669).withValues(alpha: 0.4)
-                  : const Color(0xFFBBF7D0))
-              : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            attached
-                ? Icons.check_circle_rounded
-                : Icons.radio_button_unchecked_rounded,
-            size: 14,
-            color: attached
-                ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
-                : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: attached
-                    ? (isDark
-                        ? const Color(0xFF4ADE80)
-                        : const Color(0xFF166534))
-                    : (isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1005,23 +907,108 @@ class JobOrderDetailScreen extends StatelessWidget {
     }
   }
 
-  String _getAdvanceButtonLabel(JobStatus next) {
-    return switch (next) {
-      JobStatus.scheduled => 'Schedule Work',
-      JobStatus.inProgress => 'Start Work (Mark In Progress)',
-      JobStatus.completed => 'Mark Job Completed',
-      JobStatus.activated => 'Mark Subscriber Activated',
-    };
+  /// A read-only banner for the history: the record can be inspected but not
+  /// changed from here.
+  Widget _buildViewOnlyNote(bool isDark) {
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline_rounded, size: 16, color: muted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'View only. This job is in your history and cannot be changed.',
+              style: TextStyle(fontSize: 12, color: muted),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _handleAdvanceStatus(
+  Widget _buildActivatedNote(JobOrderDto job, bool isDark) {
+    final when = job.dateInstalled;
+    final label = when == null
+        ? 'Activated'
+        : 'Activated on ${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF059669).withValues(alpha: 0.2)
+            : AppTheme.successSubtle,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xFF059669).withValues(alpha: 0.4)
+              : const Color(0xFFBBF7D0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.verified_rounded,
+              size: 16,
+              color: isDark ? const Color(0xFF4ADE80) : AppTheme.success),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color:
+                    isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Confirm, then activate. Activation is terminal and moves the job into
+  /// the technician's read-only history, so it deserves a second look.
+  Future<void> _handleActivate(
       BuildContext context, JobOrderDto job, bool isDark) async {
-    await jobsSignals.advanceJobStatus(job);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Mark as Activated?'),
+        content: Text(
+          '${job.ticketNumber} for ${job.customerName} will be marked '
+          'Activated and moved to your job history. This cannot be undone '
+          'from the app.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Activate'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await jobsSignals.activateJob(job);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            'Updated ${job.ticketNumber} to ${job.nextStatus?.label ?? "next stage"}'),
+            '${job.ticketNumber} activated. It now appears in My History.'),
         backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
         behavior: SnackBarBehavior.floating,
       ),

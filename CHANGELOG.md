@@ -12,14 +12,19 @@ First production release for Switch Fiber field technicians.
 
 ### Added
 - Technician sign-in against the Switch Fiber API with a persisted session.
-- Scheduled work-order queue with search and one-tap "Grab Job" dispatch.
-- My Job History: every job order assigned to the signed-in technician's email,
-  with status filters, search, and summary counts.
+- Scheduled work-order queue with search; tapping a ticket opens its details.
+- Two-stage workflow: a job is Scheduled, then marked Activated (with
+  confirmation) from its details or by submitting a completion report.
+  Activation records the technician's email and install date.
+- My Job History: the technician's activated jobs, view-only, with date range,
+  area and text filters and weekly / monthly counts.
 - Work-order detail screen: workflow stepper, subscriber and location details,
   plant and hardware allocation, optical power reading, on-site records, and
   external navigation to Google Maps, Waze, or Apple Maps.
-- On-site completion report with optical power gauge, ONT details, and
-  photo/signature fields.
+- On-site completion report with optical power gauge, ONT details, seven
+  photo proofs captured from the camera or gallery, and a drawn subscriber
+  signature. Photos are compressed on the phone and saved into the job order
+  as data URLs; the detail screen shows them in a zoomable gallery.
 - LCP/NAP plant records with a clustered map view, satellite layer, cabinet
   grouping, filters, and offline tile cache.
 - Technician toolkit: optical budget calculator, drop cable estimator, fiber

@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/services/image_capture_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/data_url.dart';
 import '../../jobs/models/job_order_model.dart';
 import '../../jobs/signals/jobs_signals.dart';
 import '../signals/report_signals.dart';
 import '../widgets/optical_power_gauge.dart';
+import '../widgets/photo_capture_tile.dart';
+import '../widgets/signature_pad.dart';
 
 /// On-Site Completion Report form screen for optical power validation and subscriber sign-off.
 class CreateReportScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
   final ReportSignals reportSignals;
+
+  /// Photo source; injected so tests can hand over an image without a camera.
+  final Future<String?> Function(ImageSource source)? pickImage;
   final VoidCallback? onReportSubmitted;
 
   const CreateReportScreen({
@@ -17,6 +25,7 @@ class CreateReportScreen extends StatefulWidget {
     required this.jobsSignals,
     required this.reportSignals,
     this.onReportSubmitted,
+    this.pickImage,
   });
 
   @override
@@ -25,6 +34,7 @@ class CreateReportScreen extends StatefulWidget {
 
 class _CreateReportScreenState extends State<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _signatureController = SignatureController();
   late final TextEditingController _serialController;
   late final TextEditingController _remarksController;
   late final TextEditingController _dbmController;
@@ -49,10 +59,22 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   @override
   void dispose() {
+    _signatureController.dispose();
     _serialController.dispose();
     _remarksController.dispose();
     _dbmController.dispose();
     super.dispose();
+  }
+
+  Future<String?> _pick(ImageSource source) =>
+      (widget.pickImage ?? ImageCaptureService.instance.pickAsDataUrl)(source);
+
+  /// Export the pad after every stroke so the signature is ready to submit
+  /// the moment the subscriber lifts their finger.
+  Future<void> _captureSignature() async {
+    final dataUrl = await _signatureController.toDataUrl();
+    if (!mounted) return;
+    widget.reportSignals.setSignature(dataUrl);
   }
 
   Future<void> _handleSubmit() async {
@@ -60,10 +82,17 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     FocusScope.of(context).unfocus();
 
     final rep = widget.reportSignals;
+    if (!_signatureController.isEmpty) {
+      rep.setSignature(await _signatureController.toDataUrl());
+      if (!mounted) return;
+    }
     rep.routerSerial.value = _serialController.text.trim();
     rep.remarks.value = _remarksController.text.trim();
 
-    final success = await rep.submitReport(widget.jobsSignals.repository);
+    final success = await rep.submitReport(
+      widget.jobsSignals.repository,
+      technicianEmail: widget.jobsSignals.technicianEmail.value,
+    );
 
     if (!mounted) return;
 
@@ -198,7 +227,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                                   size: 20),
                               SizedBox(width: 8),
                               Text(
-                                'Save Report & Mark Completed',
+                                'Save Report & Mark Activated',
                                 style: TextStyle(
                                     fontSize: 16, fontWeight: FontWeight.w700),
                               ),
@@ -249,16 +278,26 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   );
                 }
 
-                return DropdownButtonFormField<JobOrderDto>(
-                  initialValue: selected,
+                // Keyed on the id, not the DTO: every Drift emission builds
+                // fresh DTO instances, and a dropdown whose value no longer
+                // matches any item asserts. An id survives re-emission, and a
+                // job that has left the list simply deselects.
+                final selectedId =
+                    selected == null || !jobList.any((j) => j.id == selected.id)
+                        ? null
+                        : selected.id;
+
+                return DropdownButtonFormField<int>(
+                  key: ValueKey('report-job-$selectedId'),
+                  initialValue: selectedId,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     contentPadding:
                         EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   ),
                   items: jobList.map((j) {
-                    return DropdownMenuItem<JobOrderDto>(
-                      value: j,
+                    return DropdownMenuItem<int>(
+                      value: j.id,
                       child: Text(
                         '${j.ticketNumber} — ${j.customerName} (${j.address})',
                         maxLines: 1,
@@ -267,13 +306,15 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                       ),
                     );
                   }).toList(),
-                  onChanged: (newJob) {
-                    if (newJob != null) {
-                      rep.setJobOrder(newJob);
-                      _serialController.text = rep.routerSerial.value;
-                      _dbmController.text =
-                          rep.opticalPower.value.toStringAsFixed(1);
-                    }
+                  onChanged: (newId) {
+                    if (newId == null) return;
+                    final newJob =
+                        jobList.where((j) => j.id == newId).firstOrNull;
+                    if (newJob == null) return;
+                    rep.setJobOrder(newJob);
+                    _serialController.text = rep.routerSerial.value;
+                    _dbmController.text =
+                        rep.opticalPower.value.toStringAsFixed(1);
                   },
                   validator: (val) =>
                       val == null ? 'Please select a job order' : null,
@@ -481,124 +522,94 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     );
   }
 
+  static IconData _iconFor(JobPhoto photo) => switch (photo) {
+        JobPhoto.boxReading => Icons.speed_rounded,
+        JobPhoto.routerReading => Icons.router_rounded,
+        JobPhoto.setup => Icons.settings_input_antenna_rounded,
+        JobPhoto.speedtest => Icons.network_check_rounded,
+        JobPhoto.portLabel => Icons.label_rounded,
+        JobPhoto.signedContract => Icons.description_rounded,
+        JobPhoto.houseFront => Icons.house_rounded,
+      };
+
   Widget _buildPhotoProofSection(ReportSignals rep) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
-              children: [
-                Icon(Icons.camera_alt_outlined,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'On-Site Photo Proofs',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
-                  child: SignalBuilder(
-                    builder: (context) {
-                      final attached = rep.boxPhotoAttached.value;
-                      return _buildPhotoTile(
-                        label: 'NAP Box Reading',
-                        isAttached: attached,
-                        onToggle: () {
-                          rep.boxPhotoAttached.value = !attached;
-                        },
-                      );
-                    },
+                const Icon(Icons.camera_alt_outlined,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'On-Site Photo Proofs',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SignalBuilder(
-                    builder: (context) {
-                      final attached = rep.routerPhotoAttached.value;
-                      return _buildPhotoTile(
-                        label: 'ONT Rx Reading',
-                        isAttached: attached,
-                        onToggle: () {
-                          rep.routerPhotoAttached.value = !attached;
-                        },
-                      );
-                    },
-                  ),
+                SignalBuilder(
+                  builder: (context) {
+                    final job = rep.selectedJobOrder.value;
+                    final count = JobPhoto.values
+                        .where((p) => rep.photoFor(p)?.isNotEmpty == true)
+                        .length;
+                    final label = '$count / ${JobPhoto.values.length}';
+                    return Text(
+                      job == null ? '' : label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhotoTile({
-    required String label,
-    required bool isAttached,
-    required VoidCallback onToggle,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: onToggle,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isAttached
-              ? (isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg)
-              : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isAttached
-                ? AppTheme.primary
-                : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-            width: isAttached ? 1.5 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              isAttached
-                  ? Icons.check_circle_rounded
-                  : Icons.add_a_photo_outlined,
-              size: 26,
-              color: isAttached
-                  ? AppTheme.primary
-                  : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
-            ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              label,
-              textAlign: TextAlign.center,
+              'Photos are compressed on the phone and saved with the job order.',
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: isAttached ? FontWeight.w700 : FontWeight.w500,
-                color: isAttached
-                    ? (isDark
-                        ? const Color(0xFFFF8591)
-                        : AppTheme.primaryActive)
-                    : (isDark ? Colors.white : AppTheme.darkSlate),
+                fontSize: 11,
+                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              isAttached ? 'Attached ✓' : 'Tap to attach',
-              style: TextStyle(
-                fontSize: 10,
-                color: isAttached
-                    ? AppTheme.primary
-                    : (isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted),
-              ),
+            const SizedBox(height: 12),
+            SignalBuilder(
+              builder: (context) {
+                // Read so the grid rebuilds when any photo changes.
+                rep.photos.value;
+                rep.selectedJobOrder.value;
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.98,
+                  ),
+                  itemCount: JobPhoto.values.length,
+                  itemBuilder: (context, index) {
+                    final photo = JobPhoto.values[index];
+                    return PhotoCaptureTile(
+                      key: ValueKey(photo),
+                      label: photo.label,
+                      hint: photo.hint,
+                      icon: _iconFor(photo),
+                      value: rep.photoFor(photo),
+                      pick: _pick,
+                      onChanged: (v) => rep.setPhoto(photo, v),
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
@@ -608,6 +619,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   Widget _buildCustomerSignOffSection(ReportSignals rep) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
     return Card(
       child: Padding(
@@ -628,78 +640,108 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             const SizedBox(height: 8),
             Text(
               'Subscriber acknowledges proper optical installation and functional internet connectivity.',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
+              style: TextStyle(fontSize: 12, color: muted),
             ),
             const SizedBox(height: 12),
             SignalBuilder(
               builder: (context) {
-                final signed = rep.hasSignature.value;
-                return Container(
-                  height: 90,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: signed
-                        ? (isDark
-                            ? const Color(0xFF059669).withValues(alpha: 0.25)
-                            : AppTheme.successSubtle)
-                        : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: signed
-                          ? (isDark
-                              ? const Color(0xFF059669).withValues(alpha: 0.4)
-                              : AppTheme.success)
-                          : (isDark
-                              ? AppTheme.borderDark
-                              : AppTheme.borderLight),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      rep.hasSignature.value = !signed;
-                    },
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            signed
-                                ? Icons.verified_rounded
-                                : Icons.touch_app_rounded,
-                            color: signed
-                                ? (isDark
-                                    ? const Color(0xFF4ADE80)
-                                    : AppTheme.success)
-                                : (isDark
-                                    ? AppTheme.textSecondaryDark
-                                    : AppTheme.textMuted),
-                            size: 20,
+                final existing = rep.signature.value;
+                final existingBytes = DataUrl.decode(existing);
+                final padHasInk = !_signatureController.isEmpty;
+
+                // A signature already on the job is shown as-is until the
+                // technician chooses to capture a new one.
+                if (existingBytes != null && !padHasInk) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        height: 140,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.success.withValues(alpha: 0.6),
+                            width: 1.5,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            signed
-                                ? 'Signature Captured & Verified (Tap to clear)'
-                                : 'Tap to Capture Subscriber Signature',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: signed
-                                  ? (isDark
-                                      ? const Color(0xFF4ADE80)
-                                      : const Color(0xFF166534))
-                                  : (isDark
-                                      ? AppTheme.textSecondaryDark
-                                      : AppTheme.textMuted),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.memory(existingBytes, fit: BoxFit.contain),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.verified_rounded,
+                              size: 16, color: AppTheme.success),
+                          const SizedBox(width: 6),
+                          const Expanded(
+                            child: Text(
+                              'Signature captured',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF166534),
+                              ),
                             ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () {
+                              rep.setSignature(null);
+                              _signatureController.clear();
+                            },
+                            icon: const Icon(Icons.refresh_rounded, size: 16),
+                            label: const Text('Sign again'),
                           ),
                         ],
                       ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SignaturePad(
+                      controller: _signatureController,
+                      onStrokeEnd: _captureSignature,
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          padHasInk
+                              ? Icons.check_circle_rounded
+                              : Icons.touch_app_rounded,
+                          size: 16,
+                          color: padHasInk ? AppTheme.success : muted,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            padHasInk
+                                ? 'Signature captured'
+                                : 'Ask the subscriber to sign in the box above',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color:
+                                  padHasInk ? const Color(0xFF166534) : muted,
+                            ),
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: padHasInk
+                              ? () {
+                                  _signatureController.clear();
+                                  rep.setSignature(null);
+                                }
+                              : null,
+                          icon: const Icon(Icons.backspace_outlined, size: 16),
+                          label: const Text('Clear'),
+                        ),
+                      ],
+                    ),
+                  ],
                 );
               },
             ),

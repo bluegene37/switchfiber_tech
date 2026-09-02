@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/loading_states.dart';
@@ -8,18 +9,18 @@ import '../signals/jobs_signals.dart';
 import '../widgets/job_history_tile.dart';
 import 'job_order_detail_screen.dart';
 
-/// The signed-in technician's own job orders: everything whose
-/// `assignedEmail` matches the technician's profile email, newest first.
+/// The signed-in technician's activated job orders, newest first.
+///
+/// Strictly a record: tiles open the details in view-only mode, and the
+/// screen offers date, area and text filters but no way to change a job.
 class JobHistoryScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
   final AuthSignals authSignals;
-  final void Function(JobOrderDto job)? onSelectJobForReport;
 
   const JobHistoryScreen({
     super.key,
     required this.jobsSignals,
     required this.authSignals,
-    this.onSelectJobForReport,
   });
 
   @override
@@ -47,10 +48,37 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
         builder: (_) => JobOrderDetailScreen(
           jobId: job.id,
           jobsSignals: widget.jobsSignals,
-          onOpenReport: widget.onSelectJobForReport,
+          readOnly: true,
         ),
       ),
     );
+  }
+
+  Future<void> _pickCustomRange() async {
+    final signals = widget.jobsSignals;
+    final now = signals.clock();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 5),
+      lastDate: DateTime(now.year, now.month, now.day),
+      initialDateRange: signals.historyRangeStart.value != null &&
+              signals.historyRangeEnd.value != null
+          ? DateTimeRange(
+              start: signals.historyRangeStart.value!,
+              end: signals.historyRangeEnd.value!,
+            )
+          : null,
+      helpText: 'Show jobs activated between',
+    );
+    if (picked == null) return;
+    signals.setHistoryRange(HistoryRange.custom,
+        start: picked.start, end: picked.end);
+  }
+
+  void _clearFilters() {
+    _searchController.clear();
+    widget.jobsSignals.clearHistoryFilters();
+    setState(() {});
   }
 
   @override
@@ -73,8 +101,8 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                 final email = signals.technicianEmail.value?.trim() ?? '';
                 return Text(
                   email.isEmpty
-                      ? 'Job orders assigned to you'
-                      : 'Assigned to $email',
+                      ? 'Activated jobs assigned to you'
+                      : 'Activated jobs for $email',
                   style: TextStyle(fontSize: 12, color: muted),
                   overflow: TextOverflow.ellipsis,
                 );
@@ -147,7 +175,18 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    _FilterChips(signals: signals),
+                    _RangeChips(
+                        signals: signals, onPickCustom: _pickCustomRange),
+                    SignalBuilder(
+                      builder: (context) {
+                        final cities = signals.historyCities.value;
+                        if (cities.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: _CityChips(signals: signals, cities: cities),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -173,12 +212,7 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                         isDark: isDark,
                         filtered: total > 0,
                         onRefresh: () => signals.fetchRemote(),
-                        onClearFilters: () {
-                          _searchController.clear();
-                          signals.setHistorySearch('');
-                          signals.setHistoryFilter(HistoryFilter.all);
-                          setState(() {});
-                        },
+                        onClearFilters: _clearFilters,
                       );
                     }
 
@@ -220,10 +254,8 @@ class _SummaryStrip extends StatelessWidget {
     return SignalBuilder(
       builder: (context) {
         final total = signals.historyTotalCount.value;
-        final completed = signals.historyCompletedCount.value;
-        final activated = signals.historyActivatedCount.value;
-        final inProgress = signals.historyInProgressCount.value;
-        final attention = signals.historyExceptionCount.value;
+        final week = signals.historyThisWeekCount.value;
+        final month = signals.historyThisMonthCount.value;
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -231,32 +263,25 @@ class _SummaryStrip extends StatelessWidget {
             gradient: LinearGradient(
               colors: isDark
                   ? [
-                      const Color(0xFF3F2327).withValues(alpha: 0.6),
-                      const Color(0xFF2B1A1D).withValues(alpha: 0.4),
+                      const Color(0xFF064E3B).withValues(alpha: 0.5),
+                      const Color(0xFF022C22).withValues(alpha: 0.35),
                     ]
-                  : [AppTheme.primarySubtleBg, const Color(0xFFFFF7F7)],
+                  : [AppTheme.successSubtle, const Color(0xFFF7FEF9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDark
-                  ? AppTheme.primary.withValues(alpha: 0.35)
-                  : AppTheme.primarySubtleBorder,
+                  ? const Color(0xFF059669).withValues(alpha: 0.4)
+                  : const Color(0xFFBBF7D0),
             ),
           ),
           child: Row(
             children: [
-              _Stat(label: 'Total', value: total, color: AppTheme.primary),
-              _Stat(label: 'Done', value: completed, color: AppTheme.success),
-              _Stat(
-                label: 'Activated',
-                value: activated,
-                color: const Color(0xFF4F46E5),
-              ),
-              _Stat(
-                  label: 'Active', value: inProgress, color: AppTheme.warning),
-              _Stat(label: 'Flagged', value: attention, color: AppTheme.danger),
+              _Stat(label: 'Activated', value: total, color: AppTheme.success),
+              _Stat(label: 'This Week', value: week, color: AppTheme.info),
+              _Stat(label: 'This Month', value: month, color: AppTheme.primary),
             ],
           ),
         );
@@ -281,7 +306,7 @@ class _Stat extends StatelessWidget {
           Text(
             '$value',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: color,
               letterSpacing: -0.5,
@@ -304,32 +329,99 @@ class _Stat extends StatelessWidget {
   }
 }
 
-class _FilterChips extends StatelessWidget {
+/// Date window chips. The custom chip shows the chosen dates once picked.
+class _RangeChips extends StatelessWidget {
   final JobsSignals signals;
+  final Future<void> Function() onPickCustom;
 
-  const _FilterChips({required this.signals});
+  const _RangeChips({required this.signals, required this.onPickCustom});
+
+  static final _short = DateFormat('MMM d');
 
   @override
   Widget build(BuildContext context) {
     return SignalBuilder(
       builder: (context) {
-        final active = signals.historyFilter.value;
+        final active = signals.historyRange.value;
+        final start = signals.historyRangeStart.value;
+        final end = signals.historyRangeEnd.value;
+
         return SizedBox(
           height: 36,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: HistoryFilter.values.length,
+            itemCount: HistoryRange.values.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
-              final filter = HistoryFilter.values[index];
+              final range = HistoryRange.values[index];
+              final isCustom = range == HistoryRange.custom;
+              final label = isCustom && start != null && end != null
+                  ? '${_short.format(start)} - ${_short.format(end)}'
+                  : range.label;
               return ChoiceChip(
-                label: Text(filter.label),
-                selected: filter == active,
-                onSelected: (_) => signals.setHistoryFilter(filter),
+                avatar: isCustom
+                    ? Icon(
+                        Icons.date_range_rounded,
+                        size: 16,
+                        color: range == active ? Colors.white : null,
+                      )
+                    : null,
+                label: Text(label),
+                selected: range == active,
+                onSelected: (_) {
+                  if (isCustom) {
+                    onPickCustom();
+                  } else {
+                    signals.setHistoryRange(range);
+                  }
+                },
                 visualDensity: VisualDensity.compact,
                 labelStyle: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Area filter built from the cities present in the technician's history.
+class _CityChips extends StatelessWidget {
+  final JobsSignals signals;
+  final List<String> cities;
+
+  const _CityChips({required this.signals, required this.cities});
+
+  @override
+  Widget build(BuildContext context) {
+    return SignalBuilder(
+      builder: (context) {
+        final active = signals.historyCity.value;
+        final options = <String?>[null, ...cities];
+        return SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: options.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final city = options[index];
+              return FilterChip(
+                avatar: city == null
+                    ? null
+                    : const Icon(Icons.location_city_rounded, size: 14),
+                label: Text(city ?? 'All areas'),
+                selected: city == active,
+                onSelected: (_) => signals.setHistoryCity(city),
+                visualDensity: VisualDensity.compact,
+                showCheckmark: false,
+                labelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               );
             },
@@ -400,7 +492,7 @@ class _NoEmailState extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   final bool isDark;
 
-  /// True when the technician has history but the filter or search hides it.
+  /// True when the technician has history but the filters hide it.
   final bool filtered;
   final VoidCallback onRefresh;
   final VoidCallback onClearFilters;
@@ -435,15 +527,16 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              filtered ? 'Nothing Matches' : 'No Jobs Assigned Yet',
+              filtered ? 'Nothing Matches' : 'No Activated Jobs Yet',
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             Text(
               filtered
-                  ? 'No job in your history matches the current filter or search.'
-                  : 'Job orders Dispatch assigns to your email will appear here. '
-                      'Pull down to refresh from the server.',
+                  ? 'No job in your history matches the current date, area or '
+                      'search filters.'
+                  : 'Jobs you mark as Activated appear here as a permanent '
+                      'record. Pull down to refresh from the server.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,

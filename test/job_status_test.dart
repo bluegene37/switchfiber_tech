@@ -9,52 +9,54 @@ JobOrderDto job({String status = '', String? onsiteStatus}) =>
     });
 
 void main() {
-  group('the job statuses the technician works with', () {
-    test('recognises Scheduled, In Progress, Completed and Activated', () {
+  group('the two stages a job moves through', () {
+    test('recognises Scheduled and Activated', () {
       expect(job(status: 'Scheduled').jobStatus, JobStatus.scheduled);
-      expect(job(status: 'In Progress').jobStatus, JobStatus.inProgress);
-      expect(job(status: 'Completed').jobStatus, JobStatus.completed);
       expect(job(status: 'Activated').jobStatus, JobStatus.activated);
     });
 
     test('tolerates casing and spacing from the backend', () {
       expect(job(status: 'scheduled').jobStatus, JobStatus.scheduled);
-      expect(job(status: 'in progress').jobStatus, JobStatus.inProgress);
-      expect(job(status: 'INPROGRESS').jobStatus, JobStatus.inProgress);
-      expect(job(status: 'in-progress').jobStatus, JobStatus.inProgress);
-      expect(job(status: ' Completed ').jobStatus, JobStatus.completed);
+      expect(job(status: 'ACTIVATED').jobStatus, JobStatus.activated);
+      expect(job(status: ' Activated ').jobStatus, JobStatus.activated);
     });
 
-    test('maps dispatch-ready statuses to scheduled', () {
+    test('maps dispatch-ready office statuses to Scheduled', () {
       expect(job(status: 'Confirmed').jobStatus, JobStatus.scheduled);
       expect(job(status: 'Applied').jobStatus, JobStatus.scheduled);
       expect(job(status: 'Pending').jobStatus, JobStatus.scheduled);
     });
 
-    test('the raw status is still readable for display under All', () {
-      expect(job(status: 'Confirmed').status, 'Confirmed');
+    test('folds statuses written by earlier app versions into the two stages',
+        () {
+      // Still open work.
+      expect(job(status: 'In Progress').jobStatus, JobStatus.scheduled);
+      expect(job(status: 'inprogress').jobStatus, JobStatus.scheduled);
+      // Finished work.
+      expect(job(status: 'Completed').jobStatus, JobStatus.activated);
+    });
+
+    test('an unknown backend status is left unmapped but readable', () {
+      expect(job(status: 'Cancelled').jobStatus, isNull);
+      expect(job(status: 'Cancelled').status, 'Cancelled');
     });
   });
 
-  group('advancing a job through the workflow', () {
-    test('Scheduled advances to In Progress', () {
-      expect(job(status: 'Scheduled').nextStatus, JobStatus.inProgress);
-      expect(job(status: 'Confirmed').nextStatus, JobStatus.inProgress);
-      expect(job(status: 'Applied').nextStatus, JobStatus.inProgress);
+  group('activation', () {
+    test('Scheduled goes straight to Activated', () {
+      expect(job(status: 'Scheduled').nextStatus, JobStatus.activated);
+      expect(job(status: 'Confirmed').nextStatus, JobStatus.activated);
+      expect(job(status: 'Scheduled').canActivate, isTrue);
     });
 
-    test('runs In Progress -> Completed -> Activated', () {
-      expect(job(status: 'In Progress').nextStatus, JobStatus.completed);
-      expect(job(status: 'Completed').nextStatus, JobStatus.activated);
-    });
-
-    test('Activated is terminal and does not cycle back around', () {
+    test('Activated is terminal', () {
       expect(job(status: 'Activated').nextStatus, isNull);
+      expect(job(status: 'Activated').canActivate, isFalse);
+      expect(JobStatus.activated.next, isNull);
     });
 
     test('sends back the exact wording the backend uses', () {
-      expect(JobStatus.inProgress.wireValue, 'In Progress');
-      expect(JobStatus.completed.wireValue, 'Completed');
+      expect(JobStatus.scheduled.wireValue, 'Scheduled');
       expect(JobStatus.activated.wireValue, 'Activated');
     });
   });
@@ -70,9 +72,6 @@ void main() {
     test('a normal visit has no exception to flag', () {
       expect(
           job(status: 'Confirmed', onsiteStatus: 'Done').siteException, isNull);
-      expect(
-          job(status: 'In Progress', onsiteStatus: 'In Progress').siteException,
-          isNull);
       expect(job(status: 'Confirmed', onsiteStatus: '').siteException, isNull);
       expect(job(status: 'Confirmed').siteException, isNull);
     });

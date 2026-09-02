@@ -8,9 +8,9 @@ class AppConstants {
   // API Config
   static const String defaultBaseUrl = 'https://103.249.198.50:8090/api';
   static const int connectTimeout = 30000; // 30s
-  // GET /JobOrders currently returns the entire unpaginated table (~10.8 MB,
-  // ~55 s), which sits right on the old 60 s ceiling. Raised until the endpoint
-  // supports paging or technician-scoped filtering.
+  // GET /JobOrders/status/Activated returns every finished job (~10 MB, a few
+  // seconds on the current server, far longer on a poor mobile link). Kept
+  // generous until the endpoint can be scoped to one technician.
   static const int receiveTimeout = 120000; // 120s
 
   /// SHA-256 fingerprint of the API server's self-signed certificate.
@@ -31,10 +31,7 @@ class AppConstants {
   static const double opticalMarginalFloor = -27.0;
   static const double opticalSaturationCeiling = -8.0;
 
-  // Job Order Status Constants
-  static const String statusPending = 'pending';
-  static const String statusInProgress = 'inprogress';
-  static const String statusCompleted = 'completed';
-  static const String statusActivated = 'activated';
-  static const String statusFailed = 'failed';
+  // Job Order Status Constants: see JobStatus for the two-stage workflow.
+  static const String statusScheduled = 'Scheduled';
+  static const String statusActivated = 'Activated';
 }

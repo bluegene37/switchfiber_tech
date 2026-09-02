@@ -7,7 +7,8 @@ import '../signals/jobs_signals.dart';
 import '../widgets/job_card.dart';
 import 'job_order_detail_screen.dart';
 
-/// Screen strictly displaying Scheduled Job Orders for intake and 1-tap dispatch grabbing.
+/// The scheduled queue: every job order still waiting to be activated.
+/// Tapping a ticket opens its details, where it can be marked Activated.
 class JobOrdersScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
   final void Function(JobOrderDto job)? onSelectJobForDetails;
@@ -50,37 +51,6 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
     );
   }
 
-  Future<void> _handleGrabJob(JobOrderDto job) async {
-    await widget.jobsSignals.grabJob(job);
-    if (!mounted) return;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.flash_on_rounded, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '⚡ Grabbed ${job.ticketNumber}! Moved to In-Progress.',
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-            ),
-          ],
-        ),
-        action: SnackBarAction(
-          label: 'Open Details',
-          textColor: const Color(0xFFFF8591),
-          onPressed: () => _openDetails(job),
-        ),
-        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final signals = widget.jobsSignals;
@@ -96,7 +66,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             Text(
-              'Grab & dispatch scheduled installations',
+              'Tap a ticket to view details and activate',
               style: TextStyle(
                 fontSize: 12,
                 color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
@@ -112,7 +82,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               final pending = signals.repository.syncWorker.pendingCount.value;
 
               return IconButton(
-                tooltip: 'Sync & Pull Scheduled Jobs',
+                tooltip: 'Sync & refresh scheduled jobs',
                 onPressed: syncing
                     ? null
                     : () async {
@@ -223,7 +193,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Tap "Grab Job" on any ticket to accept and begin dispatch.',
+                                  'Open a ticket to review it and mark it Activated once the subscriber is online.',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isDark
@@ -359,12 +329,6 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       return JobCard(
                         job: job,
                         onTap: () => _openDetails(job),
-                        onOpenDetails: () => _openDetails(job),
-                        onGrabJob: () => _handleGrabJob(job),
-                        onCycleStatus: () => _handleGrabJob(job),
-                        onOpenReport: () {
-                          widget.onSelectJobForReport?.call(job);
-                        },
                       );
                     },
                   ),
@@ -407,7 +371,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'All scheduled dispatches have been grabbed or completed! Pull down to refresh from backend dispatch.',
+              'Every scheduled job has been activated. Pull down to refresh from the server.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,

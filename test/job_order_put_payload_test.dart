@@ -138,10 +138,10 @@ void main() {
       final dto = JobOrderDto.fromJson(serverRecord());
       final advanced = JobOrderDto.fromJson({
         ...jsonDecode(dto.rawJson!) as Map<String, dynamic>,
-        'status': JobStatus.inProgress.wireValue,
+        'status': JobStatus.activated.wireValue,
       });
       final payload = advanced.toApiJson();
-      expect(payload['status'], 'In Progress');
+      expect(payload['status'], 'Activated');
       expect(payload['itemName3'], 'original-itemName3');
     });
   });
