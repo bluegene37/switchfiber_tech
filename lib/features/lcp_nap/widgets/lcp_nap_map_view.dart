@@ -127,19 +127,18 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
         _fitOnFirstLoad(sites);
 
         // A site can disappear from the filtered set while its popup is open.
-        final selected = _selected != null &&
-                sites.any((s) => s.id == _selected!.id)
-            ? sites.firstWhere((s) => s.id == _selected!.id)
-            : null;
+        final selected =
+            _selected != null && sites.any((s) => s.id == _selected!.id)
+                ? sites.firstWhere((s) => s.id == _selected!.id)
+                : null;
 
         return Stack(
           children: [
             FlutterMap(
               mapController: _mapController,
               options: MapOptions(
-                initialCenter: sites.isNotEmpty
-                    ? sites.first.latLng!
-                    : _fallbackCentre,
+                initialCenter:
+                    sites.isNotEmpty ? sites.first.latLng! : _fallbackCentre,
                 initialZoom: sites.isEmpty ? 11 : 14,
                 onTap: (_, __) => setState(() {
                   _selected = null;
@@ -159,8 +158,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                       : (isDark
                           ? MapTiles.streetDarkUrl
                           : MapTiles.streetLightUrl),
-                  subdomains:
-                      _satellite ? const [] : MapTiles.cartoSubdomains,
+                  subdomains: _satellite ? const [] : MapTiles.cartoSubdomains,
                   maxZoom: _satellite
                       ? MapTiles.satelliteMaxZoom
                       : MapTiles.streetMaxZoom,
@@ -252,7 +250,8 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                   if (sites.isNotEmpty)
                     FloatingActionButton.small(
                       heroTag: 'lcpNapFitBounds',
-                      backgroundColor: Theme.of(context).cardTheme.color ?? Colors.white,
+                      backgroundColor:
+                          Theme.of(context).cardTheme.color ?? Colors.white,
                       foregroundColor: AppTheme.primary,
                       tooltip: 'Fit all sites',
                       onPressed: () => _fitToSites(sites),
@@ -424,8 +423,7 @@ class _BaseLayerToggle extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: 14,
-                color: active ? Colors.white : AppTheme.textMuted),
+                size: 14, color: active ? Colors.white : AppTheme.textMuted),
             const SizedBox(width: 4),
             Text(
               label,
@@ -528,7 +526,8 @@ class _MapZoomControl extends StatelessWidget {
           ),
           InkWell(
             onTap: onZoomOut,
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(8)),
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Icon(Icons.remove_rounded, size: 20, color: iconColor),
@@ -566,14 +565,17 @@ class _PlantLegendButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.palette_outlined, size: 15, color: AppTheme.primary),
+              const Icon(Icons.palette_outlined,
+                  size: 15, color: AppTheme.primary),
               const SizedBox(width: 5),
               Text(
                 'Legend',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: expanded ? AppTheme.primary : (isDark ? Colors.white : AppTheme.darkSlate),
+                  color: expanded
+                      ? AppTheme.primary
+                      : (isDark ? Colors.white : AppTheme.darkSlate),
                 ),
               ),
             ],
@@ -598,7 +600,8 @@ class _PlantLegendOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return SignalBuilder(
       builder: (context) {
-        final cabinets = signals.lcpCabinetList.value.where((c) => c != 'All').toList();
+        final cabinets =
+            signals.lcpCabinetList.value.where((c) => c != 'All').toList();
 
         return Card(
           elevation: 6,
@@ -615,7 +618,8 @@ class _PlantLegendOverlay extends StatelessWidget {
                     const Expanded(
                       child: Text(
                         'LCP Cabinet Colors',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -623,7 +627,8 @@ class _PlantLegendOverlay extends StatelessWidget {
                     InkWell(
                       onTap: onClose,
                       borderRadius: BorderRadius.circular(12),
-                      child: const Icon(Icons.close_rounded, size: 16, color: AppTheme.textMuted),
+                      child: const Icon(Icons.close_rounded,
+                          size: 16, color: AppTheme.textMuted),
                     ),
                   ],
                 ),
@@ -643,7 +648,8 @@ class _PlantLegendOverlay extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final cab = cabinets[index];
                       final hue = lcpColorSeed(cab);
-                      final color = HSLColor.fromAHSL(1, hue, 0.62, 0.44).toColor();
+                      final color =
+                          HSLColor.fromAHSL(1, hue, 0.62, 0.44).toColor();
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 3),
@@ -655,14 +661,16 @@ class _PlantLegendOverlay extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: color,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5),
+                                border:
+                                    Border.all(color: Colors.white, width: 1.5),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 cab,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],

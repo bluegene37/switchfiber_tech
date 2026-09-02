@@ -231,7 +231,8 @@ class JobRepository {
         planId: 3,
         status: 'scheduled',
         onsiteStatus: 'Scheduled',
-        onsiteRemarks: 'Scheduled afternoon dispatch. Customer requested PM slot.',
+        onsiteRemarks:
+            'Scheduled afternoon dispatch. Customer requested PM slot.',
         lcpId: 2,
         napId: 5,
         portId: 'Port 7',
@@ -240,7 +241,8 @@ class JobRepository {
       ),
     ];
 
-    final companions = sampleJobs.map((j) => j.toCompanion(synced: true)).toList();
+    final companions =
+        sampleJobs.map((j) => j.toCompanion(synced: true)).toList();
     await _dao.insertAllJobs(companions);
   }
 }

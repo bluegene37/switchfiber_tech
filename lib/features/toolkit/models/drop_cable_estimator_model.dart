@@ -1,11 +1,14 @@
 /// Drop Cable & On-Site Installation Material Estimator Model.
 class DropCableEstimatorModel {
   final int poleSpans; // Number of utility pole spans
-  final double averageSpanMeters; // Average distance between poles (typically 30-40m)
+  final double
+      averageSpanMeters; // Average distance between poles (typically 30-40m)
   final double sagPercentage; // Drop wire sag factor (typically 5-10%)
-  final double facadeDripLoopMeters; // Outdoor entry / drip loop slack (typically 3m)
+  final double
+      facadeDripLoopMeters; // Outdoor entry / drip loop slack (typically 3m)
   final double indoorRunMeters; // Cable run inside house/building to ONT
-  final double serviceLoopMeters; // Extra service slack at NAP and ONT (typically 4m)
+  final double
+      serviceLoopMeters; // Extra service slack at NAP and ONT (typically 4m)
 
   const DropCableEstimatorModel({
     this.poleSpans = 2,
@@ -32,7 +35,8 @@ class DropCableEstimatorModel {
   /// Bill of Materials (BOM) items required for this drop installation.
   List<BOMItem> get recommendedBOM {
     final metersRounded = totalMeters.ceil();
-    final clampsRequired = (poleSpans + 1); // 1 clamp per pole attachment + house hook
+    final clampsRequired =
+        (poleSpans + 1); // 1 clamp per pole attachment + house hook
 
     return [
       BOMItem(

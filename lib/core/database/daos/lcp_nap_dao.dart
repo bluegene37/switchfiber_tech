@@ -12,7 +12,8 @@ class LcpNapLocationsDao extends DatabaseAccessor<AppDatabase>
   /// Watch all LCP NAP location records reactively
   Stream<List<LcpNapLocation>> watchAllLocations() {
     return (select(lcpNapLocations)
-          ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.asc)]))
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.asc)]))
         .watch();
   }
 
@@ -29,14 +30,16 @@ class LcpNapLocationsDao extends DatabaseAccessor<AppDatabase>
     }
     return (select(lcpNapLocations)
           ..where((t) => t.lcp.equals(lcpName))
-          ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.asc)]))
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.asc)]))
         .watch();
   }
 
   /// Get all locations once
   Future<List<LcpNapLocation>> getAllLocations() {
     return (select(lcpNapLocations)
-          ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.asc)]))
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.asc)]))
         .get();
   }
 
@@ -46,12 +49,12 @@ class LcpNapLocationsDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// Batch insert / cache locations from API
-  Future<void> insertAllLocations(List<LcpNapLocationsCompanion> entries) async {
+  Future<void> insertAllLocations(
+      List<LcpNapLocationsCompanion> entries) async {
     await batch((batch) {
       batch.insertAllOnConflictUpdate(lcpNapLocations, entries);
     });
   }
-
 
   /// Delete a location
   Future<void> deleteLocation(int id) {

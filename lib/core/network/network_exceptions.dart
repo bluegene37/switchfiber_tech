@@ -20,7 +20,8 @@ class ApiException implements Exception {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        message = 'Connection timed out. Please check your internet connection.';
+        message =
+            'Connection timed out. Please check your internet connection.';
         status = 408;
         break;
       case DioExceptionType.badResponse:

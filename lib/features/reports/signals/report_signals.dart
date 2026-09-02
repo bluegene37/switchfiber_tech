@@ -9,7 +9,8 @@ class ReportSignals {
   final routerSerial = signal<String>('HWTC8829104');
   final routerModel = signal<String>('Huawei HG8145V5');
   final napPort = signal<String>('Port 2');
-  final remarks = signal<String>('Fiber drop cable installed. Power verified. Client speedtest 100Mbps symmetrical.');
+  final remarks = signal<String>(
+      'Fiber drop cable installed. Power verified. Client speedtest 100Mbps symmetrical.');
   final boxPhotoAttached = signal<bool>(true);
   final routerPhotoAttached = signal<bool>(true);
   final hasSignature = signal<bool>(true);
@@ -55,12 +56,18 @@ class ReportSignals {
         opticalPower: opticalPower.value,
         modemRouterSN: routerSerial.value.trim(),
         routerModel: routerModel.value.trim(),
-        boxReadingImage: boxPhotoAttached.value ? 'data:image/jpeg;base64,mock_box_reading' : null,
-        routerReadingImage: routerPhotoAttached.value ? 'data:image/jpeg;base64,mock_router_reading' : null,
-        clientSignature: hasSignature.value ? 'data:image/png;base64,mock_signature' : null,
+        boxReadingImage: boxPhotoAttached.value
+            ? 'data:image/jpeg;base64,mock_box_reading'
+            : null,
+        routerReadingImage: routerPhotoAttached.value
+            ? 'data:image/jpeg;base64,mock_router_reading'
+            : null,
+        clientSignature:
+            hasSignature.value ? 'data:image/png;base64,mock_signature' : null,
       );
 
-      submissionMessage.value = 'Completion report saved to Drift SQLite & queued for sync!';
+      submissionMessage.value =
+          'Completion report saved to Drift SQLite & queued for sync!';
       return true;
     } catch (e) {
       submissionMessage.value = 'Failed to save report: $e';

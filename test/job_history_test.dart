@@ -50,7 +50,8 @@ void main() {
     });
 
     test('an empty or missing email never matches an unassigned job', () {
-      final unassigned = JobOrderDto.fromJson(liveRecord(id: 1, assignedEmail: ''));
+      final unassigned =
+          JobOrderDto.fromJson(liveRecord(id: 1, assignedEmail: ''));
       expect(unassigned.isAssignedTo(''), isFalse);
       expect(unassigned.isAssignedTo(null), isFalse);
       expect(unassigned.isAssignedTo('tech@switchfiber.ph'), isFalse);

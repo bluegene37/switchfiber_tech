@@ -7,7 +7,8 @@ class TroubleshootingGuideTool extends StatefulWidget {
   const TroubleshootingGuideTool({super.key});
 
   @override
-  State<TroubleshootingGuideTool> createState() => _TroubleshootingGuideToolState();
+  State<TroubleshootingGuideTool> createState() =>
+      _TroubleshootingGuideToolState();
 }
 
 class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
@@ -26,8 +27,10 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Field Troubleshooting', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            Text('Step-by-step on-site decision guide', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+            Text('Field Troubleshooting',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Step-by-step on-site decision guide',
+                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
           ],
         ),
       ),
@@ -44,14 +47,17 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
                     selected: isSelected,
-                    avatar: Icon(g.icon, size: 16, color: isSelected ? Colors.white : g.badgeColor),
+                    avatar: Icon(g.icon,
+                        size: 16,
+                        color: isSelected ? Colors.white : g.badgeColor),
                     label: Text(g.title),
                     onSelected: (_) => setState(() => _selectedGuideId = g.id),
                     selectedColor: AppTheme.primary,
                     showCheckmark: false,
                     labelStyle: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: isSelected ? Colors.white : null,
                     ),
                   ),
@@ -82,7 +88,8 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                         color: guide.badgeColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(guide.icon, color: guide.badgeColor, size: 22),
+                      child:
+                          Icon(guide.icon, color: guide.badgeColor, size: 22),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -91,14 +98,17 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                         children: [
                           Text(
                             guide.title,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             guide.symptom,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textMuted,
                             ),
                           ),
                         ],
@@ -107,13 +117,14 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                   ],
                 ),
                 const SizedBox(height: 14),
-
                 Text(
                   'Probable Root Causes:',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                    color: isDark
+                        ? AppTheme.textSecondaryDark
+                        : AppTheme.textMuted,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -123,8 +134,14 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('• ', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w900)),
-                        Expanded(child: Text(cause, style: const TextStyle(fontSize: 12, height: 1.3))),
+                        const Text('• ',
+                            style: TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.w900)),
+                        Expanded(
+                            child: Text(cause,
+                                style: const TextStyle(
+                                    fontSize: 12, height: 1.3))),
                       ],
                     ),
                   ),
@@ -184,7 +201,8 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                       children: [
                         Text(
                           step.title,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -192,7 +210,9 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.4,
-                            color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                            color: isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textMuted,
                           ),
                         ),
                       ],

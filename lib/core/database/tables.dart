@@ -14,7 +14,8 @@ class JobOrders extends Table {
   TextColumn get status => text().withDefault(const Constant('pending'))();
   TextColumn get onsiteStatus => text().nullable()();
   TextColumn get onsiteRemarks => text().nullable()();
-  RealColumn get opticalPower => real().nullable()(); // Optical dBm meter reading
+  RealColumn get opticalPower =>
+      real().nullable()(); // Optical dBm meter reading
   TextColumn get modemRouterSN => text().nullable()();
   TextColumn get routerModel => text().nullable()();
   IntColumn get lcpId => integer().nullable()();

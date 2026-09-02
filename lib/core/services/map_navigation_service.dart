@@ -15,7 +15,8 @@ class MapNavigationService {
     required double longitude,
     String? destinationLabel,
   }) async {
-    final label = destinationLabel != null ? Uri.encodeComponent(destinationLabel) : '';
+    final label =
+        destinationLabel != null ? Uri.encodeComponent(destinationLabel) : '';
 
     // Standard Google Maps directions URL (opens Google Maps app with turn-by-turn navigation)
     final googleMapsUrl = Uri.parse(
@@ -30,16 +31,19 @@ class MapNavigationService {
     try {
       if (!kIsWeb && Platform.isIOS) {
         if (await canLaunchUrl(appleMapsUrl)) {
-          return await launchUrl(appleMapsUrl, mode: LaunchMode.externalApplication);
+          return await launchUrl(appleMapsUrl,
+              mode: LaunchMode.externalApplication);
         }
       }
 
       // Default to Google Maps universal navigation
       if (await canLaunchUrl(googleMapsUrl)) {
-        return await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+        return await launchUrl(googleMapsUrl,
+            mode: LaunchMode.externalApplication);
       } else {
         // Fallback to geo URI
-        final geoUri = Uri.parse('geo:$latitude,$longitude?q=$latitude,$longitude${label.isNotEmpty ? "($label)" : ""}');
+        final geoUri = Uri.parse(
+            'geo:$latitude,$longitude?q=$latitude,$longitude${label.isNotEmpty ? "($label)" : ""}');
         if (await canLaunchUrl(geoUri)) {
           return await launchUrl(geoUri, mode: LaunchMode.externalApplication);
         }
@@ -63,10 +67,12 @@ class MapNavigationService {
 
     switch (appType.toLowerCase()) {
       case 'waze':
-        url = Uri.parse('https://waze.com/ul?ll=$latitude,$longitude&navigate=yes');
+        url = Uri.parse(
+            'https://waze.com/ul?ll=$latitude,$longitude&navigate=yes');
         break;
       case 'apple':
-        url = Uri.parse('https://maps.apple.com/?daddr=$latitude,$longitude&dirflg=d');
+        url = Uri.parse(
+            'https://maps.apple.com/?daddr=$latitude,$longitude&dirflg=d');
         break;
       case 'google':
       default:
@@ -116,7 +122,8 @@ class MapNavigationService {
                         color: AppTheme.primarySubtleBg,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.navigation_rounded, color: AppTheme.primary, size: 20),
+                      child: const Icon(Icons.navigation_rounded,
+                          color: AppTheme.primary, size: 20),
                     ),
                     const SizedBox(width: 10),
                     Column(
@@ -124,11 +131,13 @@ class MapNavigationService {
                       children: [
                         Text(
                           'Start Navigation',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800),
                         ),
                         Text(
                           title,
-                          style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                          style: const TextStyle(
+                              fontSize: 12, color: AppTheme.textMuted),
                         ),
                       ],
                     ),
@@ -248,7 +257,8 @@ class MapNavigationService {
         decoration: BoxDecoration(
           color: isDark ? AppTheme.darkSlate : AppTheme.lightBg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+          border: Border.all(
+              color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
         ),
         child: Row(
           children: [
@@ -267,17 +277,20 @@ class MapNavigationService {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                    style: const TextStyle(
+                        fontSize: 11, color: AppTheme.textMuted),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.textMuted),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: AppTheme.textMuted),
           ],
         ),
       ),

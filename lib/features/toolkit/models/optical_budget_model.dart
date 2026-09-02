@@ -21,12 +21,15 @@ enum SplitterRatio {
 class OpticalBudgetModel {
   final double oltTxPower; // dBm (e.g. +3.0 to +5.0 dBm)
   final double fiberDistanceKm; // Distance from OLT to subscriber in km
-  final double fiberAttenuationPerKm; // dB/km (default 0.35 for 1310nm, 0.25 for 1490nm)
+  final double
+      fiberAttenuationPerKm; // dB/km (default 0.35 for 1310nm, 0.25 for 1490nm)
   final SplitterRatio lcpSplitter; // First stage splitter at LCP
-  final SplitterRatio? napSplitter; // Second stage splitter at NAP (nullable if 1-stage)
+  final SplitterRatio?
+      napSplitter; // Second stage splitter at NAP (nullable if 1-stage)
   final int fusionSpliceCount; // Number of fusion splices (0.05 dB each)
   final int connectorCount; // Number of SC/APC connector pairs (0.3 dB each)
-  final double? measuredRxPower; // Actual OPM reading taken at subscriber ONT (dBm)
+  final double?
+      measuredRxPower; // Actual OPM reading taken at subscriber ONT (dBm)
 
   const OpticalBudgetModel({
     this.oltTxPower = 4.0,

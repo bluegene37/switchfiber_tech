@@ -29,7 +29,8 @@ void main() {
       expect(res.fiberColor.name, 'Aqua');
     });
 
-    test('Calculates Core #13 (Crosses to Tube 2): Tube 2 Orange, Fiber 1 Blue', () {
+    test('Calculates Core #13 (Crosses to Tube 2): Tube 2 Orange, Fiber 1 Blue',
+        () {
       final res = FiberColorCalculator.calculate(13, fibersPerTube: 12);
       expect(res.tubeNumber, 2);
       expect(res.tubeColor.name, 'Orange');
@@ -53,7 +54,9 @@ void main() {
       expect(res.fiberColor.name, 'Aqua');
     });
 
-    test('Calculates 6-fiber per tube cable (e.g. Core 7 is Tube 2 Orange, Fiber 1 Blue)', () {
+    test(
+        'Calculates 6-fiber per tube cable (e.g. Core 7 is Tube 2 Orange, Fiber 1 Blue)',
+        () {
       final res = FiberColorCalculator.calculate(7, fibersPerTube: 6);
       expect(res.tubeNumber, 2);
       expect(res.tubeColor.name, 'Orange');

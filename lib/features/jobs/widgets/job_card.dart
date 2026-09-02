@@ -49,17 +49,23 @@ class JobCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                          color: isDark
+                              ? const Color(0xFF3F2327)
+                              : AppTheme.primarySubtleBg,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           isScheduled
                               ? Icons.calendar_today_rounded
-                              : (isInProgress ? Icons.build_circle_rounded : Icons.check_circle_rounded),
+                              : (isInProgress
+                                  ? Icons.build_circle_rounded
+                                  : Icons.check_circle_rounded),
                           size: 16,
                           color: isScheduled
                               ? AppTheme.info
-                              : (isInProgress ? AppTheme.primary : AppTheme.success),
+                              : (isInProgress
+                                  ? AppTheme.primary
+                                  : AppTheme.success),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -85,29 +91,35 @@ class JobCard extends StatelessWidget {
                                 color: AppTheme.success,
                               )
                             : Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                                      ? const Color(0xFF78350F)
+                                          .withValues(alpha: 0.3)
                                       : AppTheme.warningSubtle,
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                     color: isDark
-                                        ? const Color(0xFFD97706).withValues(alpha: 0.5)
+                                        ? const Color(0xFFD97706)
+                                            .withValues(alpha: 0.5)
                                         : const Color(0xFFFDE68A),
                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.cloud_off_rounded, size: 12, color: AppTheme.warning),
+                                    const Icon(Icons.cloud_off_rounded,
+                                        size: 12, color: AppTheme.warning),
                                     const SizedBox(width: 3),
                                     Text(
                                       'Offline',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
-                                        color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                                        color: isDark
+                                            ? const Color(0xFFFDE68A)
+                                            : const Color(0xFF92400E),
                                       ),
                                     ),
                                   ],
@@ -156,12 +168,15 @@ class JobCard extends StatelessWidget {
                   ),
                   if (job.napId != null || job.portId != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                          color: isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight,
                         ),
                       ),
                       child: Text(
@@ -169,7 +184,9 @@ class JobCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                          color: isDark
+                              ? AppTheme.textSecondaryDark
+                              : AppTheme.textMuted,
                         ),
                       ),
                     ),
@@ -185,7 +202,9 @@ class JobCard extends StatelessWidget {
                   Icon(
                     Icons.location_on_outlined,
                     size: 15,
-                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                    color: isDark
+                        ? AppTheme.textSecondaryDark
+                        : AppTheme.textMuted,
                   ),
                   const SizedBox(width: 4),
                   Expanded(
@@ -193,7 +212,9 @@ class JobCard extends StatelessWidget {
                       '${job.address}${job.barangay != null ? ', ${job.barangay}' : ''}${job.city != null ? ', ${job.city}' : ''}',
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -202,21 +223,26 @@ class JobCard extends StatelessWidget {
                 ],
               ),
 
-              if (job.contactNumber != null && job.contactNumber!.isNotEmpty) ...[
+              if (job.contactNumber != null &&
+                  job.contactNumber!.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(
                       Icons.phone_outlined,
                       size: 15,
-                      color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                      color: isDark
+                          ? AppTheme.textSecondaryDark
+                          : AppTheme.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       job.contactNumber!,
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -225,13 +251,16 @@ class JobCard extends StatelessWidget {
               ],
 
               // Onsite remarks or landmark snippet if available
-              if (job.onsiteRemarks != null && job.onsiteRemarks!.isNotEmpty) ...[
+              if (job.onsiteRemarks != null &&
+                  job.onsiteRemarks!.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkInput : const Color(0xFFF1F5F9),
+                    color:
+                        isDark ? AppTheme.darkInput : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -239,7 +268,9 @@ class JobCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontStyle: FontStyle.italic,
-                      color: isDark ? AppTheme.textSecondaryDark : const Color(0xFF475569),
+                      color: isDark
+                          ? AppTheme.textSecondaryDark
+                          : const Color(0xFF475569),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -248,7 +279,9 @@ class JobCard extends StatelessWidget {
               ],
 
               const SizedBox(height: 12),
-              Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+              Divider(
+                  height: 1,
+                  color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
               const SizedBox(height: 12),
 
               // Optical Power Meter Chip if recorded
@@ -261,13 +294,17 @@ class JobCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: _getOpticalColorSubtle(job.opticalPower!, isDark),
+                        color:
+                            _getOpticalColorSubtle(job.opticalPower!, isDark),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -307,7 +344,8 @@ class JobCard extends StatelessWidget {
                         icon: const Icon(Icons.flash_on_rounded, size: 16),
                         label: const Text(
                           '⚡ Grab Job (Start)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w800),
                         ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -322,7 +360,8 @@ class JobCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: onOpenDetails,
                         icon: const Icon(Icons.info_outline_rounded, size: 16),
-                        label: const Text('Details', style: TextStyle(fontSize: 12)),
+                        label: const Text('Details',
+                            style: TextStyle(fontSize: 12)),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
@@ -337,10 +376,12 @@ class JobCard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: onOpenReport,
-                        icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
+                        icon: const Icon(Icons.assignment_turned_in_rounded,
+                            size: 16),
                         label: const Text(
                           'Complete Report',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700),
                         ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 9),
@@ -351,7 +392,8 @@ class JobCard extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: onCycleStatus,
-                        icon: const Icon(Icons.arrow_circle_right_outlined, size: 16),
+                        icon: const Icon(Icons.arrow_circle_right_outlined,
+                            size: 16),
                         label: Text(
                           _getNextStatusActionLabel(job.nextStatus),
                           style: const TextStyle(fontSize: 12),
@@ -371,7 +413,8 @@ class JobCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: onOpenDetails,
                         icon: const Icon(Icons.visibility_outlined, size: 16),
-                        label: const Text('View Order Details', style: TextStyle(fontSize: 12)),
+                        label: const Text('View Order Details',
+                            style: TextStyle(fontSize: 12)),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
@@ -382,11 +425,14 @@ class JobCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: onOpenReport,
                         icon: const Icon(Icons.edit_note_rounded, size: 16),
-                        label: const Text('Update Report', style: TextStyle(fontSize: 12)),
+                        label: const Text('Update Report',
+                            style: TextStyle(fontSize: 12)),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 8),
-                          backgroundColor: isDark ? AppTheme.darkInput : AppTheme.lightBg,
-                          foregroundColor: isDark ? Colors.white : AppTheme.darkSlate,
+                          backgroundColor:
+                              isDark ? AppTheme.darkInput : AppTheme.lightBg,
+                          foregroundColor:
+                              isDark ? Colors.white : AppTheme.darkSlate,
                         ),
                       ),
                     ),

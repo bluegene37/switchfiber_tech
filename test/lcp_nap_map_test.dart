@@ -29,8 +29,8 @@ void main() {
     });
 
     test('handles negative coordinates', () {
-      expect(site('-33.8688, 151.2093').latLng,
-          const LatLng(-33.8688, 151.2093));
+      expect(
+          site('-33.8688, 151.2093').latLng, const LatLng(-33.8688, 151.2093));
     });
 
     test('accepts the same separators the web console accepts', () {

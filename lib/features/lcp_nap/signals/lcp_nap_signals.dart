@@ -27,7 +27,8 @@ class LcpNapSignals {
   final Signal<List<LcpNapDto>> allLocations = signal<List<LcpNapDto>>([]);
   final Signal<String> selectedLcpFilter = signal<String>('All');
   final Signal<String> selectedCityFilter = signal<String>('All');
-  final Signal<LcpGroupMode> groupMode = signal<LcpGroupMode>(LcpGroupMode.byLcp);
+  final Signal<LcpGroupMode> groupMode =
+      signal<LcpGroupMode>(LcpGroupMode.byLcp);
   final Signal<String> searchQuery = signal<String>('');
   final Signal<LcpNapDto?> selectedLocation = signal<LcpNapDto?>(null);
   final Signal<bool> isLoading = signal<bool>(false);
@@ -63,7 +64,7 @@ class LcpNapSignals {
         final matchesCity = loc.city?.toLowerCase().contains(query) ?? false;
         final matchesDesc =
             (loc.street?.toLowerCase().contains(query) ?? false) ||
-            (loc.region?.toLowerCase().contains(query) ?? false);
+                (loc.region?.toLowerCase().contains(query) ?? false);
 
         return matchesLcpNap ||
             matchesLcp ||
@@ -88,7 +89,8 @@ class LcpNapSignals {
   });
 
   /// Locations grouped by City / Area
-  late final Computed<Map<String, List<LcpNapDto>>> groupedByCity = computed(() {
+  late final Computed<Map<String, List<LcpNapDto>>> groupedByCity =
+      computed(() {
     final map = <String, List<LcpNapDto>>{};
     for (final loc in filteredLocations.value) {
       final key = (loc.city != null && loc.city!.trim().isNotEmpty)

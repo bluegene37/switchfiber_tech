@@ -52,7 +52,6 @@ class LcpNapRepository {
     }
   }
 
-
   /// Seed realistic fiber plant infrastructure data
   Future<void> seedSampleLocations() async {
     final now = DateTime.now();
@@ -129,7 +128,8 @@ class LcpNapRepository {
       ),
     ];
 
-    final companions = sampleSites.map((s) => s.toCompanion(synced: true)).toList();
+    final companions =
+        sampleSites.map((s) => s.toCompanion(synced: true)).toList();
     await _dao.insertAllLocations(companions);
   }
 }

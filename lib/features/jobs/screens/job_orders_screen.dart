@@ -116,8 +116,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                 onPressed: syncing
                     ? null
                     : () async {
-                        final result =
-                            await signals.repository.syncWorker.syncPendingJobs();
+                        final result = await signals.repository.syncWorker
+                            .syncPendingJobs();
                         await signals.fetchRemote();
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -168,18 +168,28 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                     final scheduledCount = signals.scheduledCount.value;
 
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: isDark
-                              ? [const Color(0xFF1E3A8A).withValues(alpha: 0.3), const Color(0xFF172554).withValues(alpha: 0.2)]
-                              : [const Color(0xFFE0F2FE), const Color(0xFFF0F9FF)],
+                              ? [
+                                  const Color(0xFF1E3A8A)
+                                      .withValues(alpha: 0.3),
+                                  const Color(0xFF172554).withValues(alpha: 0.2)
+                                ]
+                              : [
+                                  const Color(0xFFE0F2FE),
+                                  const Color(0xFFF0F9FF)
+                                ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF1D4ED8).withValues(alpha: 0.4) : const Color(0xFFBAE6FD),
+                          color: isDark
+                              ? const Color(0xFF1D4ED8).withValues(alpha: 0.4)
+                              : const Color(0xFFBAE6FD),
                         ),
                       ),
                       child: Row(
@@ -206,7 +216,9 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w800,
-                                    color: isDark ? const Color(0xFF7DD3FC) : const Color(0xFF0369A1),
+                                    color: isDark
+                                        ? const Color(0xFF7DD3FC)
+                                        : const Color(0xFF0369A1),
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -214,7 +226,9 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                   'Tap "Grab Job" on any ticket to accept and begin dispatch.',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: isDark ? AppTheme.textSecondaryDark : const Color(0xFF0C4A6E),
+                                    color: isDark
+                                        ? AppTheme.textSecondaryDark
+                                        : const Color(0xFF0C4A6E),
                                   ),
                                 ),
                               ],
@@ -232,7 +246,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                   controller: _searchController,
                   onChanged: signals.setSearch,
                   decoration: InputDecoration(
-                    hintText: 'Search scheduled subscriber, ticket #, address...',
+                    hintText:
+                        'Search scheduled subscriber, ticket #, address...',
                     prefixIcon: const Icon(Icons.search_rounded, size: 20),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -243,8 +258,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                             },
                           )
                         : null,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                   ),
                 ),
               ],
@@ -259,7 +274,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
 
               return Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 color: isDark
                     ? const Color(0xFF78350F).withValues(alpha: 0.3)
                     : AppTheme.warningSubtle,
@@ -268,7 +284,9 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                     Icon(
                       Icons.cloud_off_rounded,
                       size: 16,
-                      color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                      color: isDark
+                          ? const Color(0xFFFDE68A)
+                          : const Color(0xFF92400E),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -277,7 +295,9 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                          color: isDark
+                              ? const Color(0xFFFDE68A)
+                              : const Color(0xFF92400E),
                         ),
                       ),
                     ),
@@ -367,7 +387,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                color:
+                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                 shape: BoxShape.circle,
               ),
               child: const Icon(

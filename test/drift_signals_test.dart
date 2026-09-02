@@ -27,7 +27,8 @@ void main() {
   });
 
   group('Drift SQLite & Signals Reactive State Tests', () {
-    test('Seeding sample jobs inserts records and updates Signals stream', () async {
+    test('Seeding sample jobs inserts records and updates Signals stream',
+        () async {
       await repository.seedSampleJobs();
 
       // Wait for Drift reactive stream to push to Signals
@@ -43,7 +44,8 @@ void main() {
       expect(signals.unsyncedCount.value, 0);
     });
 
-    test('filteredJobs computed signal strictly returns only scheduled jobs', () async {
+    test('filteredJobs computed signal strictly returns only scheduled jobs',
+        () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -51,7 +53,9 @@ void main() {
       expect(signals.filteredJobs.value.every((j) => j.isScheduled), isTrue);
     });
 
-    test('Search query matches ticket number and customer name among scheduled jobs', () async {
+    test(
+        'Search query matches ticket number and customer name among scheduled jobs',
+        () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -61,10 +65,12 @@ void main() {
 
       signals.setSearch('SF-2026-0805');
       expect(signals.filteredJobs.value.length, 1);
-      expect(signals.filteredJobs.value.first.customerName, 'Jasmine Alcantara');
+      expect(
+          signals.filteredJobs.value.first.customerName, 'Jasmine Alcantara');
     });
 
-    test('Toggling job status updates Drift locally and sets isSynced = false', () async {
+    test('Toggling job status updates Drift locally and sets isSynced = false',
+        () async {
       await repository.seedSampleJobs();
       await Future.delayed(const Duration(milliseconds: 100));
 

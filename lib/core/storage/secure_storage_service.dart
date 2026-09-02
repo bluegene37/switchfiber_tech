@@ -47,7 +47,9 @@ class SecureStorageService {
   /// Get customized Base URL if overridden in Settings
   Future<String> getBaseUrl() async {
     final customUrl = await _storage.read(key: AppConstants.keyApiBaseUrl);
-    return customUrl?.trim().isNotEmpty == true ? customUrl! : AppConstants.defaultBaseUrl;
+    return customUrl?.trim().isNotEmpty == true
+        ? customUrl!
+        : AppConstants.defaultBaseUrl;
   }
 
   /// Save customized Base URL

@@ -120,8 +120,8 @@ void main() {
     test('preserves fields the app does not model', () {
       final payload = JobOrderDto.fromJson(serverRecord()).toApiJson();
       expect(payload['itemQuantity7'], 'original-itemQuantity7');
-      expect(payload['referrersAccountNumber'],
-          'original-referrersAccountNumber');
+      expect(
+          payload['referrersAccountNumber'], 'original-referrersAccountNumber');
       expect(payload['billingStatus'], 'original-billingStatus');
       expect(payload['houseFront'], 'original-houseFront');
     });

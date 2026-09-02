@@ -24,8 +24,9 @@ class SettingsSignals {
   Future<void> restore() async {
     try {
       final saved = await _storage.read(AppConstants.keyDarkMode);
-      themeMode.value =
-          saved?.trim().toLowerCase() == 'true' ? ThemeMode.dark : ThemeMode.light;
+      themeMode.value = saved?.trim().toLowerCase() == 'true'
+          ? ThemeMode.dark
+          : ThemeMode.light;
     } catch (_) {
       themeMode.value = ThemeMode.light;
     }
