@@ -93,6 +93,13 @@ class JobOrderDto {
   final String? boxReadingImage;
   final String? routerReadingImage;
   final String? clientSignature;
+
+  /// Email of the technician the office assigned this job to.
+  final String? assignedEmail;
+
+  /// When the server record was last changed.
+  final DateTime? modifiedDate;
+
   final bool isSynced;
   final DateTime? updatedAt;
 
@@ -121,6 +128,8 @@ class JobOrderDto {
     this.boxReadingImage,
     this.routerReadingImage,
     this.clientSignature,
+    this.assignedEmail,
+    this.modifiedDate,
     this.isSynced = true,
     this.updatedAt,
   });
@@ -143,6 +152,22 @@ class JobOrderDto {
 
   /// A failed or postponed visit that must stay visible to the technician.
   SiteException? get siteException => SiteException.parse(onsiteStatus);
+
+  /// Whether this job is assigned to the technician with [email].
+  ///
+  /// Compared case-insensitively and ignoring surrounding whitespace, since
+  /// the office types these by hand. A blank email on either side never
+  /// matches: an unassigned job belongs to nobody's history.
+  bool isAssignedTo(String? email) {
+    final mine = email?.trim().toLowerCase() ?? '';
+    final theirs = assignedEmail?.trim().toLowerCase() ?? '';
+    return mine.isNotEmpty && mine == theirs;
+  }
+
+  /// The date this job is placed at in the technician's history: when it was
+  /// installed, otherwise when the server record last changed, otherwise
+  /// when the app last touched it.
+  DateTime? get historyDate => dateInstalled ?? modifiedDate ?? updatedAt;
 
   factory JobOrderDto.fromJson(Map<String, dynamic> json) {
     final firstName = json['firstName']?.toString() ?? '';
@@ -199,6 +224,10 @@ class JobOrderDto {
       boxReadingImage: json['boxReadingImage']?.toString(),
       routerReadingImage: json['routerReadingImage']?.toString(),
       clientSignature: json['clientSignature']?.toString(),
+      assignedEmail: json['assignedEmail']?.toString(),
+      modifiedDate: json['modifiedDate'] != null
+          ? DateTime.tryParse(json['modifiedDate'].toString())
+          : null,
       isSynced: true,
       updatedAt: DateTime.now(),
     );
@@ -230,6 +259,8 @@ class JobOrderDto {
       boxReadingImage: row.boxReadingImage,
       routerReadingImage: row.routerReadingImage,
       clientSignature: row.clientSignature,
+      assignedEmail: row.assignedEmail,
+      modifiedDate: row.modifiedDate,
       isSynced: row.isSynced,
       updatedAt: row.updatedAt,
     );
@@ -261,6 +292,8 @@ class JobOrderDto {
       boxReadingImage: Value(boxReadingImage),
       routerReadingImage: Value(routerReadingImage),
       clientSignature: Value(clientSignature),
+      assignedEmail: Value(assignedEmail),
+      modifiedDate: Value(modifiedDate),
       isSynced: Value(synced),
       updatedAt: Value(updatedAt ?? DateTime.now()),
     );

@@ -3,6 +3,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/signals/auth_signals.dart';
 import '../jobs/models/job_order_model.dart';
+import '../jobs/screens/job_history_screen.dart';
 import '../jobs/screens/job_orders_screen.dart';
 import '../jobs/signals/jobs_signals.dart';
 import '../lcp_nap/screens/lcp_nap_list_screen.dart';
@@ -12,7 +13,7 @@ import '../reports/signals/report_signals.dart';
 import '../settings/screens/settings_screen.dart';
 import '../toolkit/screens/toolkit_screen.dart';
 
-/// Main Technician Navigation Shell containing 4 bottom tabs and drawer.
+/// Main Technician Navigation Shell containing 5 bottom tabs and drawer.
 class TechnicianShell extends StatefulWidget {
   final AuthSignals authSignals;
   final JobsSignals jobsSignals;
@@ -30,18 +31,42 @@ class TechnicianShell extends StatefulWidget {
 }
 
 class _TechnicianShellState extends State<TechnicianShell> {
-  int _currentIndex = 0;
+  static const int _tabScheduled = 0;
+  static const int _tabHistory = 1;
+  static const int _tabLcpNap = 2;
+  static const int _tabToolkit = 3;
+  static const int _tabSettings = 4;
+
+  int _currentIndex = _tabScheduled;
   late final ReportSignals _reportSignals;
+  late final void Function() _disposeEmailSync;
 
   @override
   void initState() {
     super.initState();
     _reportSignals = ReportSignals();
+    // The job history is scoped to the signed-in technician's email. Kept in
+    // sync reactively so a profile refresh that fills in the email (the login
+    // response does not carry it) immediately unlocks the history.
+    _disposeEmailSync = effect(() {
+      widget.jobsSignals
+          .setTechnicianEmail(widget.authSignals.currentUser.value?.email);
+    });
     // Initial fetch / Drift seed. Runs here rather than at construction time so
     // that requests are only made once the technician is authenticated.
     // `initial` walks each screen through downloading -> skeleton -> data.
     widget.jobsSignals.fetchRemote(initial: true);
     widget.lcpNapSignals.fetchRemote(initial: true);
+    // The login response carries no email, and the job history is matched on
+    // it, so the full profile is pulled as soon as the shell appears rather
+    // than only when the technician happens to open Settings.
+    widget.authSignals.refreshProfile();
+  }
+
+  @override
+  void dispose() {
+    _disposeEmailSync();
+    super.dispose();
   }
 
   /// Opens the on-site report for a job order as its own page, rather than a
@@ -67,6 +92,11 @@ class _TechnicianShellState extends State<TechnicianShell> {
     final screens = [
       JobOrdersScreen(
         jobsSignals: jobs,
+        onSelectJobForReport: _openReportForJob,
+      ),
+      JobHistoryScreen(
+        jobsSignals: jobs,
+        authSignals: auth,
         onSelectJobForReport: _openReportForJob,
       ),
       LcpNapListScreen(signals: widget.lcpNapSignals),
@@ -106,7 +136,24 @@ class _TechnicianShellState extends State<TechnicianShell> {
             label: 'Scheduled',
           ),
 
-          // 2. LCP NAP plant records and map
+          // 2. The technician's own job history
+          NavigationDestination(
+            icon: SignalBuilder(
+              builder: (context) {
+                final mine = jobs.historyTotalCount.value;
+                return Badge(
+                  isLabelVisible: mine > 0,
+                  label: Text('$mine'),
+                  backgroundColor: AppTheme.success,
+                  child: const Icon(Icons.history_outlined),
+                );
+              },
+            ),
+            selectedIcon: const Icon(Icons.history_rounded),
+            label: 'My History',
+          ),
+
+          // 3. LCP NAP plant records and map
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
@@ -123,14 +170,14 @@ class _TechnicianShellState extends State<TechnicianShell> {
             label: 'LCP NAP',
           ),
 
-          // 3. Technician Field Toolkit
+          // 4. Technician Field Toolkit
           const NavigationDestination(
             icon: Icon(Icons.handyman_outlined),
             selectedIcon: Icon(Icons.handyman_rounded),
             label: 'Tech Toolkit',
           ),
 
-          // 4. Settings & Terminal Diagnostics
+          // 5. Settings & Terminal Diagnostics
           NavigationDestination(
             icon: SignalBuilder(
               builder: (context) {
@@ -213,10 +260,40 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 );
               },
             ),
-            selected: _currentIndex == 0,
+            selected: _currentIndex == _tabScheduled,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 0);
+              setState(() => _currentIndex = _tabScheduled);
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.history_rounded, color: AppTheme.primary),
+            title: const Text('My Job History'),
+            trailing: SignalBuilder(
+              builder: (context) {
+                final mine = jobs.historyTotalCount.value;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successSubtle,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$mine assigned',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF166534),
+                    ),
+                  ),
+                );
+              },
+            ),
+            selected: _currentIndex == _tabHistory,
+            onTap: () {
+              Navigator.pop(context);
+              setState(() => _currentIndex = _tabHistory);
             },
           ),
 
@@ -243,20 +320,20 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 );
               },
             ),
-            selected: _currentIndex == 1,
+            selected: _currentIndex == _tabLcpNap,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 1);
+              setState(() => _currentIndex = _tabLcpNap);
             },
           ),
 
           ListTile(
             leading: const Icon(Icons.handyman_rounded, color: AppTheme.primary),
             title: const Text('Tech Toolkit & Calculators'),
-            selected: _currentIndex == 2,
+            selected: _currentIndex == _tabToolkit,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = _tabToolkit);
             },
           ),
 
@@ -290,7 +367,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
             ),
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 3);
+              setState(() => _currentIndex = _tabSettings);
             },
           ),
 
@@ -299,10 +376,10 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ListTile(
             leading: const Icon(Icons.settings_rounded),
             title: const Text('Terminal Settings'),
-            selected: _currentIndex == 3,
+            selected: _currentIndex == _tabSettings,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = 3);
+              setState(() => _currentIndex = _tabSettings);
             },
           ),
 

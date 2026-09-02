@@ -144,6 +144,18 @@ class $JobOrdersTable extends JobOrders
   late final GeneratedColumn<String> clientSignature = GeneratedColumn<String>(
       'client_signature', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _assignedEmailMeta =
+      const VerificationMeta('assignedEmail');
+  @override
+  late final GeneratedColumn<String> assignedEmail = GeneratedColumn<String>(
+      'assigned_email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _modifiedDateMeta =
+      const VerificationMeta('modifiedDate');
+  @override
+  late final GeneratedColumn<DateTime> modifiedDate = GeneratedColumn<DateTime>(
+      'modified_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _rawJsonMeta =
       const VerificationMeta('rawJson');
   @override
@@ -193,6 +205,8 @@ class $JobOrdersTable extends JobOrders
         boxReadingImage,
         routerReadingImage,
         clientSignature,
+        assignedEmail,
+        modifiedDate,
         rawJson,
         isSynced,
         updatedAt
@@ -328,6 +342,18 @@ class $JobOrdersTable extends JobOrders
           clientSignature.isAcceptableOrUnknown(
               data['client_signature']!, _clientSignatureMeta));
     }
+    if (data.containsKey('assigned_email')) {
+      context.handle(
+          _assignedEmailMeta,
+          assignedEmail.isAcceptableOrUnknown(
+              data['assigned_email']!, _assignedEmailMeta));
+    }
+    if (data.containsKey('modified_date')) {
+      context.handle(
+          _modifiedDateMeta,
+          modifiedDate.isAcceptableOrUnknown(
+              data['modified_date']!, _modifiedDateMeta));
+    }
     if (data.containsKey('raw_json')) {
       context.handle(_rawJsonMeta,
           rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta));
@@ -395,6 +421,10 @@ class $JobOrdersTable extends JobOrders
           DriftSqlType.string, data['${effectivePrefix}router_reading_image']),
       clientSignature: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}client_signature']),
+      assignedEmail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}assigned_email']),
+      modifiedDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}modified_date']),
       rawJson: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}raw_json']),
       isSynced: attachedDatabase.typeMapping
@@ -435,6 +465,14 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
   final String? routerReadingImage;
   final String? clientSignature;
 
+  /// Email of the technician the office assigned this job to. This is the
+  /// column the technician's job history is filtered on.
+  final String? assignedEmail;
+
+  /// When the server record was last changed. Orders the history for jobs
+  /// that never reached an install date.
+  final DateTime? modifiedDate;
+
   /// The complete record exactly as the API returned it.
   ///
   /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,
@@ -468,6 +506,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       this.boxReadingImage,
       this.routerReadingImage,
       this.clientSignature,
+      this.assignedEmail,
+      this.modifiedDate,
       this.rawJson,
       required this.isSynced,
       required this.updatedAt});
@@ -533,6 +573,12 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
     if (!nullToAbsent || clientSignature != null) {
       map['client_signature'] = Variable<String>(clientSignature);
     }
+    if (!nullToAbsent || assignedEmail != null) {
+      map['assigned_email'] = Variable<String>(assignedEmail);
+    }
+    if (!nullToAbsent || modifiedDate != null) {
+      map['modified_date'] = Variable<DateTime>(modifiedDate);
+    }
     if (!nullToAbsent || rawJson != null) {
       map['raw_json'] = Variable<String>(rawJson);
     }
@@ -595,6 +641,12 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       clientSignature: clientSignature == null && nullToAbsent
           ? const Value.absent()
           : Value(clientSignature),
+      assignedEmail: assignedEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedEmail),
+      modifiedDate: modifiedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(modifiedDate),
       rawJson: rawJson == null && nullToAbsent
           ? const Value.absent()
           : Value(rawJson),
@@ -631,6 +683,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       routerReadingImage:
           serializer.fromJson<String?>(json['routerReadingImage']),
       clientSignature: serializer.fromJson<String?>(json['clientSignature']),
+      assignedEmail: serializer.fromJson<String?>(json['assignedEmail']),
+      modifiedDate: serializer.fromJson<DateTime?>(json['modifiedDate']),
       rawJson: serializer.fromJson<String?>(json['rawJson']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -663,6 +717,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       'boxReadingImage': serializer.toJson<String?>(boxReadingImage),
       'routerReadingImage': serializer.toJson<String?>(routerReadingImage),
       'clientSignature': serializer.toJson<String?>(clientSignature),
+      'assignedEmail': serializer.toJson<String?>(assignedEmail),
+      'modifiedDate': serializer.toJson<DateTime?>(modifiedDate),
       'rawJson': serializer.toJson<String?>(rawJson),
       'isSynced': serializer.toJson<bool>(isSynced),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -693,6 +749,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           Value<String?> boxReadingImage = const Value.absent(),
           Value<String?> routerReadingImage = const Value.absent(),
           Value<String?> clientSignature = const Value.absent(),
+          Value<String?> assignedEmail = const Value.absent(),
+          Value<DateTime?> modifiedDate = const Value.absent(),
           Value<String?> rawJson = const Value.absent(),
           bool? isSynced,
           DateTime? updatedAt}) =>
@@ -732,6 +790,10 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         clientSignature: clientSignature.present
             ? clientSignature.value
             : this.clientSignature,
+        assignedEmail:
+            assignedEmail.present ? assignedEmail.value : this.assignedEmail,
+        modifiedDate:
+            modifiedDate.present ? modifiedDate.value : this.modifiedDate,
         rawJson: rawJson.present ? rawJson.value : this.rawJson,
         isSynced: isSynced ?? this.isSynced,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -784,6 +846,12 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       clientSignature: data.clientSignature.present
           ? data.clientSignature.value
           : this.clientSignature,
+      assignedEmail: data.assignedEmail.present
+          ? data.assignedEmail.value
+          : this.assignedEmail,
+      modifiedDate: data.modifiedDate.present
+          ? data.modifiedDate.value
+          : this.modifiedDate,
       rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -816,6 +884,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           ..write('boxReadingImage: $boxReadingImage, ')
           ..write('routerReadingImage: $routerReadingImage, ')
           ..write('clientSignature: $clientSignature, ')
+          ..write('assignedEmail: $assignedEmail, ')
+          ..write('modifiedDate: $modifiedDate, ')
           ..write('rawJson: $rawJson, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
@@ -848,6 +918,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         boxReadingImage,
         routerReadingImage,
         clientSignature,
+        assignedEmail,
+        modifiedDate,
         rawJson,
         isSynced,
         updatedAt
@@ -879,6 +951,8 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           other.boxReadingImage == this.boxReadingImage &&
           other.routerReadingImage == this.routerReadingImage &&
           other.clientSignature == this.clientSignature &&
+          other.assignedEmail == this.assignedEmail &&
+          other.modifiedDate == this.modifiedDate &&
           other.rawJson == this.rawJson &&
           other.isSynced == this.isSynced &&
           other.updatedAt == this.updatedAt);
@@ -908,6 +982,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
   final Value<String?> boxReadingImage;
   final Value<String?> routerReadingImage;
   final Value<String?> clientSignature;
+  final Value<String?> assignedEmail;
+  final Value<DateTime?> modifiedDate;
   final Value<String?> rawJson;
   final Value<bool> isSynced;
   final Value<DateTime> updatedAt;
@@ -935,6 +1011,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.boxReadingImage = const Value.absent(),
     this.routerReadingImage = const Value.absent(),
     this.clientSignature = const Value.absent(),
+    this.assignedEmail = const Value.absent(),
+    this.modifiedDate = const Value.absent(),
     this.rawJson = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -963,6 +1041,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.boxReadingImage = const Value.absent(),
     this.routerReadingImage = const Value.absent(),
     this.clientSignature = const Value.absent(),
+    this.assignedEmail = const Value.absent(),
+    this.modifiedDate = const Value.absent(),
     this.rawJson = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -993,6 +1073,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     Expression<String>? boxReadingImage,
     Expression<String>? routerReadingImage,
     Expression<String>? clientSignature,
+    Expression<String>? assignedEmail,
+    Expression<DateTime>? modifiedDate,
     Expression<String>? rawJson,
     Expression<bool>? isSynced,
     Expression<DateTime>? updatedAt,
@@ -1022,6 +1104,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       if (routerReadingImage != null)
         'router_reading_image': routerReadingImage,
       if (clientSignature != null) 'client_signature': clientSignature,
+      if (assignedEmail != null) 'assigned_email': assignedEmail,
+      if (modifiedDate != null) 'modified_date': modifiedDate,
       if (rawJson != null) 'raw_json': rawJson,
       if (isSynced != null) 'is_synced': isSynced,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1052,6 +1136,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       Value<String?>? boxReadingImage,
       Value<String?>? routerReadingImage,
       Value<String?>? clientSignature,
+      Value<String?>? assignedEmail,
+      Value<DateTime?>? modifiedDate,
       Value<String?>? rawJson,
       Value<bool>? isSynced,
       Value<DateTime>? updatedAt}) {
@@ -1079,6 +1165,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       boxReadingImage: boxReadingImage ?? this.boxReadingImage,
       routerReadingImage: routerReadingImage ?? this.routerReadingImage,
       clientSignature: clientSignature ?? this.clientSignature,
+      assignedEmail: assignedEmail ?? this.assignedEmail,
+      modifiedDate: modifiedDate ?? this.modifiedDate,
       rawJson: rawJson ?? this.rawJson,
       isSynced: isSynced ?? this.isSynced,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1157,6 +1245,12 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     if (clientSignature.present) {
       map['client_signature'] = Variable<String>(clientSignature.value);
     }
+    if (assignedEmail.present) {
+      map['assigned_email'] = Variable<String>(assignedEmail.value);
+    }
+    if (modifiedDate.present) {
+      map['modified_date'] = Variable<DateTime>(modifiedDate.value);
+    }
     if (rawJson.present) {
       map['raw_json'] = Variable<String>(rawJson.value);
     }
@@ -1195,6 +1289,8 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
           ..write('boxReadingImage: $boxReadingImage, ')
           ..write('routerReadingImage: $routerReadingImage, ')
           ..write('clientSignature: $clientSignature, ')
+          ..write('assignedEmail: $assignedEmail, ')
+          ..write('modifiedDate: $modifiedDate, ')
           ..write('rawJson: $rawJson, ')
           ..write('isSynced: $isSynced, ')
           ..write('updatedAt: $updatedAt')
@@ -2451,6 +2547,8 @@ typedef $$JobOrdersTableCreateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> boxReadingImage,
   Value<String?> routerReadingImage,
   Value<String?> clientSignature,
+  Value<String?> assignedEmail,
+  Value<DateTime?> modifiedDate,
   Value<String?> rawJson,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
@@ -2479,6 +2577,8 @@ typedef $$JobOrdersTableUpdateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> boxReadingImage,
   Value<String?> routerReadingImage,
   Value<String?> clientSignature,
+  Value<String?> assignedEmail,
+  Value<DateTime?> modifiedDate,
   Value<String?> rawJson,
   Value<bool> isSynced,
   Value<DateTime> updatedAt,
@@ -2564,6 +2664,12 @@ class $$JobOrdersTableFilterComposer
   ColumnFilters<String> get clientSignature => $composableBuilder(
       column: $table.clientSignature,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get assignedEmail => $composableBuilder(
+      column: $table.assignedEmail, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get modifiedDate => $composableBuilder(
+      column: $table.modifiedDate, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get rawJson => $composableBuilder(
       column: $table.rawJson, builder: (column) => ColumnFilters(column));
@@ -2664,6 +2770,14 @@ class $$JobOrdersTableOrderingComposer
       column: $table.clientSignature,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get assignedEmail => $composableBuilder(
+      column: $table.assignedEmail,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get modifiedDate => $composableBuilder(
+      column: $table.modifiedDate,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get rawJson => $composableBuilder(
       column: $table.rawJson, builder: (column) => ColumnOrderings(column));
 
@@ -2752,6 +2866,12 @@ class $$JobOrdersTableAnnotationComposer
   GeneratedColumn<String> get clientSignature => $composableBuilder(
       column: $table.clientSignature, builder: (column) => column);
 
+  GeneratedColumn<String> get assignedEmail => $composableBuilder(
+      column: $table.assignedEmail, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get modifiedDate => $composableBuilder(
+      column: $table.modifiedDate, builder: (column) => column);
+
   GeneratedColumn<String> get rawJson =>
       $composableBuilder(column: $table.rawJson, builder: (column) => column);
 
@@ -2808,6 +2928,8 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> boxReadingImage = const Value.absent(),
             Value<String?> routerReadingImage = const Value.absent(),
             Value<String?> clientSignature = const Value.absent(),
+            Value<String?> assignedEmail = const Value.absent(),
+            Value<DateTime?> modifiedDate = const Value.absent(),
             Value<String?> rawJson = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -2836,6 +2958,8 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             boxReadingImage: boxReadingImage,
             routerReadingImage: routerReadingImage,
             clientSignature: clientSignature,
+            assignedEmail: assignedEmail,
+            modifiedDate: modifiedDate,
             rawJson: rawJson,
             isSynced: isSynced,
             updatedAt: updatedAt,
@@ -2864,6 +2988,8 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> boxReadingImage = const Value.absent(),
             Value<String?> routerReadingImage = const Value.absent(),
             Value<String?> clientSignature = const Value.absent(),
+            Value<String?> assignedEmail = const Value.absent(),
+            Value<DateTime?> modifiedDate = const Value.absent(),
             Value<String?> rawJson = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -2892,6 +3018,8 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             boxReadingImage: boxReadingImage,
             routerReadingImage: routerReadingImage,
             clientSignature: clientSignature,
+            assignedEmail: assignedEmail,
+            modifiedDate: modifiedDate,
             rawJson: rawJson,
             isSynced: isSynced,
             updatedAt: updatedAt,

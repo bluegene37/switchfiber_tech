@@ -14,7 +14,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -33,6 +33,12 @@ class AppDatabase extends _$AppDatabase {
             // refilled on the next sync.
             await m.drop(lcpNapLocations);
             await m.createTable(lcpNapLocations);
+          }
+          if (from < 4) {
+            // Technician assignment, so the job history can be filtered to
+            // the signed-in technician without a server round trip.
+            await m.addColumn(jobOrders, jobOrders.assignedEmail);
+            await m.addColumn(jobOrders, jobOrders.modifiedDate);
           }
         },
       );

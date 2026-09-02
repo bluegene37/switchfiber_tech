@@ -206,6 +206,10 @@ class JobOrderDetailScreen extends StatelessWidget {
             _buildStepper(job, isDark),
             const SizedBox(height: 16),
 
+            // Who Dispatch assigned this job to
+            _buildAssignmentRow(job, isDark),
+            const SizedBox(height: 12),
+
             // Grab or Status Advance Button
             if (isScheduled)
               SizedBox(
@@ -246,6 +250,33 @@ class JobOrderDetailScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// The technician email Dispatch assigned this job to. Emails run long, so
+  /// unlike [_buildSpecRow] the value wraps rather than overflowing.
+  Widget _buildAssignmentRow(JobOrderDto job, bool isDark) {
+    final email = job.assignedEmail?.trim() ?? '';
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.person_pin_rounded, size: 16, color: muted),
+        const SizedBox(width: 8),
+        Text('Assigned To', style: TextStyle(fontSize: 13, color: muted)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            email.isEmpty ? 'Unassigned' : email,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: email.isEmpty ? muted : null,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
