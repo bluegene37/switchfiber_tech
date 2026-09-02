@@ -122,7 +122,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('lcpNapPin_5')));
     await tester.pump();
-    await tester.tap(find.text('View full details'));
+    await tester.tap(find.text('View details'));
     await tester.pump();
 
     expect(opened, isNotNull);

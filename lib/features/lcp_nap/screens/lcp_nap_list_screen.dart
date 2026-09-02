@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/lcp_nap_model.dart';
 import '../signals/lcp_nap_signals.dart';
 import '../widgets/lcp_nap_card.dart';
 import '../widgets/lcp_nap_map_view.dart';
 import 'lcp_nap_detail_screen.dart';
 
-/// Screen displaying the list of all LCP NAP distribution points with live search,
-/// LCP cabinet filtering, port stats, and reactive state from Drift SQLite.
+/// Scalable LCP NAP plant distribution screen supporting hierarchical cabinet grouping,
+/// searchable cabinet filter, area groupings, and map views for large scale networks.
 class LcpNapListScreen extends StatefulWidget {
   final LcpNapSignals signals;
 
@@ -26,6 +27,14 @@ enum _LcpNapView { list, map }
 class _LcpNapListScreenState extends State<LcpNapListScreen> {
   final TextEditingController _searchController = TextEditingController();
   _LcpNapView _view = _LcpNapView.list;
+  final Set<String> _expandedCabinets = {};
+  bool _initializedExpansion = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _openDetails(LcpNapDto location) {
     Navigator.push(
@@ -39,25 +48,36 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void _toggleAllGroups(bool expand, List<String> allKeys) {
+    setState(() {
+      if (expand) {
+        _expandedCabinets.addAll(allKeys);
+      } else {
+        _expandedCabinets.clear();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final signals = widget.signals;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('LCP NAP Locations'),
+            const Text(
+              'LCP NAP Plant Network',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
             Text(
-              'Fiber plant distribution cabinets & NAP boxes',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+              'Distribution cabinets & NAP plant sites',
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+              ),
             ),
           ],
         ),
@@ -71,9 +91,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                 SnackBar(
                   content: const Text('Syncing LCP NAP records with backend...'),
                   behavior: SnackBarBehavior.floating,
-                  backgroundColor: Theme.of(context).brightness == Brightness.dark
-                      ? AppTheme.darkCard
-                      : AppTheme.darkSlate,
+                  backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -83,90 +101,143 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
       ),
       body: Column(
         children: [
-          // 1. Plant Metrics Summary Banner (Reactive Computed Signals)
-          SignalBuilder(
-            builder: (context) {
-              final sites = signals.totalSitesCount.value;
-              final ports = signals.totalPortsCount.value;
+          // 1. Plant Metrics & Search Toolbar
+          Container(
+            color: isDark ? AppTheme.darkCard : Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              children: [
+                // KPI Stats Row
+                SignalBuilder(
+                  builder: (context) {
+                    final sites = signals.totalSitesCount.value;
+                    final ports = signals.totalPortsCount.value;
+                    final cabinets = signals.lcpCabinetList.value.length - 1;
 
-              return Container(
-                color: Theme.of(context).cardTheme.color ?? Colors.white,
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: Column(
-                  children: [
-                    // Stats Row
-                    Row(
+                    return Row(
                       children: [
                         _buildStatChip(
                           icon: Icons.storage_rounded,
-                          label: '$sites Sites',
+                          label: '$cabinets LCP Cabinets',
                           color: AppTheme.primary,
                         ),
                         const SizedBox(width: 8),
-                        // Only total capacity is shown: the API does not
-                        // report how many ports are actually in use.
+                        _buildStatChip(
+                          icon: Icons.pin_drop_outlined,
+                          label: '$sites NAP Sites',
+                          color: const Color(0xFF0EA5E9),
+                        ),
+                        const SizedBox(width: 8),
                         _buildStatChip(
                           icon: Icons.hub_outlined,
                           label: '$ports Ports',
-                          color: const Color(0xFF2563EB),
+                          color: const Color(0xFF10B981),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
 
-                    // Search input
-                    TextField(
-                      controller: _searchController,
-                      onChanged: signals.setSearch,
-                      decoration: InputDecoration(
-                        hintText: 'Search LCP, NAP, Barangay, City...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  signals.setSearch('');
-                                },
-                              )
-                            : null,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
+                // Search Input Field
+                TextField(
+                  controller: _searchController,
+                  onChanged: (val) {
+                    signals.setSearch(val);
+                    if (val.isNotEmpty) {
+                      // Auto-expand all matching groups when searching
+                      final groups = signals.groupedByLcp.value.keys;
+                      _expandedCabinets.addAll(groups);
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search LCP, NAP, Barangay, City, Street...',
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              signals.setSearch('');
+                            },
+                          )
+                        : null,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // View Toggle (List vs Map) & Filter Controls
+                Row(
+                  children: [
+                    Expanded(
+                      child: SegmentedButton<_LcpNapView>(
+                        segments: const [
+                          ButtonSegment(
+                            value: _LcpNapView.list,
+                            icon: Icon(Icons.account_tree_rounded, size: 16),
+                            label: Text('Grouped List'),
+                          ),
+                          ButtonSegment(
+                            value: _LcpNapView.map,
+                            icon: Icon(Icons.map_rounded, size: 16),
+                            label: Text('Plant Map'),
+                          ),
+                        ],
+                        selected: {_view},
+                        onSelectionChanged: (sel) =>
+                            setState(() => _view = sel.first),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(width: 8),
+                    // Cabinet Filter Selector Button
+                    _buildCabinetFilterButton(signals, isDark),
+                  ],
+                ),
+              ],
+            ),
+          ),
 
-                    // List / Map view toggle - both views share this search box
-                    // and the filters below it.
-                    SegmentedButton<_LcpNapView>(
-                      segments: const [
-                        ButtonSegment(
-                          value: _LcpNapView.list,
-                          icon: Icon(Icons.view_list_rounded, size: 18),
-                          label: Text('List'),
-                        ),
-                        ButtonSegment(
-                          value: _LcpNapView.map,
-                          icon: Icon(Icons.map_rounded, size: 18),
-                          label: Text('Map'),
-                        ),
-                      ],
-                      selected: {_view},
-                      onSelectionChanged: (sel) =>
-                          setState(() => _view = sel.first),
+          // 2. Active Filter indicator (if a specific cabinet is filtered)
+          SignalBuilder(
+            builder: (context) {
+              final activeLcp = signals.selectedLcpFilter.value;
+              if (activeLcp == 'All') return const SizedBox.shrink();
+
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                child: Row(
+                  children: [
+                    const Icon(Icons.filter_alt_rounded, size: 14, color: AppTheme.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Filtered by Cabinet: $activeLcp',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primary,
+                      ),
                     ),
-                    const SizedBox(height: 10),
-
-                    // Horizontal LCP Cabinet Filter Chips
-                    _buildLcpCabinetChips(signals),
-
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => signals.setLcpFilter('All'),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Show All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                    ),
                   ],
                 ),
               );
             },
           ),
 
-          // 2. Reactive body: list or map, both fed by the same filters
+          // 3. Body View: Scalable Grouped List or Interactive Map
           if (_view == _LcpNapView.map)
             Expanded(
               child: LcpNapMapView(
@@ -175,41 +246,339 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
               ),
             )
           else
-          Expanded(
-            child: SignalBuilder(
-              builder: (context) {
-                final locations = signals.filteredLocations.value;
-                final isLoading = signals.isLoading.value;
+            Expanded(
+              child: SignalBuilder(
+                builder: (context) {
+                  final grouped = signals.groupedByLcp.value;
+                  final isLoading = signals.isLoading.value;
+                  final phase = signals.loadPhase.value;
 
-                if (isLoading && locations.isEmpty) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
+                  if (phase == DataLoadPhase.downloading) {
+                    return const DownloadingIndicator(
+                      title: 'Downloading Plant Records',
+                      subtitle:
+                          'Fetching LCP NAP cabinets and sites from the server...',
+                    );
+                  }
+
+                  if (phase == DataLoadPhase.skeleton ||
+                      (isLoading && grouped.isEmpty)) {
+                    return const SkeletonCardList();
+                  }
+
+                  if (grouped.isEmpty) {
+                    return _buildEmptyState(signals);
+                  }
+
+                  final allCabinetKeys = grouped.keys.toList()..sort();
+
+                  // Auto-expand all on first load
+                  if (!_initializedExpansion && allCabinetKeys.isNotEmpty) {
+                    _expandedCabinets.addAll(allCabinetKeys);
+                    _initializedExpansion = true;
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: signals.fetchRemote,
+                    color: AppTheme.primary,
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        // Grouping Toolbar (Expand/Collapse all)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${allCabinetKeys.length} LCP Cabinet Group${allCabinetKeys.length == 1 ? "" : "s"} (${signals.filteredLocations.value.length} NAPs)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () => _toggleAllGroups(true, allCabinetKeys),
+                                  icon: const Icon(Icons.unfold_more_rounded, size: 14),
+                                  label: const Text('Expand All', style: TextStyle(fontSize: 11)),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => _toggleAllGroups(false, allCabinetKeys),
+                                  icon: const Icon(Icons.unfold_less_rounded, size: 14),
+                                  label: const Text('Collapse All', style: TextStyle(fontSize: 11)),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // LCP Group Accordion Cards
+                        ...allCabinetKeys.map((cabinetName) {
+                          final naps = grouped[cabinetName] ?? [];
+                          final isExpanded = _expandedCabinets.contains(cabinetName);
+                          final totalPorts = naps.fold(0, (sum, n) => sum + n.portTotal);
+                          final locationHint = naps.firstOrNull != null
+                              ? [naps.first.barangay, naps.first.city].where((s) => s != null && s.isNotEmpty).join(', ')
+                              : '';
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppTheme.darkCard : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                              ),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              children: [
+                                // Cabinet Header
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      if (isExpanded) {
+                                        _expandedCabinets.remove(cabinetName);
+                                      } else {
+                                        _expandedCabinets.add(cabinetName);
+                                      }
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Icon(
+                                            Icons.storage_rounded,
+                                            size: 18,
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                cabinetName,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                              if (locationHint.isNotEmpty) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  locationHint,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // Badge for count of NAPs & ports
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '${naps.length} NAPs • $totalPorts P',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Icon(
+                                          isExpanded
+                                              ? Icons.keyboard_arrow_up_rounded
+                                              : Icons.keyboard_arrow_down_rounded,
+                                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // Expanded NAP list inside this cabinet
+                                if (isExpanded) ...[
+                                  Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: naps.length,
+                                      itemBuilder: (context, napIdx) {
+                                        final nap = naps[napIdx];
+                                        return LcpNapCard(
+                                          location: nap,
+                                          onTap: () => _openDetails(nap),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
                   );
-                }
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
-                if (locations.isEmpty) {
-                  return _buildEmptyState();
-                }
+  Widget _buildCabinetFilterButton(LcpNapSignals signals, bool isDark) {
+    return SignalBuilder(
+      builder: (context) {
+        final cabinets = signals.lcpCabinetList.value;
+        final selected = signals.selectedLcpFilter.value;
 
-                return RefreshIndicator(
-                  onRefresh: signals.fetchRemote,
-                  color: AppTheme.primary,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: locations.length,
+        return OutlinedButton.icon(
+          onPressed: () => _showCabinetSelectionModal(context, signals, cabinets, selected, isDark),
+          icon: const Icon(Icons.filter_list_rounded, size: 16),
+          label: Text(
+            selected == 'All' ? 'Filter LCP' : selected,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: selected != 'All' ? FontWeight.w800 : FontWeight.w600,
+              color: selected != 'All' ? AppTheme.primary : null,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            side: BorderSide(
+              color: selected != 'All' ? AppTheme.primary : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCabinetSelectionModal(
+    BuildContext context,
+    LcpNapSignals signals,
+    List<String> cabinets,
+    String currentSelected,
+    bool isDark,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.storage_rounded, color: AppTheme.primary, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Filter by LCP Cabinet',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Select an LCP Cabinet to isolate its NAP plant locations:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: cabinets.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                    ),
                     itemBuilder: (context, index) {
-                      final item = locations[index];
-                      return LcpNapCard(
-                        location: item,
-                        onTap: () => _openDetails(item),
+                      final cabinet = cabinets[index];
+                      final isSelected = cabinet == currentSelected;
+
+                      return ListTile(
+                        dense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                        title: Text(
+                          cabinet == 'All' ? 'All Cabinets (Show Everything)' : cabinet,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            color: isSelected ? AppTheme.primary : null,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(Icons.check_circle_rounded, color: AppTheme.primary, size: 18)
+                            : null,
+                        onTap: () {
+                          signals.setLcpFilter(cabinet);
+                          Navigator.pop(ctx);
+                        },
                       );
                     },
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -250,54 +619,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
     );
   }
 
-  /// Horizontal chips for filtering by LCP cabinet.
-  Widget _buildLcpCabinetChips(LcpNapSignals signals) {
-    return SignalBuilder(
-      builder: (context) {
-        final cabinets = signals.lcpCabinetList.value;
-        final selected = signals.selectedLcpFilter.value;
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-
-        return SizedBox(
-          height: 34,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: cabinets.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final cabinet = cabinets[index];
-              final isSelected = cabinet == selected;
-
-              return ChoiceChip(
-                label: Text(cabinet),
-                selected: isSelected,
-                onSelected: (_) => signals.setLcpFilter(cabinet),
-                selectedColor: AppTheme.primary,
-                backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightBg,
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark ? Colors.white70 : AppTheme.darkSlate),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppTheme.primary
-                        : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(LcpNapSignals signals) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -313,10 +635,19 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Try a different search or cabinet filter, or pull to sync the '
-              'plant records again.',
+              'Try adjusting your search query or reset the LCP cabinet filter.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                signals.setLcpFilter('All');
+                signals.setSearch('');
+                _searchController.clear();
+              },
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Reset All Filters'),
             ),
           ],
         ),

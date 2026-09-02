@@ -612,10 +612,14 @@ class _PlantLegendOverlay extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'LCP Cabinet Colors',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    const Expanded(
+                      child: Text(
+                        'LCP Cabinet Colors',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     InkWell(
                       onTap: onClose,
                       borderRadius: BorderRadius.circular(12),

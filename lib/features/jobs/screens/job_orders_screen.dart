@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_card.dart';
 import 'job_order_detail_screen.dart';
 
-/// Job Orders list screen with filter tabs, live Signal counts, search, and instant status triggers.
+/// Screen strictly displaying Scheduled Job Orders for intake and 1-tap dispatch grabbing.
 class JobOrdersScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
   final void Function(JobOrderDto job)? onSelectJobForDetails;
@@ -49,6 +50,37 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
     );
   }
 
+  Future<void> _handleGrabJob(JobOrderDto job) async {
+    await widget.jobsSignals.grabJob(job);
+    if (!mounted) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.flash_on_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '⚡ Grabbed ${job.ticketNumber}! Moved to In-Progress.',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'Open Details',
+          textColor: const Color(0xFFFF8591),
+          onPressed: () => _openDetails(job),
+        ),
+        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final signals = widget.jobsSignals;
@@ -60,11 +92,11 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Assigned Work Orders',
+              'Scheduled Work Orders',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             Text(
-              'Field installations & repair dispatches',
+              'Grab & dispatch scheduled installations',
               style: TextStyle(
                 fontSize: 12,
                 color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
@@ -73,23 +105,28 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           ],
         ),
         actions: [
-          // Manual Sync Action Button
+          // Manual Sync & Refresh Action Button
           SignalBuilder(
             builder: (context) {
               final syncing = signals.repository.syncWorker.isSyncing.value;
               final pending = signals.repository.syncWorker.pendingCount.value;
 
               return IconButton(
-                tooltip: 'Sync with backend',
+                tooltip: 'Sync & Pull Scheduled Jobs',
                 onPressed: syncing
                     ? null
                     : () async {
                         final result =
                             await signals.repository.syncWorker.syncPendingJobs();
+                        await signals.fetchRemote();
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(result.message),
+                            content: Text(
+                              result.failedCount == 0
+                                  ? 'Synced with backend. Refreshed scheduled jobs.'
+                                  : result.message,
+                            ),
                             backgroundColor: result.success
                                 ? AppTheme.success
                                 : AppTheme.warning,
@@ -119,18 +156,83 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
       ),
       body: Column(
         children: [
-          // Search & Filter Toolbar
+          // 1. Scheduled Intake Header Banner & Search
           Container(
             color: isDark ? AppTheme.darkCard : Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
             child: Column(
               children: [
+                // Scheduled Queue Banner
+                SignalBuilder(
+                  builder: (context) {
+                    final scheduledCount = signals.scheduledCount.value;
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFF1E3A8A).withValues(alpha: 0.3), const Color(0xFF172554).withValues(alpha: 0.2)]
+                              : [const Color(0xFFE0F2FE), const Color(0xFFF0F9FF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF1D4ED8).withValues(alpha: 0.4) : const Color(0xFFBAE6FD),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0EA5E9),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.calendar_today_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? const Color(0xFF7DD3FC) : const Color(0xFF0369A1),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Tap "Grab Job" on any ticket to accept and begin dispatch.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppTheme.textSecondaryDark : const Color(0xFF0C4A6E),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
+
                 // Search Input Field
                 TextField(
                   controller: _searchController,
                   onChanged: signals.setSearch,
                   decoration: InputDecoration(
-                    hintText: 'Search subscriber, ticket #, address...',
+                    hintText: 'Search scheduled subscriber, ticket #, address...',
                     prefixIcon: const Icon(Icons.search_rounded, size: 20),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -145,15 +247,11 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   ),
                 ),
-                const SizedBox(height: 10),
-
-                // Status Filter Tabs with dynamic Signal counts
-                _buildFilterTabs(signals, isDark),
               ],
             ),
           ),
 
-          // Offline Sync Status Banner (if items are pending)
+          // 2. Offline Sync Status Banner (if items are pending)
           SignalBuilder(
             builder: (context) {
               final pending = signals.unsyncedCount.value;
@@ -175,7 +273,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '$pending local update(s) stored in Drift DB awaiting sync.',
+                        '$pending local update(s) awaiting server sync.',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -207,11 +305,24 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             },
           ),
 
-          // Reactive Jobs List
+          // 3. Reactive Scheduled Jobs List
           Expanded(
             child: SignalBuilder(
               builder: (context) {
                 final jobs = signals.filteredJobs.value;
+                final phase = signals.loadPhase.value;
+
+                if (phase == DataLoadPhase.downloading) {
+                  return const DownloadingIndicator(
+                    title: 'Downloading Job Orders',
+                    subtitle:
+                        'Fetching your scheduled dispatches from the server...',
+                  );
+                }
+
+                if (phase == DataLoadPhase.skeleton) {
+                  return const SkeletonCardList();
+                }
 
                 if (jobs.isEmpty) {
                   return _buildEmptyState(signals, isDark);
@@ -229,20 +340,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                         job: job,
                         onTap: () => _openDetails(job),
                         onOpenDetails: () => _openDetails(job),
-                        onCycleStatus: () async {
-                          await signals.advanceJobStatus(job);
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Updated ${job.ticketNumber} locally in Drift SQLite',
-                              ),
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
-                            ),
-                          );
-                        },
+                        onGrabJob: () => _handleGrabJob(job),
+                        onCycleStatus: () => _handleGrabJob(job),
                         onOpenReport: () {
                           widget.onSelectJobForReport?.call(job);
                         },
@@ -255,109 +354,6 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFilterTabs(JobsSignals signals, bool isDark) {
-    return SignalBuilder(
-      builder: (context) {
-        final currentFilter = signals.activeFilter.value;
-        final exceptionCount = signals.siteExceptionCount.value;
-
-        final tabs = [
-          {'id': 'all', 'label': 'All', 'count': signals.totalCount.value},
-          {
-            'id': JobStatus.scheduled.name,
-            'label': JobStatus.scheduled.label,
-            'count': signals.scheduledCount.value,
-          },
-          {
-            'id': JobStatus.inProgress.name,
-            'label': JobStatus.inProgress.label,
-            'count': signals.inProgressCount.value,
-          },
-          {
-            'id': JobStatus.completed.name,
-            'label': JobStatus.completed.label,
-            'count': signals.completedCount.value,
-          },
-          {
-            'id': JobStatus.activated.name,
-            'label': JobStatus.activated.label,
-            'count': signals.activatedCount.value,
-          },
-          if (exceptionCount > 0)
-            {
-              'id': 'exceptions',
-              'label': 'Exceptions',
-              'count': exceptionCount,
-            },
-        ];
-
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: tabs.map((tab) {
-              final isSelected = currentFilter == tab['id'];
-              final count = tab['count'] as int;
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  selected: isSelected,
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(tab['label'] as String),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.white.withValues(alpha: 0.25)
-                              : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '$count',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: isSelected
-                                ? Colors.white
-                                : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  onSelected: (_) {
-                    signals.setFilter(tab['id'] as String);
-                  },
-                  selectedColor: AppTheme.primary,
-                  backgroundColor: isDark ? AppTheme.darkInput : AppTheme.lightBg,
-                  labelStyle: TextStyle(
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected
-                        ? Colors.white
-                        : (isDark ? Colors.white70 : AppTheme.darkSlate),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: isSelected
-                          ? AppTheme.primary
-                          : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-                    ),
-                  ),
-                  showCheckmark: false,
-                ),
-              );
-            }).toList(),
-          ),
-        );
-      },
     );
   }
 
@@ -375,14 +371,14 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.assignment_late_outlined,
+                Icons.event_available_rounded,
                 size: 40,
                 color: AppTheme.primary,
               ),
             ),
             const SizedBox(height: 16),
             const Text(
-              'No Job Orders Found',
+              'No Scheduled Jobs Pending',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -390,7 +386,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'There are no job orders matching your selected status filter or search keyword.',
+              'All scheduled dispatches have been grabbed or completed! Pull down to refresh from backend dispatch.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -400,12 +396,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                signals.setFilter('all');
-                signals.setSearch('');
-                _searchController.clear();
+                signals.fetchRemote();
               },
               icon: const Icon(Icons.refresh_rounded, size: 16),
-              label: const Text('Reset Filters'),
+              label: const Text('Pull Scheduled From Server'),
             ),
           ],
         ),

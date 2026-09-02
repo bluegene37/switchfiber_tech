@@ -25,6 +25,15 @@ class JobOrders extends Table {
   TextColumn get boxReadingImage => text().nullable()();
   TextColumn get routerReadingImage => text().nullable()();
   TextColumn get clientSignature => text().nullable()();
+
+  /// Email of the technician the office assigned this job to. This is the
+  /// column the technician's job history is filtered on.
+  TextColumn get assignedEmail => text().nullable()();
+
+  /// When the server record was last changed. Orders the history for jobs
+  /// that never reached an install date.
+  DateTimeColumn get modifiedDate => dateTime().nullable()();
+
   /// The complete record exactly as the API returned it.
   ///
   /// PUT /api/JobOrders/{id} requires all 86 fields of UpdateJobOrderRequest,

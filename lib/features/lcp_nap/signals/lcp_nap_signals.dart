@@ -1,7 +1,18 @@
 import 'dart:async';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/widgets/loading_states.dart';
 import '../models/lcp_nap_model.dart';
 import '../repositories/lcp_nap_repository.dart';
+
+/// Grouping presentation modes for large scale LCP NAP plant records.
+enum LcpGroupMode {
+  byLcp('By LCP Cabinet'),
+  byCity('By City / Area'),
+  flatList('Flat List');
+
+  final String label;
+  const LcpGroupMode(this.label);
+}
 
 /// Signals state management for LCP NAP Network Locations.
 class LcpNapSignals {
@@ -15,24 +26,32 @@ class LcpNapSignals {
   // --- Core State Signals ---
   final Signal<List<LcpNapDto>> allLocations = signal<List<LcpNapDto>>([]);
   final Signal<String> selectedLcpFilter = signal<String>('All');
+  final Signal<String> selectedCityFilter = signal<String>('All');
+  final Signal<LcpGroupMode> groupMode = signal<LcpGroupMode>(LcpGroupMode.byLcp);
   final Signal<String> searchQuery = signal<String>('');
   final Signal<LcpNapDto?> selectedLocation = signal<LcpNapDto?>(null);
   final Signal<bool> isLoading = signal<bool>(false);
   final Signal<String?> errorMessage = signal<String?>(null);
+  // First-load presentation: downloading -> skeleton -> ready. Stays ready for
+  // pull-to-refresh and manual syncs so existing data is never hidden.
+  final Signal<DataLoadPhase> loadPhase =
+      signal<DataLoadPhase>(DataLoadPhase.ready);
 
   // --- Computed Signals (Reactive Derived State) ---
 
-  /// Locations filtered by search query, LCP cabinet, and status
+  /// Locations filtered by search query, LCP cabinet, and city
   late final Computed<List<LcpNapDto>> filteredLocations = computed(() {
     final list = allLocations.value;
     final lcp = selectedLcpFilter.value;
+    final city = selectedCityFilter.value;
     final query = searchQuery.value.trim().toLowerCase();
 
     return list.where((loc) {
       // LCP cabinet filter
       if (lcp != 'All' && loc.lcp != lcp) return false;
 
-      // Status filter
+      // City / Area filter
+      if (city != 'All' && loc.city != city) return false;
 
       // Search match
       if (query.isNotEmpty) {
@@ -58,7 +77,31 @@ class LcpNapSignals {
     }).toList();
   });
 
-  /// Distinct list of LCP Cabinets for horizontal filter chips
+  /// Locations grouped by LCP Cabinet for expandable accordion views
+  late final Computed<Map<String, List<LcpNapDto>>> groupedByLcp = computed(() {
+    final map = <String, List<LcpNapDto>>{};
+    for (final loc in filteredLocations.value) {
+      final key = loc.lcp.trim().isNotEmpty ? loc.lcp.trim() : 'Unassigned LCP';
+      map.putIfAbsent(key, () => []).add(loc);
+    }
+    return map;
+  });
+
+  /// Locations grouped by City / Area
+  late final Computed<Map<String, List<LcpNapDto>>> groupedByCity = computed(() {
+    final map = <String, List<LcpNapDto>>{};
+    for (final loc in filteredLocations.value) {
+      final key = (loc.city != null && loc.city!.trim().isNotEmpty)
+          ? loc.city!.trim()
+          : (loc.barangay != null && loc.barangay!.trim().isNotEmpty
+              ? loc.barangay!.trim()
+              : 'Other Areas');
+      map.putIfAbsent(key, () => []).add(loc);
+    }
+    return map;
+  });
+
+  /// Distinct list of LCP Cabinets with site counts
   late final Computed<List<String>> lcpCabinetList = computed(() {
     final list = allLocations.value;
     final cabinets = <String>{'All'};
@@ -68,7 +111,6 @@ class LcpNapSignals {
       }
     }
     final sorted = cabinets.toList()..sort();
-    // Ensure 'All' is first
     sorted.remove('All');
     return ['All', ...sorted];
   });
@@ -82,46 +124,44 @@ class LcpNapSignals {
     return allLocations.value.fold(0, (sum, loc) => sum + loc.portTotal);
   });
 
-  /// Total occupied ports across all sites
+  /// Mappable GPS sites
   late final Computed<List<LcpNapDto>> mappableLocations = computed(
     () => filteredLocations.value.where((l) => l.isMappable).toList(),
   );
 
-  /// Sites the map cannot place because they carry no usable GPS fix.
+  /// Sites without GPS fix
   late final Computed<List<LcpNapDto>> unmappedLocations = computed(
     () => filteredLocations.value.where((l) => !l.isMappable).toList(),
   );
 
-  /// How many currently-filtered sites have no usable coordinates. Surfaced in
-  /// the UI so records without a GPS fix are visibly missing, not silently lost.
   late final Computed<int> unmappedCount =
       computed(() => unmappedLocations.value.length);
 
   // --- Initialization & Methods ---
 
   void _init() {
-    // 1. Pipe Drift SQLite reactive stream into allLocations signal
     _driftSubscription = repository.watchLocations().listen((locations) {
       allLocations.value = locations;
 
-      // Keep selectedLocation updated if currently inspected
       final currentSelected = selectedLocation.value;
       if (currentSelected != null) {
-        final match = locations.where((l) => l.id == currentSelected.id).firstOrNull;
+        final match =
+            locations.where((l) => l.id == currentSelected.id).firstOrNull;
         if (match != null) {
           selectedLocation.value = match;
         }
       }
     });
-
-    // Note: the remote fetch is deliberately NOT started here. Constructing this
-    // object happens during app startup, before the technician has authenticated,
-    // and an unauthenticated request trips the 401 interceptor which clears
-    // secure storage. TechnicianShell triggers the fetch once signed in.
   }
 
-  /// Trigger remote API synchronization
-  Future<void> fetchRemote() async {
+  /// Trigger remote API synchronization.
+  ///
+  /// With [initial] set, and only when Drift holds nothing yet, the screen is
+  /// walked through the download indicator and a brief skeleton pass before
+  /// the hydrated Drift rows are revealed.
+  Future<void> fetchRemote({bool initial = false}) async {
+    final showPhases = initial && allLocations.value.isEmpty;
+    if (showPhases) loadPhase.value = DataLoadPhase.downloading;
     try {
       isLoading.value = true;
       errorMessage.value = null;
@@ -130,6 +170,11 @@ class LcpNapSignals {
       errorMessage.value = e.toString();
     } finally {
       isLoading.value = false;
+      if (showPhases) {
+        loadPhase.value = DataLoadPhase.skeleton;
+        await Future<void>.delayed(const Duration(milliseconds: 900));
+        loadPhase.value = DataLoadPhase.ready;
+      }
     }
   }
 
@@ -138,21 +183,26 @@ class LcpNapSignals {
     selectedLcpFilter.value = lcp;
   }
 
+  /// Update City / Area filter
+  void setCityFilter(String city) {
+    selectedCityFilter.value = city;
+  }
+
+  /// Update Grouping Mode
+  void setGroupMode(LcpGroupMode mode) {
+    groupMode.value = mode;
+  }
+
   /// Update search text query
   void setSearch(String query) {
     searchQuery.value = query;
   }
-
 
   /// Select a site for detail inspection
   void selectLocation(LcpNapDto location) {
     selectedLocation.value = location;
   }
 
-
-
-  /// Must be awaited: the Drift stream subscription has to be fully torn down
-  /// before the database can be closed, otherwise close() blocks forever.
   Future<void> dispose() async {
     await _driftSubscription?.cancel();
     _driftSubscription = null;
