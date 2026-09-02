@@ -1,0 +1,10 @@
+# Copy to android/key.properties (gitignored) and fill in the upload keystore.
+# Create one with:
+#   keytool -genkey -v -keystore ~/switchfiber-upload.jks -keyalg RSA \
+#     -keysize 2048 -validity 10000 -alias upload
+# Losing this keystore means losing the ability to update the app on Google
+# Play. Back it up somewhere durable and never commit it.
+storeFile=/absolute/path/to/switchfiber-upload.jks
+storePassword=CHANGE_ME
+keyAlias=upload
+keyPassword=CHANGE_ME

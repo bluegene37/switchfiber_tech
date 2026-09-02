@@ -89,9 +89,11 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
               signals.fetchRemote();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Syncing LCP NAP records with backend...'),
+                  content:
+                      const Text('Syncing LCP NAP records with backend...'),
                   behavior: SnackBarBehavior.floating,
-                  backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+                  backgroundColor:
+                      isDark ? AppTheme.darkCard : AppTheme.darkSlate,
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -162,8 +164,8 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                             },
                           )
                         : null,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -207,11 +209,14 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
 
               return Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                color:
+                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                 child: Row(
                   children: [
-                    const Icon(Icons.filter_alt_rounded, size: 14, color: AppTheme.primary),
+                    const Icon(Icons.filter_alt_rounded,
+                        size: 14, color: AppTheme.primary),
                     const SizedBox(width: 6),
                     Text(
                       'Filtered by Cabinet: $activeLcp',
@@ -229,7 +234,9 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text('Show All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                      child: const Text('Show All',
+                          style: TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),
@@ -293,26 +300,36 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                                color: isDark
+                                    ? AppTheme.textSecondaryDark
+                                    : AppTheme.textMuted,
                               ),
                             ),
                             Row(
                               children: [
                                 TextButton.icon(
-                                  onPressed: () => _toggleAllGroups(true, allCabinetKeys),
-                                  icon: const Icon(Icons.unfold_more_rounded, size: 14),
-                                  label: const Text('Expand All', style: TextStyle(fontSize: 11)),
+                                  onPressed: () =>
+                                      _toggleAllGroups(true, allCabinetKeys),
+                                  icon: const Icon(Icons.unfold_more_rounded,
+                                      size: 14),
+                                  label: const Text('Expand All',
+                                      style: TextStyle(fontSize: 11)),
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6),
                                     visualDensity: VisualDensity.compact,
                                   ),
                                 ),
                                 TextButton.icon(
-                                  onPressed: () => _toggleAllGroups(false, allCabinetKeys),
-                                  icon: const Icon(Icons.unfold_less_rounded, size: 14),
-                                  label: const Text('Collapse All', style: TextStyle(fontSize: 11)),
+                                  onPressed: () =>
+                                      _toggleAllGroups(false, allCabinetKeys),
+                                  icon: const Icon(Icons.unfold_less_rounded,
+                                      size: 14),
+                                  label: const Text('Collapse All',
+                                      style: TextStyle(fontSize: 11)),
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6),
                                     visualDensity: VisualDensity.compact,
                                   ),
                                 ),
@@ -325,10 +342,14 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                         // LCP Group Accordion Cards
                         ...allCabinetKeys.map((cabinetName) {
                           final naps = grouped[cabinetName] ?? [];
-                          final isExpanded = _expandedCabinets.contains(cabinetName);
-                          final totalPorts = naps.fold(0, (sum, n) => sum + n.portTotal);
+                          final isExpanded =
+                              _expandedCabinets.contains(cabinetName);
+                          final totalPorts =
+                              naps.fold(0, (sum, n) => sum + n.portTotal);
                           final locationHint = naps.firstOrNull != null
-                              ? [naps.first.barangay, naps.first.city].where((s) => s != null && s.isNotEmpty).join(', ')
+                              ? [naps.first.barangay, naps.first.city]
+                                  .where((s) => s != null && s.isNotEmpty)
+                                  .join(', ')
                               : '';
 
                           return Container(
@@ -337,7 +358,9 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                               color: isDark ? AppTheme.darkCard : Colors.white,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                                color: isDark
+                                    ? AppTheme.borderDark
+                                    : AppTheme.borderLight,
                               ),
                             ),
                             clipBehavior: Clip.antiAlias,
@@ -361,8 +384,10 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                         Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.primary.withValues(alpha: isDark ? 0.2 : 0.1),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: AppTheme.primary.withValues(
+                                                alpha: isDark ? 0.2 : 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           child: const Icon(
                                             Icons.storage_rounded,
@@ -373,7 +398,8 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 cabinetName,
@@ -388,10 +414,14 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                                   locationHint,
                                                   style: TextStyle(
                                                     fontSize: 11,
-                                                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                                                    color: isDark
+                                                        ? AppTheme
+                                                            .textSecondaryDark
+                                                        : AppTheme.textMuted,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ],
                                             ],
@@ -400,12 +430,18 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                         const SizedBox(width: 8),
                                         // Badge for count of NAPs & ports
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: isDark
+                                                ? AppTheme.darkInput
+                                                : AppTheme.lightBg,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             border: Border.all(
-                                              color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                                              color: isDark
+                                                  ? AppTheme.borderDark
+                                                  : AppTheme.borderLight,
                                             ),
                                           ),
                                           child: Text(
@@ -420,8 +456,11 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                         Icon(
                                           isExpanded
                                               ? Icons.keyboard_arrow_up_rounded
-                                              : Icons.keyboard_arrow_down_rounded,
-                                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                                              : Icons
+                                                  .keyboard_arrow_down_rounded,
+                                          color: isDark
+                                              ? AppTheme.textSecondaryDark
+                                              : AppTheme.textMuted,
                                         ),
                                       ],
                                     ),
@@ -430,12 +469,18 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
 
                                 // Expanded NAP list inside this cabinet
                                 if (isExpanded) ...[
-                                  Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                                  Divider(
+                                      height: 1,
+                                      color: isDark
+                                          ? AppTheme.borderDark
+                                          : AppTheme.borderLight),
                                   Padding(
-                                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        12, 10, 12, 4),
                                     child: ListView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       itemCount: naps.length,
                                       itemBuilder: (context, napIdx) {
                                         final nap = naps[napIdx];
@@ -469,7 +514,8 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
         final selected = signals.selectedLcpFilter.value;
 
         return OutlinedButton.icon(
-          onPressed: () => _showCabinetSelectionModal(context, signals, cabinets, selected, isDark),
+          onPressed: () => _showCabinetSelectionModal(
+              context, signals, cabinets, selected, isDark),
           icon: const Icon(Icons.filter_list_rounded, size: 16),
           label: Text(
             selected == 'All' ? 'Filter LCP' : selected,
@@ -484,7 +530,9 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             side: BorderSide(
-              color: selected != 'All' ? AppTheme.primary : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+              color: selected != 'All'
+                  ? AppTheme.primary
+                  : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
             ),
           ),
         );
@@ -518,11 +566,13 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.storage_rounded, color: AppTheme.primary, size: 20),
+                        Icon(Icons.storage_rounded,
+                            color: AppTheme.primary, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'Filter by LCP Cabinet',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800),
                         ),
                       ],
                     ),
@@ -537,17 +587,19 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                   'Select an LCP Cabinet to isolate its NAP plant locations:',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                    color: isDark
+                        ? AppTheme.textSecondaryDark
+                        : AppTheme.textMuted,
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 Expanded(
                   child: ListView.separated(
                     itemCount: cabinets.length,
                     separatorBuilder: (_, __) => Divider(
                       height: 1,
-                      color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                      color:
+                          isDark ? AppTheme.borderDark : AppTheme.borderLight,
                     ),
                     itemBuilder: (context, index) {
                       final cabinet = cabinets[index];
@@ -555,17 +607,22 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
 
                       return ListTile(
                         dense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
                         title: Text(
-                          cabinet == 'All' ? 'All Cabinets (Show Everything)' : cabinet,
+                          cabinet == 'All'
+                              ? 'All Cabinets (Show Everything)'
+                              : cabinet,
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            fontWeight:
+                                isSelected ? FontWeight.w800 : FontWeight.w500,
                             color: isSelected ? AppTheme.primary : null,
                           ),
                         ),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle_rounded, color: AppTheme.primary, size: 18)
+                            ? const Icon(Icons.check_circle_rounded,
+                                color: AppTheme.primary, size: 18)
                             : null,
                         onTap: () {
                           signals.setLcpFilter(cabinet);

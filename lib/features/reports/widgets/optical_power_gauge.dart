@@ -54,7 +54,8 @@ class OpticalPowerGauge extends StatelessWidget {
       decoration: BoxDecoration(
         color: statusColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusColor.withValues(alpha: 0.3), width: 1.5),
+        border:
+            Border.all(color: statusColor.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +78,8 @@ class OpticalPowerGauge extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor,
                   borderRadius: BorderRadius.circular(8),
@@ -111,9 +113,12 @@ class OpticalPowerGauge extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('-35 dBm (Low)', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-              Text('-24 dBm (Threshold)', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-              Text('-12 dBm (Strong)', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              Text('-35 dBm (Low)',
+                  style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              Text('-24 dBm (Threshold)',
+                  style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              Text('-12 dBm (Strong)',
+                  style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
             ],
           ),
           const SizedBox(height: 8),

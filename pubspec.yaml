@@ -41,6 +41,18 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.24.2
   build_runner: ^2.4.15
+  flutter_launcher_icons: ^0.14.4
+
+# App icons. Android already ships a hand-made adaptive icon under
+# android/app/src/main/res, so only the iOS set is generated here, from the
+# same logo, with the alpha channel flattened onto white as App Store Connect
+# requires. Regenerate with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: false
+  ios: true
+  image_path: "assets/images/logo.png"
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
 
 flutter:
   uses-material-design: true

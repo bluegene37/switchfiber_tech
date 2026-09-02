@@ -20,7 +20,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
@@ -82,10 +83,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   height: 110,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkCard : AppTheme.primarySubtleBg,
+                    color:
+                        isDark ? AppTheme.darkCard : AppTheme.primarySubtleBg,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
+                      color: isDark
+                          ? AppTheme.borderDark
+                          : AppTheme.primarySubtleBorder,
                       width: 2,
                     ),
                     boxShadow: [

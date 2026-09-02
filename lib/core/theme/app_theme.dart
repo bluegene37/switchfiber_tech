@@ -21,10 +21,13 @@ class AppTheme {
   static const Color borderDark = Color(0xFF383E45);
 
   // Status Colors
-  static const Color success = Color(0xFF10B981); // Green (Active / Good / Pass)
-  static const Color warning = Color(0xFFF59E0B); // Amber (In Progress / Marginal)
-  static const Color danger = Color(0xFFEF4444);  // Red (Failed / Faulty / Out of spec)
-  static const Color info = Color(0xFF0EA5E9);    // Sky Blue (Pending / Info)
+  static const Color success =
+      Color(0xFF10B981); // Green (Active / Good / Pass)
+  static const Color warning =
+      Color(0xFFF59E0B); // Amber (In Progress / Marginal)
+  static const Color danger =
+      Color(0xFFEF4444); // Red (Failed / Faulty / Out of spec)
+  static const Color info = Color(0xFF0EA5E9); // Sky Blue (Pending / Info)
 
   // Status subtle backgrounds
   static const Color successSubtle = Color(0xFFF0FDF4);
@@ -108,7 +111,8 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: borderLight),
@@ -126,7 +130,8 @@ class AppTheme {
           borderSide: const BorderSide(color: danger),
         ),
         labelStyle: const TextStyle(color: textMuted, fontSize: 14),
-        hintStyle: TextStyle(color: textMuted.withValues(alpha: 0.7), fontSize: 14),
+        hintStyle:
+            TextStyle(color: textMuted.withValues(alpha: 0.7), fontSize: 14),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: white,
@@ -230,7 +235,8 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkInput,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: borderDark),
@@ -244,7 +250,8 @@ class AppTheme {
           borderSide: const BorderSide(color: primary, width: 2),
         ),
         labelStyle: const TextStyle(color: textSecondaryDark, fontSize: 14),
-        hintStyle: TextStyle(color: textSecondaryDark.withValues(alpha: 0.7), fontSize: 14),
+        hintStyle: TextStyle(
+            color: textSecondaryDark.withValues(alpha: 0.7), fontSize: 14),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkCard,

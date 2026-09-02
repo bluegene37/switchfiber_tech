@@ -37,7 +37,8 @@ class AuthService {
     final user = UserModel.fromJson(rawUser);
 
     if (!user.active) {
-      throw Exception('Your technician account is inactive. Please contact Dispatch.');
+      throw Exception(
+          'Your technician account is inactive. Please contact Dispatch.');
     }
 
     final token = data is Map<String, dynamic>

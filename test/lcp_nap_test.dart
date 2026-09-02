@@ -28,7 +28,9 @@ void main() {
   });
 
   group('LCP NAP Locations - Drift to Signals Data Flow Tests', () {
-    test('1. Seeding Drift SQLite automatically triggers Signals reactive update', () async {
+    test(
+        '1. Seeding Drift SQLite automatically triggers Signals reactive update',
+        () async {
       await repository.seedSampleLocations();
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -37,7 +39,8 @@ void main() {
       expect(signals.totalPortsCount.value, 48); // 8 + 8 + 16 + 8 + 8
     });
 
-    test('2. Changing cabinet filter updates computed filteredLocations', () async {
+    test('2. Changing cabinet filter updates computed filteredLocations',
+        () async {
       await repository.seedSampleLocations();
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -53,7 +56,8 @@ void main() {
       expect(signals.filteredLocations.value.length, 5);
     });
 
-    test('3. Search query filters locations across name, barangay, and city', () async {
+    test('3. Search query filters locations across name, barangay, and city',
+        () async {
       await repository.seedSampleLocations();
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -79,7 +83,8 @@ void main() {
   });
 
   group('LCP NAP UI Widget & Navigation Tests', () {
-    testWidgets('LcpNapCard renders port capacity and triggers callbacks', (tester) async {
+    testWidgets('LcpNapCard renders port capacity and triggers callbacks',
+        (tester) async {
       final sample = LcpNapDto(
         id: 99,
         lcp: 'LCP 10',
@@ -114,7 +119,8 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('LcpNapListScreen navigates to LcpNapDetailScreen on tap', (tester) async {
+    testWidgets('LcpNapListScreen navigates to LcpNapDetailScreen on tap',
+        (tester) async {
       // Drift I/O and its watch stream need real async, which the fake clock
       // inside testWidgets never advances; runAsync gives them a real zone.
       await tester.runAsync(() async {

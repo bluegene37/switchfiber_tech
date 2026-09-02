@@ -91,11 +91,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.speed_rounded, color: AppTheme.primary, size: 22),
+                    Icon(Icons.speed_rounded,
+                        color: AppTheme.primary, size: 22),
                     SizedBox(width: 8),
                     Text(
                       'GPON Optical Power Standards',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                     ),
                   ],
                 ),
@@ -108,21 +110,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 12),
             _buildStandardRow(
               title: 'Optimal / Pass (-12.0 to -24.0 dBm)',
-              description: 'Target range for all fiber installations. Ensures maximum throughput and stability.',
+              description:
+                  'Target range for all fiber installations. Ensures maximum throughput and stability.',
               color: AppTheme.success,
               subtle: AppTheme.successSubtle,
             ),
             const SizedBox(height: 10),
             _buildStandardRow(
               title: 'Marginal (-24.0 to -27.0 dBm)',
-              description: 'Service operational but approaching attenuation floor. Clean connectors & check bend radius.',
+              description:
+                  'Service operational but approaching attenuation floor. Clean connectors & check bend radius.',
               color: AppTheme.warning,
               subtle: AppTheme.warningSubtle,
             ),
             const SizedBox(height: 10),
             _buildStandardRow(
               title: 'Faulty / Out of Spec (< -27.0 or > -8.0 dBm)',
-              description: 'Excessive insertion loss or saturation. Re-splice drop cable or inspect NAP splitter port.',
+              description:
+                  'Excessive insertion loss or saturation. Re-splice drop cable or inspect NAP splitter port.',
               color: AppTheme.danger,
               subtle: AppTheme.dangerSubtle,
             ),
@@ -184,7 +189,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: success
-            ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.25) : AppTheme.successSubtle)
+            ? (isDark
+                ? const Color(0xFF059669).withValues(alpha: 0.25)
+                : AppTheme.successSubtle)
             : (isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg),
         borderRadius: BorderRadius.circular(6),
       ),
@@ -286,7 +293,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           // Avatar with technician initials
                           CircleAvatar(
                             radius: 28,
-                            backgroundColor: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                            backgroundColor: isDark
+                                ? const Color(0xFF3F2327)
+                                : AppTheme.primarySubtleBg,
                             child: Text(
                               user?.initials ?? 'T',
                               style: const TextStyle(
@@ -322,7 +331,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   spacing: 6,
                                   runSpacing: 4,
                                   children: [
-                                    _tag('Access level ${user?.accessLevelId ?? "-"}'),
+                                    _tag(
+                                        'Access level ${user?.accessLevelId ?? "-"}'),
                                     if (user?.active == true)
                                       _tag('Active', success: true),
                                     if (user != null && user.menus.isNotEmpty)
@@ -365,15 +375,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   return SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     secondary: Icon(
-                      dark
-                          ? Icons.dark_mode_rounded
-                          : Icons.light_mode_rounded,
+                      dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                       color: AppTheme.primary,
                     ),
                     title: const Text(
                       'Dark mode',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                     subtitle: Text(
                       dark
@@ -399,10 +407,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                  color: isDark
+                      ? const Color(0xFF3F2327)
+                      : AppTheme.primarySubtleBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.speed_rounded, color: AppTheme.primary, size: 20),
+                child: const Icon(Icons.speed_rounded,
+                    color: AppTheme.primary, size: 20),
               ),
               title: const Text(
                 'GPON Optical Power Standards',
@@ -412,7 +423,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'View dBm reference thresholds & loss guidelines',
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                  color:
+                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                 ),
               ),
               trailing: Icon(
@@ -472,11 +484,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const SizedBox(height: 8),
                           _buildMetricRow(
                             'Drift Engine Status',
-                            isSyncing ? 'Synchronizing...' : 'Reactive Stream Active',
+                            isSyncing
+                                ? 'Synchronizing...'
+                                : 'Reactive Stream Active',
                             Icons.storage_rounded,
-                            badgeColor: isSyncing
-                                ? AppTheme.primary
-                                : AppTheme.success,
+                            badgeColor:
+                                isSyncing ? AppTheme.primary : AppTheme.success,
                           ),
                           const SizedBox(height: 14),
 
@@ -487,10 +500,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               onPressed: isSyncing
                                   ? null
                                   : () async {
-                                      final res = await syncWorker
-                                          .syncPendingJobs();
+                                      final res =
+                                          await syncWorker.syncPendingJobs();
                                       if (!context.mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text(res.message),
                                           backgroundColor: res.success
@@ -530,7 +544,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   SnackBar(
                                     content: const Text(
                                         'Reset & populated sample field tech jobs in Drift DB.'),
-                                    backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+                                    backgroundColor: isDark
+                                        ? AppTheme.darkCard
+                                        : AppTheme.darkSlate,
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
@@ -560,7 +576,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.dns_rounded, size: 18, color: AppTheme.primary),
+                      const Icon(Icons.dns_rounded,
+                          size: 18, color: AppTheme.primary),
                       const SizedBox(width: 8),
                       const Text(
                         'Backend Diagnostics',
@@ -576,7 +593,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'Direct communication channel with Switch Fiber dispatch server.',
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                      color: isDark
+                          ? AppTheme.textSecondaryDark
+                          : AppTheme.textMuted,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -587,7 +606,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration: BoxDecoration(
                       color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                      border: Border.all(
+                          color: isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -604,11 +626,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         if (_lastPingMs != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: _pingSuccess == true
-                                  ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.25) : AppTheme.successSubtle)
-                                  : (isDark ? const Color(0xFFDC2626).withValues(alpha: 0.25) : AppTheme.dangerSubtle),
+                                  ? (isDark
+                                      ? const Color(0xFF059669)
+                                          .withValues(alpha: 0.25)
+                                      : AppTheme.successSubtle)
+                                  : (isDark
+                                      ? const Color(0xFFDC2626)
+                                          .withValues(alpha: 0.25)
+                                      : AppTheme.dangerSubtle),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -617,8 +646,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: _pingSuccess == true
-                                    ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
-                                    : (isDark ? const Color(0xFFF87171) : AppTheme.danger),
+                                    ? (isDark
+                                        ? const Color(0xFF4ADE80)
+                                        : AppTheme.success)
+                                    : (isDark
+                                        ? const Color(0xFFF87171)
+                                        : AppTheme.danger),
                               ),
                             ),
                           ),
@@ -637,7 +670,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.network_ping_rounded, size: 16),
-                      label: Text(_isTestingPing ? 'Testing latency...' : 'Test Connection Latency'),
+                      label: Text(_isTestingPing
+                          ? 'Testing latency...'
+                          : 'Test Connection Latency'),
                     ),
                   ),
                 ],
@@ -653,7 +688,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.logout_rounded, color: AppTheme.danger),
             label: const Text(
               'Sign Out of Terminal',
-              style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                  color: AppTheme.danger, fontWeight: FontWeight.w700),
             ),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppTheme.danger, width: 1.5),
@@ -684,10 +720,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF059669).withValues(alpha: 0.25) : AppTheme.successSubtle,
+        color: isDark
+            ? const Color(0xFF059669).withValues(alpha: 0.25)
+            : AppTheme.successSubtle,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isDark ? const Color(0xFF059669).withValues(alpha: 0.4) : const Color(0xFFBBF7D0),
+          color: isDark
+              ? const Color(0xFF059669).withValues(alpha: 0.4)
+              : const Color(0xFFBBF7D0),
         ),
       ),
       child: Row(
@@ -733,7 +773,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: badgeColor ?? (Theme.of(context).brightness == Brightness.dark ? Colors.white : AppTheme.darkSlate),
+            color: badgeColor ??
+                (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : AppTheme.darkSlate),
           ),
         ),
       ],

@@ -158,7 +158,8 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                     if (phase == DataLoadPhase.downloading) {
                       return const DownloadingIndicator(
                         title: 'Downloading Job Orders',
-                        subtitle: 'Fetching your job history from the server...',
+                        subtitle:
+                            'Fetching your job history from the server...',
                       );
                     }
                     if (phase == DataLoadPhase.skeleton) {
@@ -253,7 +254,8 @@ class _SummaryStrip extends StatelessWidget {
                 value: activated,
                 color: const Color(0xFF4F46E5),
               ),
-              _Stat(label: 'Active', value: inProgress, color: AppTheme.warning),
+              _Stat(
+                  label: 'Active', value: inProgress, color: AppTheme.warning),
               _Stat(label: 'Flagged', value: attention, color: AppTheme.danger),
             ],
           ),
@@ -356,7 +358,8 @@ class _NoEmailState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                color:
+                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -420,7 +423,8 @@ class _EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                color:
+                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                 shape: BoxShape.circle,
               ),
               child: Icon(

@@ -31,7 +31,8 @@ void main() {
         showSplash: true,
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1300)); // splash min duration
+    await tester
+        .pump(const Duration(milliseconds: 1300)); // splash min duration
     await tester.pump(const Duration(milliseconds: 500)); // switcher transition
     expect(find.text('Technician Sign In'), findsOneWidget);
 

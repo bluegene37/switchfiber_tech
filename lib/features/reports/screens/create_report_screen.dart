@@ -63,8 +63,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     rep.routerSerial.value = _serialController.text.trim();
     rep.remarks.value = _remarksController.text.trim();
 
-    final success =
-        await rep.submitReport(widget.jobsSignals.repository);
+    final success = await rep.submitReport(widget.jobsSignals.repository);
 
     if (!mounted) return;
 
@@ -78,7 +77,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  rep.submissionMessage.value ?? 'Report submitted successfully!',
+                  rep.submissionMessage.value ??
+                      'Report submitted successfully!',
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ),
@@ -86,7 +86,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
           ),
           backgroundColor: AppTheme.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
       widget.onReportSubmitted?.call();
@@ -193,7 +194,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check_circle_outline_rounded, size: 20),
+                              Icon(Icons.check_circle_outline_rounded,
+                                  size: 20),
                               SizedBox(width: 8),
                               Text(
                                 'Save Report & Mark Completed',
@@ -306,7 +308,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             // Live Quality Gauge
             SignalBuilder(
               builder: (context) {
-                return OpticalPowerGauge(opticalPowerDbm: rep.opticalPower.value);
+                return OpticalPowerGauge(
+                    opticalPowerDbm: rep.opticalPower.value);
               },
             ),
 
@@ -418,11 +421,14 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                             : models.first,
                         decoration: const InputDecoration(
                           labelText: 'ONT Model',
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: models.map((m) {
-                          return DropdownMenuItem(value: m, child: Text(m, style: const TextStyle(fontSize: 13)));
+                          return DropdownMenuItem(
+                              value: m,
+                              child: Text(m,
+                                  style: const TextStyle(fontSize: 13)));
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) rep.routerModel.value = val;
@@ -451,11 +457,14 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                             : ports.first,
                         decoration: const InputDecoration(
                           labelText: 'NAP Port',
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: ports.map((p) {
-                          return DropdownMenuItem(value: p, child: Text(p, style: const TextStyle(fontSize: 13)));
+                          return DropdownMenuItem(
+                              value: p,
+                              child: Text(p,
+                                  style: const TextStyle(fontSize: 13)));
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) rep.napPort.value = val;
@@ -491,7 +500,6 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ],
             ),
             const SizedBox(height: 12),
-
             Row(
               children: [
                 Expanded(
@@ -562,7 +570,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   ? Icons.check_circle_rounded
                   : Icons.add_a_photo_outlined,
               size: 26,
-              color: isAttached ? AppTheme.primary : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+              color: isAttached
+                  ? AppTheme.primary
+                  : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
             ),
             const SizedBox(height: 6),
             Text(
@@ -572,7 +582,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 fontSize: 12,
                 fontWeight: isAttached ? FontWeight.w700 : FontWeight.w500,
                 color: isAttached
-                    ? (isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive)
+                    ? (isDark
+                        ? const Color(0xFFFF8591)
+                        : AppTheme.primaryActive)
                     : (isDark ? Colors.white : AppTheme.darkSlate),
               ),
             ),
@@ -581,7 +593,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               isAttached ? 'Attached ✓' : 'Tap to attach',
               style: TextStyle(
                 fontSize: 10,
-                color: isAttached ? AppTheme.primary : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+                color: isAttached
+                    ? AppTheme.primary
+                    : (isDark
+                        ? AppTheme.textSecondaryDark
+                        : AppTheme.textMuted),
               ),
             ),
           ],
@@ -618,7 +634,6 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
             SignalBuilder(
               builder: (context) {
                 final signed = rep.hasSignature.value;
@@ -627,13 +642,19 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: signed
-                        ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.25) : AppTheme.successSubtle)
+                        ? (isDark
+                            ? const Color(0xFF059669).withValues(alpha: 0.25)
+                            : AppTheme.successSubtle)
                         : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: signed
-                          ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.4) : AppTheme.success)
-                          : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                          ? (isDark
+                              ? const Color(0xFF059669).withValues(alpha: 0.4)
+                              : AppTheme.success)
+                          : (isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight),
                       width: 1.5,
                     ),
                   ),
@@ -650,8 +671,12 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                                 ? Icons.verified_rounded
                                 : Icons.touch_app_rounded,
                             color: signed
-                                ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
-                                : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+                                ? (isDark
+                                    ? const Color(0xFF4ADE80)
+                                    : AppTheme.success)
+                                : (isDark
+                                    ? AppTheme.textSecondaryDark
+                                    : AppTheme.textMuted),
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -663,8 +688,12 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: signed
-                                  ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534))
-                                  : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+                                  ? (isDark
+                                      ? const Color(0xFF4ADE80)
+                                      : const Color(0xFF166534))
+                                  : (isDark
+                                      ? AppTheme.textSecondaryDark
+                                      : AppTheme.textMuted),
                             ),
                           ),
                         ],

@@ -160,14 +160,21 @@ class _StatusDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final (Color color, IconData icon) = switch (job.siteException) {
       SiteException.failed => (AppTheme.danger, Icons.error_rounded),
-      SiteException.reschedule =>
-        (const Color(0xFF7C3AED), Icons.event_repeat_rounded),
+      SiteException.reschedule => (
+          const Color(0xFF7C3AED),
+          Icons.event_repeat_rounded
+        ),
       null => switch (job.jobStatus) {
-          JobStatus.activated => (const Color(0xFF4F46E5), Icons.verified_rounded),
+          JobStatus.activated => (
+              const Color(0xFF4F46E5),
+              Icons.verified_rounded
+            ),
           JobStatus.completed => (AppTheme.success, Icons.check_rounded),
           JobStatus.inProgress => (AppTheme.warning, Icons.build_rounded),
-          JobStatus.scheduled || null =>
-            (AppTheme.info, Icons.calendar_today_rounded),
+          JobStatus.scheduled || null => (
+              AppTheme.info,
+              Icons.calendar_today_rounded
+            ),
         },
     };
 

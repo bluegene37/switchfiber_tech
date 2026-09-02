@@ -66,11 +66,13 @@ class LcpNapPinPopup extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: cabinetColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: cabinetColor.withValues(alpha: 0.4)),
+                    border:
+                        Border.all(color: cabinetColor.withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -146,14 +148,17 @@ class LcpNapPinPopup extends StatelessWidget {
                 if (location.coordinates != null)
                   InkWell(
                     onTap: () {
-                      Clipboard.setData(ClipboardData(text: location.coordinates!));
+                      Clipboard.setData(
+                          ClipboardData(text: location.coordinates!));
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Coordinates copied: ${location.coordinates}'),
+                          content: Text(
+                              'Coordinates copied: ${location.coordinates}'),
                           behavior: SnackBarBehavior.floating,
-                          backgroundColor: Theme.of(context).brightness == Brightness.dark
-                              ? AppTheme.darkCard
-                              : AppTheme.darkSlate,
+                          backgroundColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? AppTheme.darkCard
+                                  : AppTheme.darkSlate,
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -192,9 +197,11 @@ class LcpNapPinPopup extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.navigation_rounded, size: 15),
-                    label: const Text('Navigate', style: TextStyle(fontSize: 12)),
+                    label:
+                        const Text('Navigate', style: TextStyle(fontSize: 12)),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -203,7 +210,8 @@ class LcpNapPinPopup extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: onOpenDetails,
                     icon: const Icon(Icons.open_in_new_rounded, size: 15),
-                    label: const Text('View details', style: TextStyle(fontSize: 12)),
+                    label: const Text('View details',
+                        style: TextStyle(fontSize: 12)),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),

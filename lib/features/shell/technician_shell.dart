@@ -198,7 +198,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, AuthSignals auth, JobsSignals jobs) {
+  Widget _buildDrawer(
+      BuildContext context, AuthSignals auth, JobsSignals jobs) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -225,7 +226,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 ),
                 accountName: Text(
                   user?.fullName ?? 'Field Technician',
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 16),
                 ),
                 accountEmail: Text(
                   user?.email.isNotEmpty == true
@@ -238,13 +240,15 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ),
 
           ListTile(
-            leading: const Icon(Icons.receipt_long_rounded, color: AppTheme.primary),
+            leading:
+                const Icon(Icons.receipt_long_rounded, color: AppTheme.primary),
             title: const Text('Job Orders'),
             trailing: SignalBuilder(
               builder: (context) {
                 final scheduled = jobs.scheduledCount.value;
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppTheme.primarySubtleBg,
                     borderRadius: BorderRadius.circular(10),
@@ -274,7 +278,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
               builder: (context) {
                 final mine = jobs.historyTotalCount.value;
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppTheme.successSubtle,
                     borderRadius: BorderRadius.circular(10),
@@ -298,13 +303,15 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ),
 
           ListTile(
-            leading: const Icon(Icons.share_location_rounded, color: AppTheme.primary),
+            leading: const Icon(Icons.share_location_rounded,
+                color: AppTheme.primary),
             title: const Text('LCP NAP Locations'),
             trailing: SignalBuilder(
               builder: (context) {
                 final total = widget.lcpNapSignals.totalSitesCount.value;
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppTheme.primarySubtleBg,
                     borderRadius: BorderRadius.circular(10),
@@ -328,7 +335,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ),
 
           ListTile(
-            leading: const Icon(Icons.handyman_rounded, color: AppTheme.primary),
+            leading:
+                const Icon(Icons.handyman_rounded, color: AppTheme.primary),
             title: const Text('Tech Toolkit & Calculators'),
             selected: _currentIndex == _tabToolkit,
             onTap: () {
@@ -385,8 +393,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
 
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: AppTheme.danger),
-            title:
-                const Text('Sign Out', style: TextStyle(color: AppTheme.danger)),
+            title: const Text('Sign Out',
+                style: TextStyle(color: AppTheme.danger)),
             onTap: () async {
               Navigator.pop(context);
               await auth.logout();

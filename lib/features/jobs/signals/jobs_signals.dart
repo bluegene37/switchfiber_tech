@@ -61,15 +61,20 @@ class JobsSignals {
         final matchesTicket = job.ticketNumber.toLowerCase().contains(query);
         final matchesCustomer = job.customerName.toLowerCase().contains(query);
         final matchesAddress = job.address.toLowerCase().contains(query);
-        final matchesBarangay = (job.barangay ?? '').toLowerCase().contains(query);
-        return matchesTicket || matchesCustomer || matchesAddress || matchesBarangay;
+        final matchesBarangay =
+            (job.barangay ?? '').toLowerCase().contains(query);
+        return matchesTicket ||
+            matchesCustomer ||
+            matchesAddress ||
+            matchesBarangay;
       }
 
       return true;
     }).toList();
   });
 
-  late final ReadonlySignal<int> totalCount = computed(() => allJobs.value.length);
+  late final ReadonlySignal<int> totalCount =
+      computed(() => allJobs.value.length);
 
   int _countOf(JobStatus s) =>
       allJobs.value.where((j) => j.jobStatus == s).length;

@@ -17,7 +17,9 @@ import 'package:swithfiber_tech/features/reports/widgets/optical_power_gauge.dar
 import 'package:swithfiber_tech/main.dart';
 
 void main() {
-  testWidgets('StatusBadge renders appropriate labels and colors for scheduled and workflow states', (WidgetTester tester) async {
+  testWidgets(
+      'StatusBadge renders appropriate labels and colors for scheduled and workflow states',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -56,7 +58,8 @@ void main() {
             'in the backend\'s own words');
   });
 
-  testWidgets('OpticalPowerGauge displays dBm reading and PASS indicator', (WidgetTester tester) async {
+  testWidgets('OpticalPowerGauge displays dBm reading and PASS indicator',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -69,7 +72,9 @@ void main() {
     expect(find.text('Optimal Signal (PASS)'), findsOneWidget);
   });
 
-  testWidgets('JobOrderDetailScreen renders properly in light and dark mode without RenderFlex crashes', (WidgetTester tester) async {
+  testWidgets(
+      'JobOrderDetailScreen renders properly in light and dark mode without RenderFlex crashes',
+      (WidgetTester tester) async {
     // Everything touching the database must be built and awaited inside
     // runAsync. testWidgets installs a fake-async zone whose timers only
     // advance when the tester pumps, so a real `await` deadlocks - and a
@@ -143,7 +148,8 @@ void main() {
     });
   });
 
-  testWidgets('JobOrdersScreen opens JobOrderDetailScreen when card is tapped', (WidgetTester tester) async {
+  testWidgets('JobOrdersScreen opens JobOrderDetailScreen when card is tapped',
+      (WidgetTester tester) async {
     // See the note above: database work and its stream subscription must be
     // created and awaited outside the fake-async zone testWidgets installs.
     late final AppDatabase db;
@@ -197,11 +203,13 @@ void main() {
     });
   });
 
-  testWidgets('SplashScreen renders official logo branding and title', (WidgetTester tester) async {
+  testWidgets('SplashScreen renders official logo branding and title',
+      (WidgetTester tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     final repository = JobRepository(db.jobOrdersDao);
     final jobsSignals = JobsSignals(repository);
-    final lcpNapSignals = LcpNapSignals(LcpNapRepository(LcpNapLocationsDao(db)));
+    final lcpNapSignals =
+        LcpNapSignals(LcpNapRepository(LcpNapLocationsDao(db)));
     final authSignals = AuthSignals.instance;
     authSignals.currentUser.value = null;
 
@@ -228,11 +236,14 @@ void main() {
     });
   });
 
-  testWidgets('SwitchFiberTechApp directly renders LoginScreen when showSplash is false', (WidgetTester tester) async {
+  testWidgets(
+      'SwitchFiberTechApp directly renders LoginScreen when showSplash is false',
+      (WidgetTester tester) async {
     final db = AppDatabase(NativeDatabase.memory());
     final repository = JobRepository(db.jobOrdersDao);
     final jobsSignals = JobsSignals(repository);
-    final lcpNapSignals = LcpNapSignals(LcpNapRepository(LcpNapLocationsDao(db)));
+    final lcpNapSignals =
+        LcpNapSignals(LcpNapRepository(LcpNapLocationsDao(db)));
     final authSignals = AuthSignals.instance;
     authSignals.currentUser.value = null;
 

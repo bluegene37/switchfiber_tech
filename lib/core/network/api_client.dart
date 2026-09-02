@@ -21,8 +21,10 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.defaultBaseUrl,
-        connectTimeout: const Duration(milliseconds: AppConstants.connectTimeout),
-        receiveTimeout: const Duration(milliseconds: AppConstants.receiveTimeout),
+        connectTimeout:
+            const Duration(milliseconds: AppConstants.connectTimeout),
+        receiveTimeout:
+            const Duration(milliseconds: AppConstants.receiveTimeout),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -57,11 +59,12 @@ class ApiClient {
     );
   }
 
-  String _fingerprintOf(X509Certificate cert) =>
-      sha256.convert(cert.der).bytes
-          .map((b) => b.toRadixString(16).padLeft(2, '0'))
-          .join(':')
-          .toUpperCase();
+  String _fingerprintOf(X509Certificate cert) => sha256
+      .convert(cert.der)
+      .bytes
+      .map((b) => b.toRadixString(16).padLeft(2, '0'))
+      .join(':')
+      .toUpperCase();
 
   /// Update base URL dynamically (e.g., from technician settings)
   void setBaseUrl(String newUrl) {
@@ -113,7 +116,8 @@ class ApiClient {
     Options? options,
   }) async {
     try {
-      return await dio.get<T>(path, queryParameters: queryParameters, options: options);
+      return await dio.get<T>(path,
+          queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       if (e.error is ApiException) {
         throw e.error as ApiException;
@@ -130,7 +134,8 @@ class ApiClient {
     Options? options,
   }) async {
     try {
-      return await dio.post<T>(path, data: data, queryParameters: queryParameters, options: options);
+      return await dio.post<T>(path,
+          data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       if (e.error is ApiException) {
         throw e.error as ApiException;
@@ -147,7 +152,8 @@ class ApiClient {
     Options? options,
   }) async {
     try {
-      return await dio.put<T>(path, data: data, queryParameters: queryParameters, options: options);
+      return await dio.put<T>(path,
+          data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       if (e.error is ApiException) {
         throw e.error as ApiException;
@@ -164,7 +170,8 @@ class ApiClient {
     Options? options,
   }) async {
     try {
-      return await dio.delete<T>(path, data: data, queryParameters: queryParameters, options: options);
+      return await dio.delete<T>(path,
+          data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       if (e.error is ApiException) {
         throw e.error as ApiException;

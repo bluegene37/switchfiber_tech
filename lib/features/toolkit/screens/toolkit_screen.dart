@@ -49,7 +49,8 @@ class ToolkitScreen extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
+                color:
+                    isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
               ),
             ),
             child: Row(
@@ -73,14 +74,17 @@ class ToolkitScreen extends StatelessWidget {
                     children: [
                       const Text(
                         'ISP Field Engineer Suite',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'On-site fiber optics calibration, core splicing references, and network diagnostic tools.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                          color: isDark
+                              ? AppTheme.textSecondaryDark
+                              : AppTheme.textMuted,
                         ),
                       ),
                     ],
@@ -95,7 +99,8 @@ class ToolkitScreen extends StatelessWidget {
           _buildToolCard(
             context: context,
             title: 'Fiber Color Code (TIA-598-C)',
-            subtitle: 'Calculate tube & core color mappings for 12F to 288F loose tube cables.',
+            subtitle:
+                'Calculate tube & core color mappings for 12F to 288F loose tube cables.',
             icon: Icons.palette_rounded,
             badge: 'Splicing Standard',
             color: const Color(0xFF0070BA),
@@ -111,7 +116,8 @@ class ToolkitScreen extends StatelessWidget {
           _buildToolCard(
             context: context,
             title: 'Optical Link Budget Calculator',
-            subtitle: 'Theoretical GPON/FTTH link attenuation, splitter loss, and power margin validation.',
+            subtitle:
+                'Theoretical GPON/FTTH link attenuation, splitter loss, and power margin validation.',
             icon: Icons.speed_rounded,
             badge: 'OPM dBm Standard',
             color: AppTheme.primary,
@@ -127,7 +133,8 @@ class ToolkitScreen extends StatelessWidget {
           _buildToolCard(
             context: context,
             title: 'Drop Cable & Materials Estimator',
-            subtitle: 'Pole span distance calculations, sag factor, and installation Bill of Materials.',
+            subtitle:
+                'Pole span distance calculations, sag factor, and installation Bill of Materials.',
             icon: Icons.cable_rounded,
             badge: 'Installation BOM',
             color: const Color(0xFF10B981),
@@ -143,7 +150,8 @@ class ToolkitScreen extends StatelessWidget {
           _buildToolCard(
             context: context,
             title: 'Network & DNS Diagnostics',
-            subtitle: 'Field ping latency, DNS lookup tests, and CGNAT (100.64.0.0/10) subnet helper.',
+            subtitle:
+                'Field ping latency, DNS lookup tests, and CGNAT (100.64.0.0/10) subnet helper.',
             icon: Icons.network_ping_rounded,
             badge: 'Connectivity Ping',
             color: const Color(0xFF8B5CF6),
@@ -159,14 +167,16 @@ class ToolkitScreen extends StatelessWidget {
           _buildToolCard(
             context: context,
             title: 'Field Troubleshooting Guide',
-            subtitle: 'Step-by-step decision trees for Red LOS, high attenuation, and OMCI sync issues.',
+            subtitle:
+                'Step-by-step decision trees for Red LOS, high attenuation, and OMCI sync issues.',
             icon: Icons.auto_stories_rounded,
             badge: 'Resolution Guide',
             color: const Color(0xFFF59E0B),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const TroubleshootingGuideTool()),
+              MaterialPageRoute(
+                  builder: (_) => const TroubleshootingGuideTool()),
             ),
           ),
         ],
@@ -222,12 +232,16 @@ class ToolkitScreen extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+                            color:
+                                isDark ? AppTheme.darkInput : AppTheme.lightBg,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                              color: isDark
+                                  ? AppTheme.borderDark
+                                  : AppTheme.borderLight,
                             ),
                           ),
                           child: Text(
@@ -247,7 +261,9 @@ class ToolkitScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.3,
-                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
                       ),
                     ),
                   ],

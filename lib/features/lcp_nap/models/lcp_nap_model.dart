@@ -66,8 +66,10 @@ class LcpNapDto {
     // Accepts the separators and labelled forms the web console accepts, so
     // both clients plot exactly the same rows.
     final clean = raw
-        .replaceAll(RegExp(r'lat:|latitude:|lng:|longitude:|lon:',
-            caseSensitive: false), '')
+        .replaceAll(
+            RegExp(r'lat:|latitude:|lng:|longitude:|lon:',
+                caseSensitive: false),
+            '')
         .trim();
     if (clean.isEmpty) return null;
 

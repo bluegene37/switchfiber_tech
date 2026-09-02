@@ -81,8 +81,7 @@ void main() {
     final clusters = find.byKey(const Key('lcpNapCluster'));
 
     // Nothing is lost: the plant is drawn either as pins or clustered pins.
-    expect(pins.evaluate().length + clusters.evaluate().length,
-        greaterThan(0));
+    expect(pins.evaluate().length + clusters.evaluate().length, greaterThan(0));
   });
 
   testWidgets('nearby sites cluster instead of stacking on each other',
@@ -105,8 +104,7 @@ void main() {
 
     // Target one specific site rather than whichever pin happens to be first
     // in the marker layer's build order.
-    final site =
-        signals.mappableLocations.value.firstWhere((s) => s.id == 5);
+    final site = signals.mappableLocations.value.firstWhere((s) => s.id == 5);
     await tester.tap(find.byKey(const Key('lcpNapPin_5')));
     await tester.pump();
 

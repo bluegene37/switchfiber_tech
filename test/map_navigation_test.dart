@@ -5,7 +5,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('MapNavigationService', () {
-    test('formats navigation parameters correctly for external map apps', () async {
+    test('formats navigation parameters correctly for external map apps',
+        () async {
       const lat = 14.5995;
       const lng = 120.9842;
       const label = 'LCP-BIN-01 NAP-05';

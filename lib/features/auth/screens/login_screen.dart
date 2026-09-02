@@ -70,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: AppTheme.danger,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -103,11 +104,13 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.support_agent_rounded, color: AppTheme.primary, size: 22),
+                    Icon(Icons.support_agent_rounded,
+                        color: AppTheme.primary, size: 22),
                     SizedBox(width: 8),
                     Text(
                       'Dispatch & Terminal Help',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                     ),
                   ],
                 ),
@@ -139,7 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: const InputDecoration(
                       hintText: 'tech.email@switchfiber.ph',
                       prefixIcon: Icon(Icons.mail_outline_rounded, size: 18),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                   ),
                 ),
@@ -155,7 +159,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.pop(ctx);
                       messenger.showSnackBar(
                         const SnackBar(
-                          content: Text('Password reset request sent! Check your email.'),
+                          content: Text(
+                              'Password reset request sent! Check your email.'),
                           backgroundColor: AppTheme.success,
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -164,7 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (!ctx.mounted) return;
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text('Failed: ${e.toString().replaceAll('Exception: ', '')}'),
+                          content: Text(
+                              'Failed: ${e.toString().replaceAll('Exception: ', '')}'),
                           backgroundColor: AppTheme.danger,
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -172,7 +178,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                   ),
                   child: const Text('Send'),
                 ),
@@ -194,20 +201,24 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: BoxDecoration(
                 color: isDark ? AppTheme.darkSlate : AppTheme.lightBg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                border: Border.all(
+                    color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.phone_in_talk_rounded, color: AppTheme.primary, size: 20),
+                  const Icon(Icons.phone_in_talk_rounded,
+                      color: AppTheme.primary, size: 20),
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Switch Fiber Operations Manila',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 13)),
                         Text('+63 2 8888 3423 • Toll-Free 1800-SWITCH',
-                            style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                            style: TextStyle(
+                                fontSize: 12, color: AppTheme.textMuted)),
                       ],
                     ),
                   ),
@@ -215,7 +226,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: const Icon(Icons.copy_rounded, size: 18),
                     tooltip: 'Copy Hotline',
                     onPressed: () {
-                      Clipboard.setData(const ClipboardData(text: '+63288883423'));
+                      Clipboard.setData(
+                          const ClipboardData(text: '+63288883423'));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Hotline number copied to clipboard!'),
@@ -260,7 +272,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     SignalBuilder(
                       builder: (context) {
                         final err = authSignals.authError.value;
-                        if (err == null || err.isEmpty) return const SizedBox.shrink();
+                        if (err == null || err.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
                         return Container(
                           margin: const EdgeInsets.only(bottom: 20),
                           padding: const EdgeInsets.all(12),
@@ -324,7 +338,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 textInputAction: TextInputAction.next,
                                 decoration: const InputDecoration(
                                   labelText: 'Username or Email',
-                                  prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                                  prefixIcon: Icon(Icons.person_outline_rounded,
+                                      size: 20),
                                 ),
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
@@ -346,7 +361,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onFieldSubmitted: (_) => _handleLogin(),
                                     decoration: InputDecoration(
                                       labelText: 'Password',
-                                      prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                                      prefixIcon: const Icon(
+                                          Icons.lock_outline_rounded,
+                                          size: 20),
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           obscure
@@ -373,7 +390,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               // Remember Me & Demo credentials
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   SignalBuilder(
                                     builder: (context) {
@@ -384,13 +402,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                             height: 24,
                                             width: 24,
                                             child: Checkbox(
-                                              value: authSignals.rememberMe.value,
+                                              value:
+                                                  authSignals.rememberMe.value,
                                               activeColor: AppTheme.primary,
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(4),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                               ),
                                               onChanged: (val) {
-                                                authSignals.rememberMe.value = val ?? true;
+                                                authSignals.rememberMe.value =
+                                                    val ?? true;
                                               },
                                             ),
                                           ),
@@ -411,7 +432,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _usernameController.text = 'tech_marcos';
                                       _passwordController.text = 'Switch@2026';
                                     },
-                                    icon: const Icon(Icons.flash_on_rounded, size: 14, color: AppTheme.primary),
+                                    icon: const Icon(Icons.flash_on_rounded,
+                                        size: 14, color: AppTheme.primary),
                                     label: const Text(
                                       'Demo Tech',
                                       style: TextStyle(
@@ -423,7 +445,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: TextButton.styleFrom(
                                       padding: EdgeInsets.zero,
                                       minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
                                   ),
                                 ],
@@ -446,9 +469,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                             ),
                                           )
                                         : const Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Icon(Icons.login_rounded, size: 18),
+                                              Icon(Icons.login_rounded,
+                                                  size: 18),
                                               SizedBox(width: 8),
                                               Text('Sign In to Terminal'),
                                             ],
@@ -483,12 +508,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Backend Connection Status Indicator Pill
                     Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: isDark ? AppTheme.darkCard : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                            color: isDark
+                                ? AppTheme.borderDark
+                                : AppTheme.borderLight,
                           ),
                         ),
                         child: Row(
@@ -549,7 +577,8 @@ class _LoginScreenState extends State<LoginScreen> {
             color: isDark ? AppTheme.darkCard : AppTheme.primarySubtleBg,
             shape: BoxShape.circle,
             border: Border.all(
-              color: isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
+              color:
+                  isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
               width: 1.5,
             ),
             boxShadow: [

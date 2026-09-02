@@ -41,7 +41,8 @@ class SyncWorker {
 
       if (unsynced.isEmpty) {
         lastSyncTime.value = DateTime.now();
-        return SyncResult(success: true, syncedCount: 0, message: 'All jobs are up to date.');
+        return SyncResult(
+            success: true, syncedCount: 0, message: 'All jobs are up to date.');
       }
 
       for (final rawJob in unsynced) {

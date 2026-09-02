@@ -14,10 +14,10 @@ class DropCableTool extends StatefulWidget {
 class _DropCableToolState extends State<DropCableTool> {
   int _poleSpans = 2;
   double _averageSpanMeters = 35.0;
-  double _sagPercentage = 8.0;
-  double _facadeLoopMeters = 3.0;
+  final double _sagPercentage = 8.0;
+  final double _facadeLoopMeters = 3.0;
   double _indoorRunMeters = 10.0;
-  double _serviceLoopMeters = 4.0;
+  final double _serviceLoopMeters = 4.0;
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +40,10 @@ class _DropCableToolState extends State<DropCableTool> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Drop Cable Estimator', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            Text('Span calculations & Bill of Materials (BOM)', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+            Text('Drop Cable Estimator',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Span calculations & Bill of Materials (BOM)',
+                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
           ],
         ),
         actions: [
@@ -51,7 +53,8 @@ class _DropCableToolState extends State<DropCableTool> {
             onPressed: () {
               final buffer = StringBuffer();
               buffer.writeln('=== SWITCH FIBER INSTALLATION BOM ===');
-              buffer.writeln('Calculated Drop Length: ${totalMeters.toStringAsFixed(1)}m (Spans: $_poleSpans)');
+              buffer.writeln(
+                  'Calculated Drop Length: ${totalMeters.toStringAsFixed(1)}m (Spans: $_poleSpans)');
               buffer.writeln('------------------------------------');
               for (final item in bomItems) {
                 buffer.writeln('• ${item.name}: ${item.quantity}');
@@ -61,7 +64,8 @@ class _DropCableToolState extends State<DropCableTool> {
                 SnackBar(
                   content: const Text('BOM checklist copied to clipboard!'),
                   behavior: SnackBarBehavior.floating,
-                  backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+                  backgroundColor:
+                      isDark ? AppTheme.darkCard : AppTheme.darkSlate,
                 ),
               );
             },
@@ -84,7 +88,8 @@ class _DropCableToolState extends State<DropCableTool> {
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
+                color:
+                    isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
                 width: 1.5,
               ),
             ),
@@ -102,7 +107,9 @@ class _DropCableToolState extends State<DropCableTool> {
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
-                            color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                            color: isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textMuted,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -117,20 +124,26 @@ class _DropCableToolState extends State<DropCableTool> {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: isDark ? AppTheme.darkInput : Colors.white,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                          color: isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight,
                         ),
                       ),
                       child: Column(
                         children: [
-                          const Text('Exact Length', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+                          const Text('Exact Length',
+                              style: TextStyle(
+                                  fontSize: 10, color: AppTheme.textMuted)),
                           Text(
                             '${totalMeters.toStringAsFixed(1)} m',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -138,14 +151,23 @@ class _DropCableToolState extends State<DropCableTool> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                Divider(
+                    height: 1,
+                    color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildSubstat('Aerial Span', '${estimator.aerialSpanLength.toStringAsFixed(1)}m', isDark),
-                    _buildSubstat('Indoor Run', '${_indoorRunMeters.toStringAsFixed(1)}m', isDark),
-                    _buildSubstat('Coil/Slack', '${(_facadeLoopMeters + _serviceLoopMeters).toStringAsFixed(1)}m', isDark),
+                    _buildSubstat(
+                        'Aerial Span',
+                        '${estimator.aerialSpanLength.toStringAsFixed(1)}m',
+                        isDark),
+                    _buildSubstat('Indoor Run',
+                        '${_indoorRunMeters.toStringAsFixed(1)}m', isDark),
+                    _buildSubstat(
+                        'Coil/Slack',
+                        '${(_facadeLoopMeters + _serviceLoopMeters).toStringAsFixed(1)}m',
+                        isDark),
                   ],
                 ),
               ],
@@ -162,11 +184,13 @@ class _DropCableToolState extends State<DropCableTool> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.cable_rounded, size: 18, color: AppTheme.primary),
+                      Icon(Icons.cable_rounded,
+                          size: 18, color: AppTheme.primary),
                       SizedBox(width: 8),
                       Text(
                         'Span & Route Parameters',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -176,8 +200,13 @@ class _DropCableToolState extends State<DropCableTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Pole Spans (Pole to Pole):', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                      Text('$_poleSpans spans', style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                      const Text('Pole Spans (Pole to Pole):',
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600)),
+                      Text('$_poleSpans spans',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.primary)),
                     ],
                   ),
                   Slider(
@@ -193,8 +222,13 @@ class _DropCableToolState extends State<DropCableTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Avg Span Distance (Meters):', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                      Text('${_averageSpanMeters.toStringAsFixed(0)} m', style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                      const Text('Avg Span Distance (Meters):',
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600)),
+                      Text('${_averageSpanMeters.toStringAsFixed(0)} m',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.primary)),
                     ],
                   ),
                   Slider(
@@ -210,8 +244,13 @@ class _DropCableToolState extends State<DropCableTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Indoor Conduit Run to ONT:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                      Text('${_indoorRunMeters.toStringAsFixed(0)} m', style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                      const Text('Indoor Conduit Run to ONT:',
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600)),
+                      Text('${_indoorRunMeters.toStringAsFixed(0)} m',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.primary)),
                     ],
                   ),
                   Slider(
@@ -237,11 +276,13 @@ class _DropCableToolState extends State<DropCableTool> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.inventory_2_outlined, size: 18, color: AppTheme.primary),
+                      Icon(Icons.inventory_2_outlined,
+                          size: 18, color: AppTheme.primary),
                       SizedBox(width: 8),
                       Text(
                         'Bill of Materials Checklist',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -250,7 +291,11 @@ class _DropCableToolState extends State<DropCableTool> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: bomItems.length,
-                    separatorBuilder: (_, __) => Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                    separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        color: isDark
+                            ? AppTheme.borderDark
+                            : AppTheme.borderLight),
                     itemBuilder: (context, index) {
                       final item = bomItems[index];
                       return Padding(
@@ -258,26 +303,34 @@ class _DropCableToolState extends State<DropCableTool> {
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: isDark ? AppTheme.darkInput : AppTheme.primarySubtleBg,
+                                color: isDark
+                                    ? AppTheme.darkInput
+                                    : AppTheme.primarySubtleBg,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 item.category,
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.primary),
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.primary),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 item.name,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w600),
                               ),
                             ),
                             Text(
                               item.quantity,
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                              style: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),

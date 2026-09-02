@@ -5,13 +5,15 @@ import '../tables.dart';
 part 'job_orders_dao.g.dart';
 
 @DriftAccessor(tables: [JobOrders])
-class JobOrdersDao extends DatabaseAccessor<AppDatabase> with _$JobOrdersDaoMixin {
+class JobOrdersDao extends DatabaseAccessor<AppDatabase>
+    with _$JobOrdersDaoMixin {
   JobOrdersDao(super.db);
 
   /// Watch all cached job orders sorted by ID descending
   Stream<List<JobOrder>> watchAllJobs() {
     return (select(jobOrders)
-          ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
         .watch();
   }
 
@@ -22,14 +24,16 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase> with _$JobOrdersDaoMixi
     }
     return (select(jobOrders)
           ..where((t) => t.status.equals(status.toLowerCase()))
-          ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
         .watch();
   }
 
   /// Get all job orders once
   Future<List<JobOrder>> getAllJobs() {
     return (select(jobOrders)
-          ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
+          ..orderBy(
+              [(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]))
         .get();
   }
 
@@ -64,7 +68,8 @@ class JobOrdersDao extends DatabaseAccessor<AppDatabase> with _$JobOrdersDaoMixi
     );
   }
 
-  Future<void> updateJobStatus(int id, String newStatus, {bool isSynced = false}) {
+  Future<void> updateJobStatus(int id, String newStatus,
+      {bool isSynced = false}) {
     return (update(jobOrders)..where((t) => t.id.equals(id))).write(
       JobOrdersCompanion(
         status: Value(newStatus),

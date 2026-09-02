@@ -44,7 +44,9 @@ class DownloadingIndicator extends StatelessWidget {
                   Icon(
                     Icons.cloud_download_rounded,
                     size: 28,
-                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                    color: isDark
+                        ? AppTheme.textSecondaryDark
+                        : AppTheme.textMuted,
                   ),
                 ],
               ),

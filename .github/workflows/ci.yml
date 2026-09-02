@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Analyze, format, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.x
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify generated code is up to date
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- '*.g.dart' \
+            || (echo "::error::Generated files are stale. Run: dart run build_runner build" && exit 1)
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed -o none lib test
+
+      - name: Test
+        run: flutter test --coverage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          retention-days: 14
+
+  build-android:
+    name: Build debug APK
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.x
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build
+        run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7

@@ -37,17 +37,16 @@ List<MapCluster> clusterSites(List<LcpNapDto> sites, {required double zoom}) {
   final buckets = <String, List<LcpNapDto>>{};
   for (final s in mappable) {
     final p = s.latLng!;
-    final key = '${(p.latitude / cell).floor()}:${(p.longitude / cell).floor()}';
+    final key =
+        '${(p.latitude / cell).floor()}:${(p.longitude / cell).floor()}';
     buckets.putIfAbsent(key, () => <LcpNapDto>[]).add(s);
   }
 
   return buckets.values.map((group) {
-    final lat =
-        group.map((s) => s.latLng!.latitude).reduce((a, b) => a + b) /
-            group.length;
-    final lng =
-        group.map((s) => s.latLng!.longitude).reduce((a, b) => a + b) /
-            group.length;
+    final lat = group.map((s) => s.latLng!.latitude).reduce((a, b) => a + b) /
+        group.length;
+    final lng = group.map((s) => s.latLng!.longitude).reduce((a, b) => a + b) /
+        group.length;
     return MapCluster(center: LatLng(lat, lng), sites: group);
   }).toList();
 }

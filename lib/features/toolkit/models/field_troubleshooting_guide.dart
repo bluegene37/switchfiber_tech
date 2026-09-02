@@ -24,7 +24,8 @@ class TroubleshootingGuideItem {
     TroubleshootingGuideItem(
       id: 'red_los',
       title: 'Red LOS Light (Loss of Signal)',
-      symptom: 'ONT LOS LED is solid or blinking RED; no optical power received.',
+      symptom:
+          'ONT LOS LED is solid or blinking RED; no optical power received.',
       icon: Icons.highlight_off_rounded,
       badgeColor: Color(0xFFEF4444),
       probableCauses: [
@@ -97,7 +98,8 @@ class TroubleshootingGuideItem {
     TroubleshootingGuideItem(
       id: 'flashing_pon',
       title: 'Flashing PON Light (OMCI Registration Pending)',
-      symptom: 'Optical power is good (-18 dBm) but PON LED blinks GREEN; ONT not synchronized.',
+      symptom:
+          'Optical power is good (-18 dBm) but PON LED blinks GREEN; ONT not synchronized.',
       icon: Icons.sync_problem_rounded,
       badgeColor: Color(0xFF0EA5E9),
       probableCauses: [
@@ -129,7 +131,8 @@ class TroubleshootingGuideItem {
     TroubleshootingGuideItem(
       id: 'ip_config',
       title: 'No Internet / IP & DHCP Issues',
-      symptom: 'PON is steady GREEN, but no IP assigned or captive portal loop.',
+      symptom:
+          'PON is steady GREEN, but no IP assigned or captive portal loop.',
       icon: Icons.router_rounded,
       badgeColor: Color(0xFF8B5CF6),
       probableCauses: [

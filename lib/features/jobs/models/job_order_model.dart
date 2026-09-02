@@ -35,7 +35,11 @@ enum JobStatus {
   static JobStatus? parse(String? raw) {
     final v = raw?.trim().toLowerCase().replaceAll(RegExp(r'[-_\s]+'), '');
     return switch (v) {
-      'scheduled' || 'confirmed' || 'applied' || 'pending' => JobStatus.scheduled,
+      'scheduled' ||
+      'confirmed' ||
+      'applied' ||
+      'pending' =>
+        JobStatus.scheduled,
       'inprogress' => JobStatus.inProgress,
       'completed' => JobStatus.completed,
       'activated' => JobStatus.activated,
@@ -186,14 +190,16 @@ class JobOrderDto {
           : json['fullName']?.toString() ??
               json['customerName']?.toString() ??
               'Subscriber',
-      contactNumber: json['contactNumber']?.toString() ??
-          json['mobileNumber']?.toString(),
+      contactNumber:
+          json['contactNumber']?.toString() ?? json['mobileNumber']?.toString(),
       address: json['address']?.toString() ??
           json['installationAddress']?.toString() ??
           'N/A',
       barangay: json['barangay']?.toString(),
       city: json['city']?.toString(),
-      planName: json['plan']?.toString() ?? json['desiredPlan']?.toString() ?? 'Fiber 50Mbps',
+      planName: json['plan']?.toString() ??
+          json['desiredPlan']?.toString() ??
+          'Fiber 50Mbps',
       planId: json['planId'] is int
           ? json['planId']
           : int.tryParse(json['planId']?.toString() ?? '0'),
@@ -206,7 +212,8 @@ class JobOrderDto {
       opticalPower: json['opticalPower'] is num
           ? (json['opticalPower'] as num).toDouble()
           : double.tryParse(json['opticalPower']?.toString() ?? ''),
-      modemRouterSN: json['modemRouterSN']?.toString() ?? json['routerModemSn']?.toString(),
+      modemRouterSN: json['modemRouterSN']?.toString() ??
+          json['routerModemSn']?.toString(),
       routerModel: json['routerModel']?.toString(),
       lcpId: json['lcpId'] is int
           ? json['lcpId']

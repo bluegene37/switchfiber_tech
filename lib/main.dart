@@ -141,4 +141,3 @@ class _RootViewState extends State<_RootView> {
     );
   }
 }
-

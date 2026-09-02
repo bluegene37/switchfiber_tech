@@ -68,10 +68,11 @@ void main() {
     });
 
     test('a normal visit has no exception to flag', () {
-      expect(job(status: 'Confirmed', onsiteStatus: 'Done').siteException,
+      expect(
+          job(status: 'Confirmed', onsiteStatus: 'Done').siteException, isNull);
+      expect(
+          job(status: 'In Progress', onsiteStatus: 'In Progress').siteException,
           isNull);
-      expect(job(status: 'In Progress', onsiteStatus: 'In Progress')
-          .siteException, isNull);
       expect(job(status: 'Confirmed', onsiteStatus: '').siteException, isNull);
       expect(job(status: 'Confirmed').siteException, isNull);
     });

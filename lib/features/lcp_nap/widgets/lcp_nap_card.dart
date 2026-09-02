@@ -32,9 +32,12 @@ class LcpNapCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                      color: isDark
+                          ? const Color(0xFF3F2327)
+                          : AppTheme.primarySubtleBg,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
@@ -50,7 +53,10 @@ class LcpNapCard extends StatelessWidget {
                   Text(
                     '•',
                     style: TextStyle(
-                      color: (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted).withValues(alpha: 0.5),
+                      color: (isDark
+                              ? AppTheme.textSecondaryDark
+                              : AppTheme.textMuted)
+                          .withValues(alpha: 0.5),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -66,12 +72,17 @@ class LcpNapCard extends StatelessWidget {
                   ),
                   // Port capacity
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                      color: isDark
+                          ? const Color(0xFF3F2327)
+                          : AppTheme.primarySubtleBg,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF882933) : AppTheme.primarySubtleBorder,
+                        color: isDark
+                            ? const Color(0xFF882933)
+                            : AppTheme.primarySubtleBorder,
                       ),
                     ),
                     child: Text(
@@ -79,7 +90,9 @@ class LcpNapCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
+                        color: isDark
+                            ? const Color(0xFFFF8591)
+                            : AppTheme.primaryActive,
                       ),
                     ),
                   ),
@@ -94,7 +107,9 @@ class LcpNapCard extends StatelessWidget {
                     Icon(
                       Icons.location_on_outlined,
                       size: 15,
-                      color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                      color: isDark
+                          ? AppTheme.textSecondaryDark
+                          : AppTheme.textMuted,
                     ),
                     const SizedBox(width: 5),
                     Expanded(
@@ -123,7 +138,9 @@ class LcpNapCard extends StatelessWidget {
                     Icon(
                       Icons.gps_fixed_rounded,
                       size: 13,
-                      color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                      color: isDark
+                          ? AppTheme.textSecondaryDark
+                          : AppTheme.textMuted,
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -131,7 +148,9 @@ class LcpNapCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontFamily: 'monospace',
-                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
                       ),
                     ),
                   ],
@@ -139,7 +158,9 @@ class LcpNapCard extends StatelessWidget {
               ],
 
               const SizedBox(height: 12),
-              Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+              Divider(
+                  height: 1,
+                  color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
               const SizedBox(height: 10),
 
               // Bottom Actions Row
@@ -154,14 +175,18 @@ class LcpNapCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                          color: isDark
+                              ? AppTheme.textSecondaryDark
+                              : AppTheme.textMuted,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 11,
-                        color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textMuted,
                       ),
                     ],
                   ),

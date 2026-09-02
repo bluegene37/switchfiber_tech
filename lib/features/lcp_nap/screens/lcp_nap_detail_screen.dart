@@ -49,7 +49,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
     return SignalBuilder(
       builder: (context) {
         final all = widget.signals.allLocations.value;
-        final location = all.where((l) => l.id == widget.locationId).firstOrNull;
+        final location =
+            all.where((l) => l.id == widget.locationId).firstOrNull;
 
         if (location == null) {
           return Scaffold(
@@ -58,7 +59,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
               child: Text(
                 'Location not found',
                 style: TextStyle(
-                  color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                  color:
+                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                 ),
               ),
             ),
@@ -107,8 +109,12 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                           : Icons.cloud_off_rounded,
                       size: 14,
                       color: location.isSynced
-                          ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
-                          : (isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E)),
+                          ? (isDark
+                              ? const Color(0xFF4ADE80)
+                              : AppTheme.success)
+                          : (isDark
+                              ? const Color(0xFFFDE68A)
+                              : const Color(0xFF92400E)),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -117,8 +123,12 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: location.isSynced
-                            ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
-                            : (isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E)),
+                            ? (isDark
+                                ? const Color(0xFF4ADE80)
+                                : AppTheme.success)
+                            : (isDark
+                                ? const Color(0xFFFDE68A)
+                                : const Color(0xFF92400E)),
                       ),
                     ),
                   ],
@@ -151,7 +161,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                 decoration: BoxDecoration(
                                   color: cabinetColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: cabinetColor.withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                      color:
+                                          cabinetColor.withValues(alpha: 0.3)),
                                 ),
                                 child: Icon(Icons.router_rounded,
                                     color: cabinetColor, size: 24),
@@ -208,7 +220,11 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Divider(height: 1, color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                      Divider(
+                          height: 1,
+                          color: isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight),
                       const SizedBox(height: 14),
 
                       // Location hierarchy
@@ -217,7 +233,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                           Icon(
                             Icons.location_city_rounded,
                             size: 16,
-                            color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                            color: isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textMuted,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -226,7 +244,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : AppTheme.darkSlate,
+                                color:
+                                    isDark ? Colors.white : AppTheme.darkSlate,
                               ),
                             ),
                           ),
@@ -298,10 +317,14 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                           final portNumber = index + 1;
                           return Container(
                             decoration: BoxDecoration(
-                              color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+                              color: isDark
+                                  ? AppTheme.darkInput
+                                  : AppTheme.lightBg,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                                color: isDark
+                                    ? AppTheme.borderDark
+                                    : AppTheme.borderLight,
                               ),
                             ),
                             child: Center(
@@ -337,7 +360,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                         'Standard NAP distribution box. Ready for drop cable splicing.',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                          color: isDark
+                              ? AppTheme.textSecondaryDark
+                              : AppTheme.textMuted,
                         ),
                       ),
                     ],
@@ -368,14 +393,15 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                            color: isDark
+                                ? AppTheme.borderDark
+                                : AppTheme.borderLight,
                           ),
                         ),
                         child: Row(
@@ -388,7 +414,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                   'WGS84 Coordinates',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                                    color: isDark
+                                        ? AppTheme.textSecondaryDark
+                                        : AppTheme.textMuted,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -413,9 +441,12 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Copied: ${location.coordinates}'),
+                                      content: Text(
+                                          'Copied: ${location.coordinates}'),
                                       behavior: SnackBarBehavior.floating,
-                                      backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+                                      backgroundColor: isDark
+                                          ? AppTheme.darkCard
+                                          : AppTheme.darkSlate,
                                     ),
                                   );
                                 },
@@ -438,7 +469,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                     '${location.street ?? ""}, ${location.barangay ?? ""}, ${location.city ?? ""}',
                               );
                             },
-                            icon: const Icon(Icons.navigation_rounded, size: 18),
+                            icon:
+                                const Icon(Icons.navigation_rounded, size: 18),
                             label: const Text('Start Turn-by-Turn Navigation'),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -482,7 +514,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                     SizedBox(width: 8),
                     Text(
                       'Site Map Location',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
@@ -512,7 +545,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
             height: 180,
             width: double.infinity,
             child: tiles == null
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppTheme.primary))
                 : FlutterMap(
                     options: MapOptions(
                       initialCenter: latLng,
@@ -523,7 +557,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: isDark ? MapTiles.streetDarkUrl : MapTiles.streetLightUrl,
+                        urlTemplate: isDark
+                            ? MapTiles.streetDarkUrl
+                            : MapTiles.streetLightUrl,
                         subdomains: MapTiles.cartoSubdomains,
                         maxZoom: MapTiles.streetMaxZoom,
                         userAgentPackageName: MapTiles.userAgentPackageName,
@@ -539,7 +575,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                               decoration: BoxDecoration(
                                 color: cabinetColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2.5),
+                                border:
+                                    Border.all(color: Colors.white, width: 2.5),
                                 boxShadow: const [
                                   BoxShadow(
                                     color: Color(0x66000000),

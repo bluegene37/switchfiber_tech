@@ -39,7 +39,7 @@ class CompletionReportData {
 }
 
 enum OpticalReadingQuality {
-  optimal,   // -12 to -24 dBm (Green)
-  marginal,  // -24.1 to -27 dBm (Amber)
+  optimal, // -12 to -24 dBm (Green)
+  marginal, // -24.1 to -27 dBm (Amber)
   outOfSpec, // < -27 dBm or > -8 dBm (Red)
 }
