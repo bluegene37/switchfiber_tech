@@ -1,22 +1,35 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/loading_states.dart';
+import '../../lcp_nap/signals/lcp_nap_signals.dart';
+import '../../service_orders/signals/service_orders_signals.dart';
+import '../../service_orders/widgets/service_order_card.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_card.dart';
+import '../widgets/jobs_map_view.dart';
 import 'job_order_detail_screen.dart';
+
+enum _JobsViewMode { list, map }
+enum _JobsCategory { installs, repairs }
 
 /// The scheduled queue: every job order still waiting to be activated.
 /// Tapping a ticket opens its details, where it can be marked Activated.
+/// Supports both Inset Grouped Queue List and interactive Dispatch Map.
 class JobOrdersScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
+  final LcpNapSignals? lcpNapSignals;
+  final ServiceOrdersSignals? serviceOrdersSignals;
   final void Function(JobOrderDto job)? onSelectJobForDetails;
   final void Function(JobOrderDto job)? onSelectJobForReport;
 
   const JobOrdersScreen({
     super.key,
     required this.jobsSignals,
+    this.lcpNapSignals,
+    this.serviceOrdersSignals,
     this.onSelectJobForDetails,
     this.onSelectJobForReport,
   });
@@ -27,6 +40,8 @@ class JobOrdersScreen extends StatefulWidget {
 
 class _JobOrdersScreenState extends State<JobOrdersScreen> {
   final TextEditingController _searchController = TextEditingController();
+  _JobsViewMode _viewMode = _JobsViewMode.list;
+  _JobsCategory _category = _JobsCategory.installs;
 
   @override
   void dispose() {
@@ -40,7 +55,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
       return;
     }
 
-    Navigator.of(context).push(
+    Navigator.push(
+      context,
       MaterialPageRoute(
         builder: (_) => JobOrderDetailScreen(
           jobId: job.id,
@@ -58,43 +74,35 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Scheduled Work Orders',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            Text(
-              'Tap a ticket to view details and activate',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
-            ),
-          ],
+        title: Text(
+          _category == _JobsCategory.installs
+              ? 'Scheduled Installations'
+              : 'Service & Repair Tickets',
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
         actions: [
           // Manual Sync & Refresh Action Button
           SignalBuilder(
             builder: (context) {
-              final syncing = signals.repository.syncWorker.isSyncing.value;
+              final syncing = signals.repository.syncWorker.isSyncing.value ||
+                  (widget.serviceOrdersSignals?.isSyncing.value ?? false);
               final pending = signals.repository.syncWorker.pendingCount.value;
 
               return IconButton(
-                tooltip: 'Sync & refresh scheduled jobs',
+                tooltip: 'Sync & refresh queue',
                 onPressed: syncing
                     ? null
                     : () async {
                         final result = await signals.repository.syncWorker
                             .syncPendingJobs();
                         await signals.fetchRemote();
+                        await widget.serviceOrdersSignals?.fetchRemote();
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
                               result.failedCount == 0
-                                  ? 'Synced with backend. Refreshed scheduled jobs.'
+                                  ? 'Synced with backend.'
                                   : result.message,
                             ),
                             backgroundColor: result.success
@@ -117,7 +125,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                             color: AppTheme.primary,
                           ),
                         )
-                      : const Icon(Icons.sync_rounded),
+                      : const Icon(CupertinoIcons.arrow_2_circlepath),
                 ),
               );
             },
@@ -126,57 +134,156 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
       ),
       body: Column(
         children: [
-          // 1. Scheduled Intake Header Banner & Search
+          // 1. Scheduled Intake Header Banner & iOS Search
           Container(
             color: isDark ? AppTheme.darkCard : Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
               children: [
-                // Scheduled Queue Banner
+                // Top Category Toggle: Installs vs Repairs
+                if (widget.serviceOrdersSignals != null) ...[
+                  SignalBuilder(
+                    builder: (context) {
+                      final installCount = signals.scheduledCount.value;
+                      final repairCount = widget.serviceOrdersSignals?.allOrders.value.length ?? 0;
+
+                      return SizedBox(
+                        width: double.infinity,
+                        child: CupertinoSlidingSegmentedControl<_JobsCategory>(
+                          groupValue: _category,
+                          backgroundColor:
+                              isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                          thumbColor: isDark ? AppTheme.darkCard : Colors.white,
+                          children: {
+                            _JobsCategory.installs: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              child: Text(
+                                'Installs ($installCount)',
+                                style: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            _JobsCategory.repairs: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              child: Text(
+                                'Repairs ($repairCount)',
+                                style: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          },
+                          onValueChanged: (val) {
+                            if (val != null) setState(() => _category = val);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                ],
+
+                // iOS Capsule Search Bar
+                Container(
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        CupertinoIcons.search,
+                        size: 16,
+                        color: AppTheme.textMuted,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (text) {
+                            setState(() {});
+                            signals.setSearch(text);
+                            widget.serviceOrdersSignals?.searchQuery.value = text;
+                          },
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white : AppTheme.darkSlate,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: _category == _JobsCategory.installs
+                                ? 'Search subscriber, ticket #, address...'
+                                : 'Search repair ticket, account, concern...',
+                            hintStyle: const TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textMuted,
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      if (_searchController.text.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            _searchController.clear();
+                            setState(() {});
+                            signals.setSearch('');
+                            widget.serviceOrdersSignals?.searchQuery.value = '';
+                          },
+                          child: const Icon(
+                            CupertinoIcons.clear_thick_circled,
+                            size: 16,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Scheduled Queue iOS Widget Banner
                 SignalBuilder(
                   builder: (context) {
                     final scheduledCount = signals.scheduledCount.value;
 
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
+                          horizontal: 12, vertical: 9),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isDark
-                              ? [
-                                  const Color(0xFF1E3A8A)
-                                      .withValues(alpha: 0.3),
-                                  const Color(0xFF172554).withValues(alpha: 0.2)
-                                ]
-                              : [
-                                  const Color(0xFFE0F2FE),
-                                  const Color(0xFFF0F9FF)
-                                ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: isDark
+                            ? const Color(0xFF1C2230)
+                            : const Color(0xFFF0F6FF),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isDark
-                              ? const Color(0xFF1D4ED8).withValues(alpha: 0.4)
-                              : const Color(0xFFBAE6FD),
+                              ? const Color(0xFF2563EB).withValues(alpha: 0.3)
+                              : const Color(0xFFBFDBFE),
+                          width: 0.5,
                         ),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            width: 32,
+                            height: 32,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0EA5E9),
+                              color: const Color(0xFF0284C7),
                               borderRadius: BorderRadius.circular(8),
                             ),
+                            alignment: Alignment.center,
                             child: const Icon(
-                              Icons.calendar_today_rounded,
+                              CupertinoIcons.calendar,
                               color: Colors.white,
-                              size: 18,
+                              size: 17,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,21 +291,22 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 Text(
                                   '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.2,
                                     color: isDark
-                                        ? const Color(0xFF7DD3FC)
-                                        : const Color(0xFF0369A1),
+                                        ? const Color(0xFF93C5FD)
+                                        : const Color(0xFF1E40AF),
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 1),
                                 Text(
-                                  'Open a ticket to review it and mark it Activated once the subscriber is online.',
+                                  'Tap ticket to verify optical specs & activate subscriber.',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isDark
                                         ? AppTheme.textSecondaryDark
-                                        : const Color(0xFF0C4A6E),
+                                        : const Color(0xFF3B82F6),
                                   ),
                                 ),
                               ],
@@ -211,25 +319,51 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Search Input Field
-                TextField(
-                  controller: _searchController,
-                  onChanged: signals.setSearch,
-                  decoration: InputDecoration(
-                    hintText:
-                        'Search scheduled subscriber, ticket #, address...',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              signals.setSearch('');
-                            },
-                          )
-                        : null,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                // iOS Segmented View Control (Queue List vs Dispatch Map)
+                SizedBox(
+                  width: double.infinity,
+                  child: CupertinoSlidingSegmentedControl<_JobsViewMode>(
+                    groupValue: _viewMode,
+                    backgroundColor:
+                        isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                    thumbColor: isDark ? AppTheme.darkCard : Colors.white,
+                    children: const {
+                      _JobsViewMode.list: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(CupertinoIcons.list_bullet, size: 14),
+                            SizedBox(width: 6),
+                            Text(
+                              'Ticket Queue',
+                              style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _JobsViewMode.map: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(CupertinoIcons.map_fill, size: 14),
+                            SizedBox(width: 6),
+                            Text(
+                              'Dispatch Map',
+                              style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    },
+                    onValueChanged: (val) {
+                      if (val != null) setState(() => _viewMode = val);
+                    },
                   ),
                 ),
               ],
@@ -295,49 +429,120 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             },
           ),
 
-          // 3. Reactive Scheduled Jobs List
+          // 3. Body: Repairs Queue OR (Interactive Dispatch Map / Scheduled Jobs List)
           Expanded(
-            child: SignalBuilder(
-              builder: (context) {
-                final jobs = signals.filteredJobs.value;
-                final phase = signals.loadPhase.value;
+            child: _category == _JobsCategory.repairs
+                ? _buildRepairsBody(context, isDark)
+                : (_viewMode == _JobsViewMode.map
+                    ? JobsMapView(
+                        jobsSignals: signals,
+                        lcpNapSignals: widget.lcpNapSignals,
+                        onOpenJob: _openDetails,
+                      )
+                    : SignalBuilder(
+                        builder: (context) {
+                          final jobs = signals.filteredJobs.value;
+                          final phase = signals.loadPhase.value;
 
-                if (phase == DataLoadPhase.downloading) {
-                  return const DownloadingIndicator(
-                    title: 'Downloading Job Orders',
-                    subtitle:
-                        'Fetching your scheduled dispatches from the server...',
-                  );
-                }
+                          if (phase == DataLoadPhase.downloading) {
+                            return const DownloadingIndicator(
+                              title: 'Downloading Job Orders',
+                              subtitle:
+                                  'Fetching your scheduled dispatches from the server...',
+                            );
+                          }
 
-                if (phase == DataLoadPhase.skeleton) {
-                  return const SkeletonCardList();
-                }
+                          if (phase == DataLoadPhase.skeleton) {
+                            return const SkeletonCardList();
+                          }
 
-                if (jobs.isEmpty) {
-                  return _buildEmptyState(signals, isDark);
-                }
+                          if (jobs.isEmpty) {
+                            return _buildEmptyState(signals, isDark);
+                          }
 
-                return RefreshIndicator(
-                  onRefresh: signals.fetchRemote,
-                  color: AppTheme.primary,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: jobs.length,
-                    itemBuilder: (context, index) {
-                      final job = jobs[index];
-                      return JobCard(
-                        job: job,
-                        onTap: () => _openDetails(job),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
+                          return RefreshIndicator(
+                            onRefresh: signals.fetchRemote,
+                            color: AppTheme.primary,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: jobs.length,
+                              itemBuilder: (context, index) {
+                                final job = jobs[index];
+                                return JobCard(
+                                  job: job,
+                                  onTap: () => _openDetails(job),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      )),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRepairsBody(BuildContext context, bool isDark) {
+    final sos = widget.serviceOrdersSignals;
+    if (sos == null) {
+      return const Center(child: Text('Service Orders service unavailable'));
+    }
+
+    return SignalBuilder(
+      builder: (context) {
+        final orders = sos.filteredOrders.value;
+        final syncing = sos.isSyncing.value;
+
+        if (syncing && orders.isEmpty) {
+          return const DownloadingIndicator(
+            title: 'Loading Service Orders',
+            subtitle: 'Fetching maintenance tickets and equipment pullouts...',
+          );
+        }
+
+        if (orders.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(CupertinoIcons.wrench, size: 36, color: AppTheme.primary),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('No Active Service Orders', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Text(
+                    'No repair or swap tickets currently assigned.',
+                    style: TextStyle(color: isDark ? Colors.white60 : AppTheme.textMuted, fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => sos.fetchRemote(),
+          color: AppTheme.primary,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              return ServiceOrderCard(order: order, signals: sos);
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -349,15 +554,21 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color:
                     isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark
+                      ? AppTheme.primary.withValues(alpha: 0.3)
+                      : AppTheme.primarySubtleBorder,
+                  width: 0.5,
+                ),
               ),
               child: const Icon(
-                Icons.event_available_rounded,
-                size: 40,
+                CupertinoIcons.calendar_badge_plus,
+                size: 38,
                 color: AppTheme.primary,
               ),
             ),
@@ -367,6 +578,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
               ),
             ),
             const SizedBox(height: 6),
@@ -376,6 +588,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               style: TextStyle(
                 fontSize: 13,
                 color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                height: 1.35,
               ),
             ),
             const SizedBox(height: 20),
@@ -383,7 +596,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               onPressed: () {
                 signals.fetchRemote();
               },
-              icon: const Icon(Icons.refresh_rounded, size: 16),
+              icon: const Icon(CupertinoIcons.arrow_2_circlepath, size: 15),
               label: const Text('Pull Scheduled From Server'),
             ),
           ],

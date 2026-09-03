@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/server_display.dart';
 import '../services/auth_service.dart';
 import '../signals/auth_signals.dart';
 
@@ -47,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     final success = await authSignals.login(
-      usernameOrEmail: _usernameController.text.trim(),
+      username: _usernameController.text.trim(),
       password: _passwordController.text,
     );
 
@@ -78,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showHelpModal() {
-    final emailController = TextEditingController();
+    final usernameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
@@ -86,161 +88,200 @@ class _LoginScreenState extends State<LoginScreen> {
       isScrollControlled: true,
       backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Padding(
+        // viewInsets covers the keyboard. padding.bottom covers the system
+        // navigation bar or home indicator, which otherwise sits on top of the
+        // hotline row at the end of the sheet. It collapses to zero while the
+        // keyboard is up, so the two never double up.
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          top: 20,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          top: 10,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom +
+              MediaQuery.of(ctx).padding.bottom +
+              24,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.support_agent_rounded,
-                        color: AppTheme.primary, size: 22),
-                    SizedBox(width: 8),
-                    Text(
-                      'Dispatch & Terminal Help',
-                      style:
-                          TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Forgot technician password or having connectivity issues? Request a reset link or contact Dispatch Operations.',
-              style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-            ),
-            const SizedBox(height: 16),
-
-            // Password reset request
-            const Text(
-              'Request Password Reset Link',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      hintText: 'tech.email@switchfiber.ph',
-                      prefixIcon: Icon(Icons.mail_outline_rounded, size: 18),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // iOS Grabber Pill
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF38383A)
+                        : const Color(0xFFD1D1D6),
+                    borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () async {
-                    final email = emailController.text.trim();
-                    if (email.isEmpty) return;
-                    final messenger = ScaffoldMessenger.of(context);
-                    try {
-                      await AuthService().requestPasswordReset(email);
-                      if (!ctx.mounted) return;
-                      Navigator.pop(ctx);
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Password reset request sent! Check your email.'),
-                          backgroundColor: AppTheme.success,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    } catch (e) {
-                      if (!ctx.mounted) return;
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Failed: ${e.toString().replaceAll('Exception: ', '')}'),
-                          backgroundColor: AppTheme.danger,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                  ),
-                  child: const Text('Send'),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-            const Divider(height: 1),
-            const SizedBox(height: 14),
-
-            // Dispatch Hotline
-            const Text(
-              'Operations Dispatch Hotline',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? AppTheme.darkSlate : AppTheme.lightBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                    color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
               ),
-              child: Row(
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.phone_in_talk_rounded,
-                      color: AppTheme.primary, size: 20),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Switch Fiber Operations Manila',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 13)),
-                        Text('+63 2 8888 3423 • Toll-Free 1800-SWITCH',
-                            style: TextStyle(
-                                fontSize: 12, color: AppTheme.textMuted)),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded, size: 18),
-                    tooltip: 'Copy Hotline',
-                    onPressed: () {
-                      Clipboard.setData(
-                          const ClipboardData(text: '+63288883423'));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Hotline number copied to clipboard!'),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: AppTheme.darkSlate,
+                  const Row(
+                    children: [
+                      Icon(CupertinoIcons.question_circle_fill,
+                          color: AppTheme.primary, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'Dispatch & Terminal Help',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
                         ),
-                      );
-                    },
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        CupertinoIcons.xmark,
+                        size: 13,
+                        color: isDark ? Colors.white : AppTheme.darkSlate,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              const Text(
+                'Forgot technician password or having connectivity issues? Enter your username to get a reset link by email, or contact Dispatch Operations.',
+                style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+              ),
+              const SizedBox(height: 16),
+
+              // Password reset request
+              const Text(
+                'Request Password Reset Link',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: usernameController,
+                      keyboardType: TextInputType.text,
+                      autocorrect: false,
+                      decoration: const InputDecoration(
+                        hintText: 'tech_username',
+                        prefixIcon: Icon(CupertinoIcons.person, size: 18),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final username = usernameController.text.trim();
+                      if (username.isEmpty) return;
+                      final messenger = ScaffoldMessenger.of(context);
+                      try {
+                        await AuthService().requestPasswordReset(username);
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Password reset request sent! Check your email.'),
+                            backgroundColor: AppTheme.success,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!ctx.mounted) return;
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Failed: ${e.toString().replaceAll('Exception: ', '')}'),
+                            backgroundColor: AppTheme.danger,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                    ),
+                    child: const Text('Send'),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 18),
+              const Divider(height: 1),
+              const SizedBox(height: 14),
+
+              // Dispatch Hotline
+              const Text(
+                'Operations Dispatch Hotline',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkSlate : AppTheme.lightBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color:
+                          isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.phone_in_talk_rounded,
+                        color: AppTheme.primary, size: 20),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Switch Fiber Operations',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 13)),
+                          Text('+63 2 8888 3423 • Toll-Free 1800-SWITCH',
+                              style: TextStyle(
+                                  fontSize: 12, color: AppTheme.textMuted)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      tooltip: 'Copy Hotline',
+                      onPressed: () {
+                        Clipboard.setData(
+                            const ClipboardData(text: '+63288883423'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Hotline number copied to clipboard!'),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: AppTheme.darkSlate,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -332,18 +373,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 20),
 
-                              // Username / Email Field
+                              // Username Field
                               TextFormField(
                                 controller: _usernameController,
                                 textInputAction: TextInputAction.next,
                                 decoration: const InputDecoration(
-                                  labelText: 'Username or Email',
-                                  prefixIcon: Icon(Icons.person_outline_rounded,
-                                      size: 20),
+                                  labelText: 'Username',
+                                  prefixIcon:
+                                      Icon(CupertinoIcons.person, size: 18),
                                 ),
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
-                                    return 'Please enter username or email';
+                                    return 'Please enter your username';
                                   }
                                   return null;
                                 },
@@ -362,14 +403,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     decoration: InputDecoration(
                                       labelText: 'Password',
                                       prefixIcon: const Icon(
-                                          Icons.lock_outline_rounded,
-                                          size: 20),
+                                          CupertinoIcons.lock,
+                                          size: 18),
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           obscure
-                                              ? Icons.visibility_off_outlined
-                                              : Icons.visibility_outlined,
-                                          size: 20,
+                                              ? CupertinoIcons.eye_slash
+                                              : CupertinoIcons.eye,
+                                          size: 18,
                                           color: AppTheme.textMuted,
                                         ),
                                         onPressed: () {
@@ -532,7 +573,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Server: ${_baseUrl.replaceAll("https://", "").replaceAll("/api", "")}',
+                              'Server: ${ServerDisplay.mask(_baseUrl)}',
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontFamily: 'monospace',

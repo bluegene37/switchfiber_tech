@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -94,17 +95,19 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
           children: [
             const Text(
               'My Job History',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
             SignalBuilder(
               builder: (context) {
                 final email = signals.technicianEmail.value?.trim() ?? '';
+                if (email.isEmpty) return const SizedBox.shrink();
                 return Text(
-                  email.isEmpty
-                      ? 'Activated jobs assigned to you'
-                      : 'Activated jobs for $email',
-                  style: TextStyle(fontSize: 12, color: muted),
-                  overflow: TextOverflow.ellipsis,
+                  'Activated jobs for $email',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: muted,
+                  ),
                 );
               },
             ),
@@ -126,7 +129,7 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                           color: AppTheme.primary,
                         ),
                       )
-                    : const Icon(Icons.refresh_rounded),
+                    : const Icon(CupertinoIcons.arrow_2_circlepath),
               );
             },
           ),
@@ -146,35 +149,73 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
             children: [
               Container(
                 color: isDark ? AppTheme.darkCard : Colors.white,
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: Column(
                   children: [
                     _SummaryStrip(signals: signals, isDark: isDark),
                     const SizedBox(height: 10),
-                    TextField(
-                      controller: _searchController,
-                      onChanged: (v) {
-                        signals.setHistorySearch(v);
-                        setState(() {});
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search ticket #, subscriber, address...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  signals.setHistorySearch('');
-                                  setState(() {});
-                                },
-                              )
-                            : null,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
+                    // iOS Capsule Search Bar
+                    Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            CupertinoIcons.search,
+                            size: 16,
+                            color: AppTheme.textMuted,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (v) {
+                                signals.setHistorySearch(v);
+                                setState(() {});
+                              },
+                              style: TextStyle(
+                                fontSize: 14,
+                                color:
+                                    isDark ? Colors.white : AppTheme.darkSlate,
+                              ),
+                              decoration: const InputDecoration(
+                                hintText:
+                                    'Search ticket #, subscriber, address...',
+                                hintStyle: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.textMuted,
+                                ),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          if (_searchController.text.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                _searchController.clear();
+                                signals.setHistorySearch('');
+                                setState(() {});
+                              },
+                              child: const Icon(
+                                CupertinoIcons.clear_thick_circled,
+                                size: 16,
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 10),
+                    _StatusChips(signals: signals),
+                    const SizedBox(height: 8),
                     _RangeChips(
                         signals: signals, onPickCustom: _pickCustomRange),
                     SignalBuilder(
@@ -254,8 +295,9 @@ class _SummaryStrip extends StatelessWidget {
     return SignalBuilder(
       builder: (context) {
         final total = signals.historyTotalCount.value;
+        final activated = signals.historyActivatedCount.value;
+        final completed = signals.historyCompletedCount.value;
         final week = signals.historyThisWeekCount.value;
-        final month = signals.historyThisMonthCount.value;
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -279,9 +321,18 @@ class _SummaryStrip extends StatelessWidget {
           ),
           child: Row(
             children: [
-              _Stat(label: 'Activated', value: total, color: AppTheme.success),
+              _Stat(label: 'Total', value: total, color: AppTheme.primary),
+              _Stat(
+                label: 'Activated',
+                value: activated,
+                color: const Color(0xFF4F46E5),
+              ),
+              _Stat(
+                label: 'Completed',
+                value: completed,
+                color: AppTheme.success,
+              ),
               _Stat(label: 'This Week', value: week, color: AppTheme.info),
-              _Stat(label: 'This Month', value: month, color: AppTheme.primary),
             ],
           ),
         );
@@ -325,6 +376,43 @@ class _Stat extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Status filter chips for technician history (All, Activated, Completed).
+class _StatusChips extends StatelessWidget {
+  final JobsSignals signals;
+
+  const _StatusChips({required this.signals});
+
+  @override
+  Widget build(BuildContext context) {
+    return SignalBuilder(
+      builder: (context) {
+        final active = signals.historyStatus.value;
+        return SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: HistoryStatusFilter.values.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final filter = HistoryStatusFilter.values[index];
+              return ChoiceChip(
+                label: Text(filter.label),
+                selected: filter == active,
+                onSelected: (_) => signals.setHistoryStatus(filter),
+                visualDensity: VisualDensity.compact,
+                labelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -506,12 +594,15 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -527,16 +618,16 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              filtered ? 'Nothing Matches' : 'No Activated Jobs Yet',
+              filtered ? 'Nothing Matches' : 'No History Jobs Yet',
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             Text(
               filtered
-                  ? 'No job in your history matches the current date, area or '
-                      'search filters.'
-                  : 'Jobs you mark as Activated appear here as a permanent '
-                      'record. Pull down to refresh from the server.',
+                  ? 'No job in your history matches the current status, date, '
+                      'area or search filters.'
+                  : 'Jobs marked as Activated or Completed appear here as a '
+                      'permanent record. Pull down to refresh from the server.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -559,6 +650,7 @@ class _EmptyState extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

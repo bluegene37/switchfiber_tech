@@ -4,6 +4,8 @@ import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/services/image_capture_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
+import '../../catalogs/models/catalog_model.dart';
+import '../../catalogs/services/catalog_service.dart';
 import '../../jobs/models/job_order_model.dart';
 import '../../jobs/signals/jobs_signals.dart';
 import '../signals/report_signals.dart';
@@ -38,6 +40,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   late final TextEditingController _serialController;
   late final TextEditingController _remarksController;
   late final TextEditingController _dbmController;
+  List<RouterDto> _availableRouters = CatalogService.fallbackRouters;
 
   @override
   void initState() {
@@ -48,6 +51,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     _dbmController =
         TextEditingController(text: rep.opticalPower.value.toStringAsFixed(1));
 
+    _loadCatalog();
+
     // Auto-select first available job order if none selected
     if (rep.selectedJobOrder.value == null &&
         widget.jobsSignals.allJobs.value.isNotEmpty) {
@@ -55,6 +60,12 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       _serialController.text = rep.routerSerial.value;
       _dbmController.text = rep.opticalPower.value.toStringAsFixed(1);
     }
+  }
+
+  Future<void> _loadCatalog() async {
+    final list = await CatalogService.instance.getRouters();
+    if (!mounted) return;
+    setState(() => _availableRouters = list);
   }
 
   @override
@@ -126,7 +137,6 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   @override
   Widget build(BuildContext context) {
     final rep = widget.reportSignals;
-    final jobs = widget.jobsSignals;
 
     return Scaffold(
       appBar: AppBar(
@@ -152,7 +162,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. Target Job Order Selector
-              _buildJobOrderSelector(jobs, rep),
+              _buildJobOrderSummary(rep),
               const SizedBox(height: 16),
 
               // 2. Optical Power Reading Gauge & Input
@@ -244,84 +254,70 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     );
   }
 
-  Widget _buildJobOrderSelector(JobsSignals jobs, ReportSignals rep) {
+  /// A report always belongs to the job order the technician opened, so the
+  /// job is shown read-only rather than as a picker. Letting it be changed
+  /// here allowed a report to be filed against the wrong job.
+  Widget _buildJobOrderSummary(ReportSignals rep) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
+        child: SignalBuilder(
+          builder: (context) {
+            final job = rep.selectedJobOrder.value;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.receipt_long_rounded,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'Select Target Job Order',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SignalBuilder(
-              builder: (context) {
-                final jobList = jobs.allJobs.value;
-                final selected = rep.selectedJobOrder.value;
-
-                if (jobList.isEmpty) {
-                  return const Text(
-                    'No job orders available.',
-                    style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
-                  );
-                }
-
-                // Keyed on the id, not the DTO: every Drift emission builds
-                // fresh DTO instances, and a dropdown whose value no longer
-                // matches any item asserts. An id survives re-emission, and a
-                // job that has left the list simply deselects.
-                final selectedId =
-                    selected == null || !jobList.any((j) => j.id == selected.id)
-                        ? null
-                        : selected.id;
-
-                return DropdownButtonFormField<int>(
-                  key: ValueKey('report-job-$selectedId'),
-                  initialValue: selectedId,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  items: jobList.map((j) {
-                    return DropdownMenuItem<int>(
-                      value: j.id,
+                const Row(
+                  children: [
+                    Icon(Icons.receipt_long_rounded,
+                        size: 18, color: AppTheme.primary),
+                    SizedBox(width: 8),
+                    Expanded(
                       child: Text(
-                        '${j.ticketNumber} — ${j.customerName} (${j.address})',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 13),
+                        'Job Order',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (newId) {
-                    if (newId == null) return;
-                    final newJob =
-                        jobList.where((j) => j.id == newId).firstOrNull;
-                    if (newJob == null) return;
-                    rep.setJobOrder(newJob);
-                    _serialController.text = rep.routerSerial.value;
-                    _dbmController.text =
-                        rep.opticalPower.value.toStringAsFixed(1);
-                  },
-                  validator: (val) =>
-                      val == null ? 'Please select a job order' : null,
-                );
-              },
-            ),
-          ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (job == null)
+                  const Text(
+                    'No job order is linked to this report.',
+                    style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                  )
+                else ...[
+                  Text(
+                    job.ticketNumber,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    job.customerName,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    job.address,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -450,18 +446,31 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 Expanded(
                   child: SignalBuilder(
                     builder: (context) {
-                      final models = [
-                        'Huawei HG8145V5',
-                        'Huawei EG8145V5',
-                        'ZTE F670L',
-                        'FiberHome AN5506',
-                      ];
+                      final models = _availableRouters
+                          .map((r) => r.compactName)
+                          .toList();
+                      if (!models.contains(rep.routerModel.value) &&
+                          rep.routerModel.value.isNotEmpty) {
+                        models.insert(0, rep.routerModel.value);
+                      }
+                      if (models.isEmpty) {
+                        models.addAll([
+                          'Huawei 5v5',
+                          'UT-KING UT-XP6486-S',
+                          'ZTE F670L',
+                        ]);
+                      }
+
                       return DropdownButtonFormField<String>(
+                        // Without this the button sizes to its widest item
+                        // ('UT-KING UT-XP6486-S') and overflows the column it
+                        // shares with the NAP port field.
+                        isExpanded: true,
                         initialValue: models.contains(rep.routerModel.value)
                             ? rep.routerModel.value
                             : models.first,
                         decoration: const InputDecoration(
-                          labelText: 'ONT Model',
+                          labelText: 'Approved ONT Model',
                           contentPadding: EdgeInsets.symmetric(
                               horizontal: 12, vertical: 10),
                         ),
@@ -469,6 +478,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           return DropdownMenuItem(
                               value: m,
                               child: Text(m,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(fontSize: 13)));
                         }).toList(),
                         onChanged: (val) {
@@ -493,6 +504,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         'Port 8',
                       ];
                       return DropdownButtonFormField<String>(
+                        isExpanded: true,
                         initialValue: ports.contains(rep.napPort.value)
                             ? rep.napPort.value
                             : ports.first,

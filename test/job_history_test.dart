@@ -164,14 +164,29 @@ void main() {
       expect(signals.historyTotalCount.value, 0);
     });
 
-    test('lists only my activated jobs, newest first, undated last', () {
+    test('lists only my history jobs (Activated and Completed), newest first, undated last', () {
       signals.setTechnicianEmail('tech@switchfiber.ph');
       expect(signals.historyJobs.value.map((j) => j.id), [1, 2, 3, 7]);
       expect(signals.historyTotalCount.value, 4);
+      expect(signals.historyActivatedCount.value, 3);
+      expect(signals.historyCompletedCount.value, 1);
       // Wed 2 Sep: today and Mon 31 Aug fall in this week, but only today
       // falls in this month.
       expect(signals.historyThisWeekCount.value, 2);
       expect(signals.historyThisMonthCount.value, 1);
+    });
+
+    test('status filter narrows history by Activated and Completed', () {
+      signals.setTechnicianEmail('tech@switchfiber.ph');
+
+      signals.setHistoryStatus(HistoryStatusFilter.activated);
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 2, 7]);
+
+      signals.setHistoryStatus(HistoryStatusFilter.completed);
+      expect(signals.historyJobs.value.map((j) => j.id), [3]);
+
+      signals.setHistoryStatus(HistoryStatusFilter.all);
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 2, 3, 7]);
     });
 
     test('a scheduled job never appears in the history', () {
@@ -230,12 +245,14 @@ void main() {
 
     test('filters combine and clear together', () {
       signals.setTechnicianEmail('tech@switchfiber.ph');
+      signals.setHistoryStatus(HistoryStatusFilter.activated);
       signals.setHistoryRange(HistoryRange.week);
       signals.setHistoryCity('Antipolo');
       signals.setHistorySearch('SF-1');
       expect(signals.historyJobs.value.map((j) => j.id), [1]);
 
       signals.clearHistoryFilters();
+      expect(signals.historyStatus.value, HistoryStatusFilter.all);
       expect(signals.historyRange.value, HistoryRange.all);
       expect(signals.historyCity.value, isNull);
       expect(signals.historySearch.value, isEmpty);

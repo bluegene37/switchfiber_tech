@@ -47,6 +47,7 @@ class JobRepository {
     try {
       final scheduled = await _api.fetchByStatus(JobStatus.scheduled.wireValue);
       final activated = await _api.fetchByStatus(JobStatus.activated.wireValue);
+      final completed = await _api.fetchByStatus(JobStatus.completed.wireValue);
 
       final email = technicianEmail?.trim() ?? '';
       final pending = await _dao.getUnsyncedIds();
@@ -64,6 +65,11 @@ class JobRepository {
         take(JobOrderDto.fromJson(item));
       }
       for (final item in activated) {
+        final dto = JobOrderDto.fromJson(item);
+        if (email.isEmpty || !dto.isAssignedTo(email)) continue;
+        take(dto);
+      }
+      for (final item in completed) {
         final dto = JobOrderDto.fromJson(item);
         if (email.isEmpty || !dto.isAssignedTo(email)) continue;
         take(dto);

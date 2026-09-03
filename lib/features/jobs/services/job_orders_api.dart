@@ -8,6 +8,15 @@ abstract class JobOrdersApi {
   /// The server matches the status case-insensitively.
   Future<List<Map<String, dynamic>>> fetchByStatus(String status);
 
+  /// `GET /api/JobOrders/status-date`: filter by status, date range, or both.
+  /// [dateFrom] and [dateTo] filter on `dateInstalled` (format yyyy-MM-dd).
+  Future<List<Map<String, dynamic>>> fetchByStatusDate({
+    String? status,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+  }) =>
+      fetchByStatus(status ?? '');
+
   /// `GET /api/JobOrders/{id}`: one record as the server holds it now, or
   /// null when it no longer exists.
   Future<Map<String, dynamic>?> fetchById(int id);
@@ -25,7 +34,32 @@ class DioJobOrdersApi implements JobOrdersApi {
 
   @override
   Future<List<Map<String, dynamic>>> fetchByStatus(String status) async {
-    final response = await _api.get('/JobOrders/status/$status');
+    return fetchByStatusDate(status: status);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchByStatusDate({
+    String? status,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (status != null && status.trim().isNotEmpty) {
+      queryParams['status'] = status.trim();
+    }
+    if (dateFrom != null) {
+      queryParams['dateFrom'] =
+          '${dateFrom.year}-${dateFrom.month.toString().padLeft(2, '0')}-${dateFrom.day.toString().padLeft(2, '0')}';
+    }
+    if (dateTo != null) {
+      queryParams['dateTo'] =
+          '${dateTo.year}-${dateTo.month.toString().padLeft(2, '0')}-${dateTo.day.toString().padLeft(2, '0')}';
+    }
+
+    final response = await _api.get(
+      '/JobOrders/status-date',
+      queryParameters: queryParams.isEmpty ? null : queryParams,
+    );
     final data = response.data;
     if (data is! List) return const [];
     return [

@@ -67,6 +67,7 @@ class StatusBadge extends StatelessWidget {
   static IconData _iconFor(JobStatus? s) => switch (s) {
         JobStatus.scheduled => Icons.calendar_today_rounded,
         JobStatus.activated => Icons.verified_rounded,
+        JobStatus.completed => Icons.check_circle_rounded,
         null => Icons.calendar_today_rounded,
       };
 
@@ -75,12 +76,14 @@ class StatusBadge extends StatelessWidget {
       return switch (s) {
         JobStatus.scheduled => const Color(0xFF0369A1).withValues(alpha: 0.25),
         JobStatus.activated => const Color(0xFF4F46E5).withValues(alpha: 0.25),
+        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.25),
         null => const Color(0xFF0369A1).withValues(alpha: 0.25),
       };
     }
     return switch (s) {
       JobStatus.scheduled => const Color(0xFFF0F9FF),
       JobStatus.activated => const Color(0xFFEFF6FF),
+      JobStatus.completed => AppTheme.successSubtle,
       null => const Color(0xFFF0F9FF),
     };
   }
@@ -90,12 +93,14 @@ class StatusBadge extends StatelessWidget {
       return switch (s) {
         JobStatus.scheduled => const Color(0xFF38BDF8),
         JobStatus.activated => const Color(0xFF818CF8),
+        JobStatus.completed => const Color(0xFF4ADE80),
         null => const Color(0xFF38BDF8),
       };
     }
     return switch (s) {
       JobStatus.scheduled => const Color(0xFF0369A1),
       JobStatus.activated => const Color(0xFF1E40AF),
+      JobStatus.completed => const Color(0xFF166534),
       null => const Color(0xFF0369A1),
     };
   }
@@ -105,12 +110,14 @@ class StatusBadge extends StatelessWidget {
       return switch (s) {
         JobStatus.scheduled => const Color(0xFF0284C7).withValues(alpha: 0.4),
         JobStatus.activated => const Color(0xFF4F46E5).withValues(alpha: 0.4),
+        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.4),
         null => const Color(0xFF0284C7).withValues(alpha: 0.4),
       };
     }
     return switch (s) {
       JobStatus.scheduled => const Color(0xFFBAE6FD),
       JobStatus.activated => const Color(0xFFBFDBFE),
+      JobStatus.completed => const Color(0xFF86EFAC),
       null => const Color(0xFFBAE6FD),
     };
   }

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
@@ -34,11 +35,13 @@ class JobPhotoGallery extends StatelessWidget {
           color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-              color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+            width: 0.5,
+          ),
         ),
         child: Row(
           children: [
-            Icon(Icons.no_photography_outlined, size: 18, color: muted),
+            Icon(CupertinoIcons.camera, size: 18, color: muted),
             const SizedBox(width: 8),
             Text('No photos attached yet',
                 style: TextStyle(fontSize: 12, color: muted)),
@@ -98,7 +101,9 @@ class _PhotoThumb extends StatelessWidget {
           color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-              color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+            width: 0.5,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -106,10 +111,44 @@ class _PhotoThumb extends StatelessWidget {
           children: [
             Expanded(
               child: data != null
-                  ? Image.memory(
-                      data,
-                      fit: BoxFit.cover,
-                      gaplessPlayback: true,
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.memory(
+                          data,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        ),
+                        // GPS Badge
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.success.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(CupertinoIcons.location_fill,
+                                    color: Colors.white, size: 8),
+                                SizedBox(width: 2),
+                                Text(
+                                  'GPS',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     )
                   : Center(
                       child: Column(

@@ -9,6 +9,20 @@ import '../theme/app_theme.dart';
 class MapNavigationService {
   MapNavigationService._();
 
+  /// Launch turn-by-turn navigation to a coordinates object (such as LatLng).
+  static Future<bool> navigateTo(
+    dynamic coordinates, {
+    String? label,
+  }) async {
+    final double lat = (coordinates.latitude as num).toDouble();
+    final double lng = (coordinates.longitude as num).toDouble();
+    return navigateToCoordinates(
+      latitude: lat,
+      longitude: lng,
+      destinationLabel: label,
+    );
+  }
+
   /// Launch turn-by-turn navigation from current location to destination [latitude, longitude].
   static Future<bool> navigateToCoordinates({
     required double latitude,
@@ -106,7 +120,10 @@ class MapNavigationService {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        // Clear the system navigation bar, which otherwise covers the last
+        // row of the sheet.
+        padding: EdgeInsets.fromLTRB(
+            20, 16, 20, 24 + MediaQuery.of(ctx).padding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

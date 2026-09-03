@@ -4,6 +4,17 @@ import '../../../core/widgets/loading_states.dart';
 import '../models/job_order_model.dart';
 import '../repositories/job_repository.dart';
 
+/// Which terminal status of the technician's job history is shown.
+enum HistoryStatusFilter {
+  all('All'),
+  activated('Activated'),
+  completed('Completed');
+
+  const HistoryStatusFilter(this.label);
+
+  final String label;
+}
+
 /// The date window applied to the technician's job history.
 enum HistoryRange {
   all('All time'),
@@ -47,6 +58,7 @@ class JobsSignals {
   // signed-in technician, with their own date, area and search filters so the
   // history and the scheduled queue never fight over one query box.
   final technicianEmail = signal<String?>(null);
+  final historyStatus = signal<HistoryStatusFilter>(HistoryStatusFilter.all);
   final historyRange = signal<HistoryRange>(HistoryRange.all);
   final historyRangeStart = signal<DateTime?>(null);
   final historyRangeEnd = signal<DateTime?>(null);
@@ -103,14 +115,14 @@ class JobsSignals {
     () => allJobs.value.where((j) => !j.isSynced).length,
   );
 
-  /// Every activated job assigned to the signed-in technician, newest first.
-  /// Empty until the technician's email is known.
+  /// Every finished job (Activated or Completed) assigned to the signed-in
+  /// technician, newest first. Empty until the technician's email is known.
   late final ReadonlySignal<List<JobOrderDto>> assignedJobs = computed(() {
     final email = technicianEmail.value;
     if (email == null || email.trim().isEmpty) return const <JobOrderDto>[];
 
     final mine = allJobs.value
-        .where((j) => j.isActivated && j.isAssignedTo(email))
+        .where((j) => (j.isActivated || j.isCompleted) && j.isAssignedTo(email))
         .toList();
     mine.sort((a, b) {
       final ad = a.historyDate;
@@ -166,13 +178,20 @@ class JobsSignals {
     return true;
   }
 
-  /// [assignedJobs] narrowed by the date window, city and search box.
+  /// [assignedJobs] narrowed by the status filter, date window, city and search box.
   late final ReadonlySignal<List<JobOrderDto>> historyJobs = computed(() {
+    final status = historyStatus.value;
     final window = _windowFor(historyRange.value);
     final city = historyCity.value?.trim().toLowerCase();
     final query = historySearch.value.trim().toLowerCase();
 
     return assignedJobs.value.where((job) {
+      if (status == HistoryStatusFilter.activated && !job.isActivated) {
+        return false;
+      }
+      if (status == HistoryStatusFilter.completed && !job.isCompleted) {
+        return false;
+      }
       if (!_inWindow(job, window)) return false;
       if (city != null &&
           city.isNotEmpty &&
@@ -190,6 +209,14 @@ class JobsSignals {
 
   late final ReadonlySignal<int> historyTotalCount =
       computed(() => assignedJobs.value.length);
+
+  late final ReadonlySignal<int> historyActivatedCount = computed(
+    () => assignedJobs.value.where((j) => j.isActivated).length,
+  );
+
+  late final ReadonlySignal<int> historyCompletedCount = computed(
+    () => assignedJobs.value.where((j) => j.isCompleted).length,
+  );
 
   int _historyCountIn(HistoryRange range) {
     final window = _windowFor(range);
@@ -272,7 +299,13 @@ class JobsSignals {
     historyCity.value = (city == null || city.trim().isEmpty) ? null : city;
   }
 
+  /// Restrict the history to one status, or all history.
+  void setHistoryStatus(HistoryStatusFilter status) {
+    historyStatus.value = status;
+  }
+
   void clearHistoryFilters() {
+    historyStatus.value = HistoryStatusFilter.all;
     historyRange.value = HistoryRange.all;
     historyRangeStart.value = null;
     historyRangeEnd.value = null;

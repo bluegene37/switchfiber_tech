@@ -1,4 +1,7 @@
+import 'dart:ui' show ImageFilter;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/signals/auth_signals.dart';
@@ -10,6 +13,7 @@ import '../lcp_nap/screens/lcp_nap_list_screen.dart';
 import '../lcp_nap/signals/lcp_nap_signals.dart';
 import '../reports/screens/create_report_screen.dart';
 import '../reports/signals/report_signals.dart';
+import '../service_orders/signals/service_orders_signals.dart';
 import '../settings/screens/settings_screen.dart';
 import '../toolkit/screens/toolkit_screen.dart';
 
@@ -39,12 +43,14 @@ class _TechnicianShellState extends State<TechnicianShell> {
 
   int _currentIndex = _tabScheduled;
   late final ReportSignals _reportSignals;
+  late final ServiceOrdersSignals _serviceOrdersSignals;
   late final void Function() _disposeEmailSync;
 
   @override
   void initState() {
     super.initState();
     _reportSignals = ReportSignals();
+    _serviceOrdersSignals = ServiceOrdersSignals();
     // The job history is scoped to the signed-in technician's email. Kept in
     // sync reactively so a profile refresh that fills in the email (the login
     // response does not carry it) immediately unlocks the history.
@@ -52,19 +58,24 @@ class _TechnicianShellState extends State<TechnicianShell> {
     _disposeEmailSync = effect(() {
       final email = widget.authSignals.currentUser.value?.email.trim();
       widget.jobsSignals.setTechnicianEmail(email);
+      _serviceOrdersSignals.technicianEmail.value = email;
       // The activated history is fetched per technician, so the first time
       // the email becomes known (the login response lacks it) the jobs are
       // pulled again to fill it in.
       final becameKnown =
           (email?.isNotEmpty ?? false) && (lastEmail?.isEmpty ?? true);
       lastEmail = email;
-      if (becameKnown) widget.jobsSignals.fetchRemote();
+      if (becameKnown) {
+        widget.jobsSignals.fetchRemote();
+        _serviceOrdersSignals.fetchRemote();
+      }
     });
     // Initial fetch / Drift seed. Runs here rather than at construction time so
     // that requests are only made once the technician is authenticated.
     // `initial` walks each screen through downloading -> skeleton -> data.
     widget.jobsSignals.fetchRemote(initial: true);
     widget.lcpNapSignals.fetchRemote(initial: true);
+    _serviceOrdersSignals.fetchRemote();
     // The login response carries no email, and the job history is matched on
     // it, so the full profile is pulled as soon as the shell appears rather
     // than only when the technician happens to open Settings.
@@ -100,6 +111,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
     final screens = [
       JobOrdersScreen(
         jobsSignals: jobs,
+        lcpNapSignals: widget.lcpNapSignals,
+        serviceOrdersSignals: _serviceOrdersSignals,
         onSelectJobForReport: _openReportForJob,
       ),
       JobHistoryScreen(
@@ -114,100 +127,201 @@ class _TechnicianShellState extends State<TechnicianShell> {
       ),
     ];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      drawer: _buildDrawer(context, auth, jobs),
+      drawer: _buildDrawer(context, auth, jobs, isDark),
       body: screens[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: [
-          // 1. Scheduled Job Orders with scheduled badge
-          NavigationDestination(
-            icon: SignalBuilder(
-              builder: (context) {
-                final scheduled = jobs.scheduledCount.value;
+      bottomNavigationBar: _buildIosBottomBar(context, jobs, isDark),
+    );
+  }
 
-                return Badge(
-                  isLabelVisible: scheduled > 0,
-                  label: Text('$scheduled'),
-                  backgroundColor: AppTheme.primary,
-                  child: const Icon(Icons.calendar_today_outlined),
-                );
-              },
+  /// iOS Apple HIG Translucent/Frosted Glass Bottom Tab Bar
+  Widget _buildIosBottomBar(
+      BuildContext context, JobsSignals jobs, bool isDark) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final barBg = isDark ? const Color(0xEB1C1C1E) : const Color(0xF2FFFFFF);
+    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
+
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        child: Container(
+          decoration: BoxDecoration(
+            color: barBg,
+            border: Border(
+              top: BorderSide(color: borderColor, width: 0.5),
             ),
-            selectedIcon: const Icon(Icons.calendar_today_rounded),
-            label: 'Scheduled',
           ),
+          padding: EdgeInsets.only(
+            top: 7,
+            bottom: bottomPadding > 0 ? bottomPadding : 7,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // 1. Scheduled Job Orders
+              _buildIosTabItem(
+                index: _tabScheduled,
+                icon: CupertinoIcons.calendar,
+                activeIcon: CupertinoIcons.calendar_today,
+                label: 'Scheduled',
+                badgeSignal: jobs.scheduledCount,
+                badgeColor: AppTheme.primary,
+                isDark: isDark,
+              ),
 
-          // 2. The technician's own job history
-          NavigationDestination(
-            icon: SignalBuilder(
-              builder: (context) {
-                final mine = jobs.historyTotalCount.value;
-                return Badge(
-                  isLabelVisible: mine > 0,
-                  label: Text('$mine'),
-                  backgroundColor: AppTheme.success,
-                  child: const Icon(Icons.history_outlined),
-                );
-              },
-            ),
-            selectedIcon: const Icon(Icons.history_rounded),
-            label: 'My History',
-          ),
+              // 2. Technician Job History
+              _buildIosTabItem(
+                index: _tabHistory,
+                icon: CupertinoIcons.clock,
+                activeIcon: CupertinoIcons.clock_fill,
+                label: 'My History',
+                badgeSignal: jobs.historyTotalCount,
+                badgeColor: AppTheme.success,
+                isDark: isDark,
+              ),
 
-          // 3. LCP NAP plant records and map
-          NavigationDestination(
-            icon: SignalBuilder(
-              builder: (context) {
-                final sites = widget.lcpNapSignals.totalSitesCount.value;
-                return Badge(
-                  isLabelVisible: sites > 0,
-                  label: Text('$sites'),
-                  backgroundColor: const Color(0xFF0EA5E9),
-                  child: const Icon(Icons.share_location_outlined),
-                );
-              },
-            ),
-            selectedIcon: const Icon(Icons.share_location_rounded),
-            label: 'LCP NAP',
-          ),
+              // 3. LCP NAP Plant Sites
+              _buildIosTabItem(
+                index: _tabLcpNap,
+                icon: CupertinoIcons.map,
+                activeIcon: CupertinoIcons.map_fill,
+                label: 'LCP NAP',
+                badgeSignal: widget.lcpNapSignals.totalSitesCount,
+                badgeColor: AppTheme.info,
+                isDark: isDark,
+              ),
 
-          // 4. Technician Field Toolkit
-          const NavigationDestination(
-            icon: Icon(Icons.handyman_outlined),
-            selectedIcon: Icon(Icons.handyman_rounded),
-            label: 'Tech Toolkit',
-          ),
+              // 4. Technician Toolkit
+              _buildIosTabItem(
+                index: _tabToolkit,
+                icon: CupertinoIcons.wrench,
+                activeIcon: CupertinoIcons.wrench_fill,
+                label: 'Tech Toolkit',
+                isDark: isDark,
+              ),
 
-          // 5. Settings & Terminal Diagnostics
-          NavigationDestination(
-            icon: SignalBuilder(
-              builder: (context) {
-                final pending = jobs.unsyncedCount.value;
-                return Badge(
-                  isLabelVisible: pending > 0,
-                  label: Text('$pending'),
-                  backgroundColor: AppTheme.warning,
-                  child: const Icon(Icons.settings_outlined),
-                );
-              },
-            ),
-            selectedIcon: const Icon(Icons.settings_rounded),
-            label: 'Settings',
+              // 5. Settings & Terminal Diagnostics
+              _buildIosTabItem(
+                index: _tabSettings,
+                icon: CupertinoIcons.gear_alt,
+                activeIcon: CupertinoIcons.gear_alt_fill,
+                label: 'Settings',
+                badgeSignal: jobs.unsyncedCount,
+                badgeColor: AppTheme.warning,
+                isDark: isDark,
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIosTabItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required bool isDark,
+    ReadonlySignal<int>? badgeSignal,
+    Color? badgeColor,
+  }) {
+    final isSelected = _currentIndex == index;
+    final activeColor = AppTheme.primary;
+    final inactiveColor =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
+
+    return Expanded(
+      child: Semantics(
+        label: label,
+        selected: isSelected,
+        button: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (_currentIndex != index) {
+              HapticFeedback.selectionClick();
+              setState(() => _currentIndex = index);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    isSelected ? activeIcon : icon,
+                    size: 22,
+                    color: isSelected ? activeColor : inactiveColor,
+                  ),
+                  if (badgeSignal != null)
+                    Positioned(
+                      top: -4,
+                      right: -10,
+                      child: SignalBuilder(
+                        builder: (context) {
+                          final count = badgeSignal.value;
+                          if (count <= 0) return const SizedBox.shrink();
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4.5, vertical: 1.5),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeColor ?? AppTheme.primary,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF1C1C1E)
+                                    : Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              count > 99 ? '99+' : '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                height: 1,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? activeColor : inactiveColor,
+                  letterSpacing: -0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildDrawer(
-      BuildContext context, AuthSignals auth, JobsSignals jobs) {
+      BuildContext context, AuthSignals auth, JobsSignals jobs, bool isDark) {
     return Drawer(
+      backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [

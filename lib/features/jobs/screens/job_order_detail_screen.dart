@@ -1,9 +1,14 @@
+import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/location_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../diagnostics/widgets/radius_connection_card.dart';
 import '../../toolkit/screens/fiber_color_code_tool.dart';
 import '../../toolkit/screens/optical_budget_tool.dart';
 import '../../toolkit/screens/drop_cable_tool.dart';
@@ -169,8 +174,19 @@ class JobOrderDetailScreen extends StatelessWidget {
               _buildCustomerCard(context, job, isDark),
               const SizedBox(height: 14),
 
+              // 3b. GPS Coordinates & Field Navigation
+              _buildLocationAndGpsCard(context, job, isDark),
+              const SizedBox(height: 14),
+
               // 4. Fiber Plant & Equipment Assignment
               _buildPlantAndHardwareCard(context, job, isDark),
+              const SizedBox(height: 14),
+
+              // 4b. Live RADIUS PPPoE Connection & Reconnect Test
+              RadiusConnectionCard(
+                accountName: _radiusAccountOf(job),
+                subscriberName: job.customerName,
+              ),
               const SizedBox(height: 14),
 
               // 5. Tech Toolkit & Field Utilities
@@ -236,11 +252,15 @@ class JobOrderDetailScreen extends StatelessWidget {
             // The one field action: Scheduled -> Activated.
             if (readOnly)
               _buildViewOnlyNote(isDark)
-            else if (job.canActivate)
+            else if (job.canActivate) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _handleActivate(context, job, isDark),
+                  // Activation is final, so it stays disabled until the
+                  // on-site report is filed.
+                  onPressed: job.hasCompletedReport
+                      ? () => _handleActivate(context, job, isDark)
+                      : null,
                   icon: const Icon(Icons.verified_rounded, size: 18),
                   label: const Text('Mark as Activated',
                       style: TextStyle(fontWeight: FontWeight.w800)),
@@ -250,7 +270,12 @@ class JobOrderDetailScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                   ),
                 ),
-              )
+              ),
+              if (!job.hasCompletedReport) ...[
+                const SizedBox(height: 8),
+                _buildReportRequiredNote(isDark),
+              ],
+            ]
             else
               _buildActivatedNote(job, isDark),
           ],
@@ -288,9 +313,13 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   Widget _buildStepper(JobOrderDto job, bool isDark) {
     final status = job.jobStatus;
+    final isFinished =
+        status == JobStatus.activated || status == JobStatus.completed;
+    final terminalLabel =
+        status == JobStatus.completed ? 'Completed' : 'Activated';
     final steps = [
       {'label': 'Scheduled', 'active': true},
-      {'label': 'Activated', 'active': status == JobStatus.activated},
+      {'label': terminalLabel, 'active': isFinished},
     ];
 
     return Row(
@@ -508,7 +537,9 @@ class JobOrderDetailScreen extends StatelessWidget {
                 color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
             const SizedBox(height: 12),
 
-            // Contact Action Buttons (Call, SMS, Copy Address)
+            // Contact Action Buttons (Call, SMS, Copy Address). Navigation
+            // lives in the Service Location card below, so it is not repeated
+            // here.
             Row(
               children: [
                 if (job.contactNumber != null &&
@@ -542,16 +573,10 @@ class JobOrderDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                 ],
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _copyAddress(context, job, isDark),
-                    icon: const Icon(Icons.map_outlined, size: 16),
-                    label: const Text('Address'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ),
+                IconButton(
+                  tooltip: 'Copy Address',
+                  icon: const Icon(CupertinoIcons.doc_on_clipboard, size: 18),
+                  onPressed: () => _copyAddress(context, job, isDark),
                 ),
               ],
             ),
@@ -559,6 +584,115 @@ class JobOrderDetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildLocationAndGpsCard(
+      BuildContext context, JobOrderDto job, bool isDark) {
+    final latLng = job.latLng;
+    final dms = latLng != null
+        ? LocationService.instance.formatDms(latLng.latitude, latLng.longitude)
+        : null;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(CupertinoIcons.location_circle_fill,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                const Text(
+                  'Service Location & GPS Coordinates',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
+                if (latLng != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'GPS Fixed',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.success,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _buildSpecRow(
+              'Coordinates',
+              dms ?? 'Derived from service area',
+              CupertinoIcons.location_solid,
+              isDark,
+            ),
+            if (latLng != null)
+              _buildSpecRow(
+                'Decimal Lat/Lng',
+                '${latLng.latitude.toStringAsFixed(6)}, ${latLng.longitude.toStringAsFixed(6)}',
+                CupertinoIcons.map_pin_ellipse,
+                isDark,
+              ),
+            // The GPS fix is owned by a widget that asks for it once. Building
+            // the future inline here restarted a 4-second high-accuracy fix on
+            // every rebuild of this screen, and there is nothing to measure
+            // against when the job carries no coordinates.
+            if (latLng != null)
+              _DistanceFromTechnicianRow(target: latLng, isDark: isDark),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: CupertinoButton(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                onPressed: () => _openNavigation(job),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(CupertinoIcons.location_north_fill,
+                        size: 15, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'Start Turn-by-Turn Navigation',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openNavigation(JobOrderDto job) async {
+    final latLng = job.latLng;
+    final Uri uri;
+    if (latLng != null) {
+      uri = Uri.parse(
+          'https://maps.apple.com/?q=${latLng.latitude},${latLng.longitude}');
+    } else {
+      final fullAddr =
+          '${job.address}${job.barangay != null ? ", ${job.barangay}" : ""}${job.city != null ? ", ${job.city}" : ""}, Philippines';
+      uri = Uri.parse(
+          'https://maps.apple.com/?q=${Uri.encodeComponent(fullAddr)}');
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Widget _buildPlantAndHardwareCard(
@@ -872,7 +1006,8 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSpecRow(String label, String value, IconData icon, bool isDark) {
+  static Widget _buildSpecRow(
+      String label, String value, IconData icon, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -898,13 +1033,43 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
+  /// Opens the report on top of this screen.
+  ///
+  /// This used to pop the detail screen first, which left the report sitting
+  /// directly on the job list: backing out of it landed the technician on the
+  /// main screen instead of the job they were working.
   void _handleOpenReport(BuildContext context, JobOrderDto job) {
-    if (onOpenReport != null) {
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      onOpenReport!(job);
-    }
+    onOpenReport?.call(job);
+  }
+
+  /// Says why activation is unavailable, so the button does not just look
+  /// broken.
+  Widget _buildReportRequiredNote(bool isDark) {
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, size: 16, color: muted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Complete the on-site report first. It needs the modem serial '
+              'and the subscriber signature.',
+              style: TextStyle(fontSize: 12, color: muted),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// A read-only banner for the history: the record can be inspected but not
@@ -937,9 +1102,10 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   Widget _buildActivatedNote(JobOrderDto job, bool isDark) {
     final when = job.dateInstalled;
+    final prefix = job.isCompleted ? 'Completed' : 'Activated';
     final label = when == null
-        ? 'Activated'
-        : 'Activated on ${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
+        ? prefix
+        : '$prefix on ${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -980,21 +1146,25 @@ class JobOrderDetailScreen extends StatelessWidget {
   /// the technician's read-only history, so it deserves a second look.
   Future<void> _handleActivate(
       BuildContext context, JobOrderDto job, bool isDark) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showCupertinoDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Mark as Activated?'),
-        content: Text(
-          '${job.ticketNumber} for ${job.customerName} will be marked '
-          'Activated and moved to your job history. This cannot be undone '
-          'from the app.',
+        content: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(
+            '${job.ticketNumber} for ${job.customerName} will be marked '
+            'Activated and moved to your job history. This cannot be undone '
+            'from the app.',
+          ),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.of(ctx).pop(false),
+            isDefaultAction: true,
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Activate'),
           ),
@@ -1044,7 +1214,10 @@ class JobOrderDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        // Clear the system navigation bar, which otherwise covers the last
+        // row of the sheet.
+        padding: EdgeInsets.fromLTRB(
+            20, 16, 20, 24 + MediaQuery.of(ctx).padding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1162,31 +1335,33 @@ class JobOrderDetailScreen extends StatelessWidget {
     JobOrderDto? job,
     required bool isDark,
   }) {
-    showDialog(
+    showCupertinoModalPopup(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isCall ? 'Call Customer' : 'Send SMS'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Number: $phone',
-                style:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            const SizedBox(height: 8),
-            if (!isCall && job != null)
-              Text(
-                'Pre-filled SMS:\n"Good day ${job.customerName}, Switch Fiber Technician is arriving shortly for ticket ${job.ticketNumber}."',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
-              ),
-          ],
+      builder: (ctx) => CupertinoActionSheet(
+        title: Text(isCall ? 'Call Subscriber' : 'Send SMS'),
+        message: Text(
+          !isCall && job != null
+              ? '$phone\n\n"Good day ${job.customerName}, Switch Fiber Technician is arriving shortly for ticket ${job.ticketNumber}."'
+              : phone,
         ),
         actions: [
-          TextButton(
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isCall
+                      ? 'Calling $phone...'
+                      : 'Opening SMS to $phone...'),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: AppTheme.primary,
+                ),
+              );
+            },
+            isDefaultAction: true,
+            child: Text(isCall ? 'Dial Now' : 'Send Message'),
+          ),
+          CupertinoActionSheetAction(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: phone));
               Navigator.pop(ctx);
@@ -1201,23 +1376,82 @@ class JobOrderDetailScreen extends StatelessWidget {
             },
             child: const Text('Copy Number'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(isCall
-                      ? 'Calling $phone...'
-                      : 'Opening SMS to $phone...'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppTheme.primary,
-                ),
-              );
-            },
-            child: Text(isCall ? 'Dial Now' : 'Send Message'),
-          ),
         ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
       ),
+    );
+  }
+
+  String _radiusAccountOf(JobOrderDto job) {
+    if (job.rawJson != null) {
+      try {
+        final map = jsonDecode(job.rawJson!);
+        if (map is Map<String, dynamic>) {
+          final u = map['username']?.toString().trim();
+          if (u != null && u.isNotEmpty && u.toLowerCase() != 'switch') {
+            return u;
+          }
+          final acc = map['accountNumber']?.toString().trim();
+          if (acc != null && acc.isNotEmpty) return acc;
+        }
+      } catch (_) {}
+    }
+    return job.ticketNumber;
+  }
+}
+
+/// The straight-line distance between the technician and the job's coordinates.
+///
+/// The position request is made once, in [initState], rather than in `build`:
+/// a future created during build is re-issued on every rebuild, which turned
+/// each repaint of the details screen into a fresh high-accuracy GPS fix.
+class _DistanceFromTechnicianRow extends StatefulWidget {
+  final LatLng target;
+  final bool isDark;
+
+  const _DistanceFromTechnicianRow({
+    required this.target,
+    required this.isDark,
+  });
+
+  @override
+  State<_DistanceFromTechnicianRow> createState() =>
+      _DistanceFromTechnicianRowState();
+}
+
+class _DistanceFromTechnicianRowState
+    extends State<_DistanceFromTechnicianRow> {
+  late final Future<String?> _distance = _measure();
+
+  Future<String?> _measure() async {
+    final here = await LocationService.instance.getCurrentPosition();
+    if (here == null) return null;
+    final meters = LocationService.instance.distanceBetween(
+      startLat: here.latitude,
+      startLng: here.longitude,
+      endLat: widget.target.latitude,
+      endLng: widget.target.longitude,
+    );
+    return LocationService.instance.formatDistance(meters);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _distance,
+      builder: (context, snapshot) {
+        final distance = snapshot.data;
+        if (distance == null) return const SizedBox.shrink();
+        return JobOrderDetailScreen._buildSpecRow(
+          'Distance from You',
+          distance,
+          CupertinoIcons.arrow_up_right_diamond_fill,
+          widget.isDark,
+        );
+      },
     );
   }
 }

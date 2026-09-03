@@ -61,6 +61,9 @@ class SignatureController extends ChangeNotifier {
   }
 }
 
+/// Alias for [SignatureController] for backwards compatibility.
+typedef SignaturePadController = SignatureController;
+
 /// A drawing surface for the subscriber's signature.
 ///
 /// Reports each finished stroke through [onStrokeEnd] so the owner can export

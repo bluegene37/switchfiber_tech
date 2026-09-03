@@ -31,7 +31,8 @@ class AppConstants {
   static const double opticalMarginalFloor = -27.0;
   static const double opticalSaturationCeiling = -8.0;
 
-  // Job Order Status Constants: see JobStatus for the two-stage workflow.
+  // Job Order Status Constants: see JobStatus for the workflow.
   static const String statusScheduled = 'Scheduled';
   static const String statusActivated = 'Activated';
+  static const String statusCompleted = 'Completed';
 }

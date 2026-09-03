@@ -10,15 +10,19 @@ JobOrderDto job({String status = '', String? onsiteStatus}) =>
 
 void main() {
   group('the two stages a job moves through', () {
-    test('recognises Scheduled and Activated', () {
+    test('recognises Scheduled, Activated, and Completed', () {
       expect(job(status: 'Scheduled').jobStatus, JobStatus.scheduled);
       expect(job(status: 'Activated').jobStatus, JobStatus.activated);
+      expect(job(status: 'Completed').jobStatus, JobStatus.completed);
     });
 
     test('tolerates casing and spacing from the backend', () {
       expect(job(status: 'scheduled').jobStatus, JobStatus.scheduled);
       expect(job(status: 'ACTIVATED').jobStatus, JobStatus.activated);
       expect(job(status: ' Activated ').jobStatus, JobStatus.activated);
+      expect(job(status: 'completed').jobStatus, JobStatus.completed);
+      expect(job(status: 'COMPLETED').jobStatus, JobStatus.completed);
+      expect(job(status: ' Completed ').jobStatus, JobStatus.completed);
     });
 
     test('maps dispatch-ready office statuses to Scheduled', () {
@@ -27,13 +31,12 @@ void main() {
       expect(job(status: 'Pending').jobStatus, JobStatus.scheduled);
     });
 
-    test('folds statuses written by earlier app versions into the two stages',
-        () {
+    test('folds statuses written by earlier app versions into the stages', () {
       // Still open work.
       expect(job(status: 'In Progress').jobStatus, JobStatus.scheduled);
       expect(job(status: 'inprogress').jobStatus, JobStatus.scheduled);
-      // Finished work.
-      expect(job(status: 'Completed').jobStatus, JobStatus.activated);
+      // Finished legacy work.
+      expect(job(status: 'Completed').jobStatus, JobStatus.completed);
     });
 
     test('an unknown backend status is left unmapped but readable', () {
@@ -42,7 +45,7 @@ void main() {
     });
   });
 
-  group('activation', () {
+  group('activation and terminal stages', () {
     test('Scheduled goes straight to Activated', () {
       expect(job(status: 'Scheduled').nextStatus, JobStatus.activated);
       expect(job(status: 'Confirmed').nextStatus, JobStatus.activated);
@@ -55,9 +58,16 @@ void main() {
       expect(JobStatus.activated.next, isNull);
     });
 
+    test('Completed is terminal', () {
+      expect(job(status: 'Completed').nextStatus, isNull);
+      expect(job(status: 'Completed').canActivate, isFalse);
+      expect(JobStatus.completed.next, isNull);
+    });
+
     test('sends back the exact wording the backend uses', () {
       expect(JobStatus.scheduled.wireValue, 'Scheduled');
       expect(JobStatus.activated.wireValue, 'Activated');
+      expect(JobStatus.completed.wireValue, 'Completed');
     });
   });
 

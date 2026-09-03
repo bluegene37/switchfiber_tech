@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import 'fiber_color_code_tool.dart';
@@ -5,8 +6,9 @@ import 'optical_budget_tool.dart';
 import 'drop_cable_tool.dart';
 import 'network_diagnostic_tool.dart';
 import 'troubleshooting_guide_tool.dart';
+import '../../diagnostics/screens/radius_disconnections_screen.dart';
 
-/// Main Tech Toolkit Hub screen for Field ISP Technicians.
+/// Main Tech Toolkit Hub screen for Field ISP Technicians with iOS styling.
 class ToolkitScreen extends StatelessWidget {
   const ToolkitScreen({super.key});
 
@@ -16,25 +18,13 @@ class ToolkitScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Technician Toolkit',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            Text(
-              'Field calculators, splicing codes & diagnostics',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
-            ),
-          ],
+        title: const Text(
+          'Technician Toolkit',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           // Header Banner
           Container(
@@ -179,6 +169,24 @@ class ToolkitScreen extends StatelessWidget {
                   builder: (_) => const TroubleshootingGuideTool()),
             ),
           ),
+          const SizedBox(height: 12),
+
+          // 6. Subscriber Disconnections & RADIUS Control Card
+          _buildToolCard(
+            context: context,
+            title: 'Subscriber Disconnections & RADIUS',
+            subtitle:
+                'Review RADIUS PPPoE accounts and toggle live line connection/disconnection state.',
+            icon: CupertinoIcons.wifi_slash,
+            badge: 'Live RADIUS',
+            color: const Color(0xFFEF4444),
+            isDark: isDark,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const RadiusDisconnectionsScreen()),
+            ),
+          ),
         ],
       ),
     );
@@ -194,88 +202,112 @@ class ToolkitScreen extends StatelessWidget {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 0,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: isDark ? 0.2 : 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.3),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+          width: 0.5,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // iOS Squircle Icon Container
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: isDark ? 0.2 : 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.3),
+                      width: 0.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTheme.darkInput
+                                  : AppTheme.fillLight,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isDark
+                                    ? AppTheme.borderDark
+                                    : AppTheme.borderLight,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              badge,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.3,
+                          color: isDark
+                              ? AppTheme.textSecondaryDark
+                              : AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color:
-                                isDark ? AppTheme.darkInput : AppTheme.lightBg,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: isDark
-                                  ? AppTheme.borderDark
-                                  : AppTheme.borderLight,
-                            ),
-                          ),
-                          child: Text(
-                            badge,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: color,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.3,
-                        color: isDark
-                            ? AppTheme.textSecondaryDark
-                            : AppTheme.textMuted,
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Icon(
+                    CupertinoIcons.chevron_forward,
+                    color: isDark
+                        ? AppTheme.textSecondaryDark
+                        : AppTheme.textMuted,
+                    size: 16,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppTheme.textMuted,
-                size: 20,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

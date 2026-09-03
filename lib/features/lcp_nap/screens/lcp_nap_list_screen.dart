@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/theme/app_theme.dart';
@@ -65,25 +66,13 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'LCP NAP Plant Network',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            Text(
-              'Distribution cabinets & NAP plant sites',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
-            ),
-          ],
+        title: const Text(
+          'LCP NAP Plant Network',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(CupertinoIcons.arrow_2_circlepath),
             tooltip: 'Sync Plant Records',
             onPressed: () {
               signals.fetchRemote();
@@ -119,19 +108,19 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                     return Row(
                       children: [
                         _buildStatChip(
-                          icon: Icons.storage_rounded,
+                          icon: CupertinoIcons.tray_2,
                           label: '$cabinets LCP Cabinets',
                           color: AppTheme.primary,
                         ),
                         const SizedBox(width: 8),
                         _buildStatChip(
-                          icon: Icons.pin_drop_outlined,
+                          icon: CupertinoIcons.location,
                           label: '$sites NAP Sites',
                           color: const Color(0xFF0EA5E9),
                         ),
                         const SizedBox(width: 8),
                         _buildStatChip(
-                          icon: Icons.hub_outlined,
+                          icon: CupertinoIcons.circle_grid_hex,
                           label: '$ports Ports',
                           color: const Color(0xFF10B981),
                         ),
@@ -141,55 +130,154 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Search Input Field
-                TextField(
-                  controller: _searchController,
-                  onChanged: (val) {
-                    signals.setSearch(val);
-                    if (val.isNotEmpty) {
-                      // Auto-expand all matching groups when searching
-                      final groups = signals.groupedByLcp.value.keys;
-                      _expandedCabinets.addAll(groups);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search LCP, NAP, Barangay, City, Street...',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              signals.setSearch('');
-                            },
-                          )
-                        : null,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                // iOS Capsule Search Bar
+                Container(
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        CupertinoIcons.search,
+                        size: 16,
+                        color: AppTheme.textMuted,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (val) {
+                            setState(() {});
+                            signals.setSearch(val);
+                            if (val.isNotEmpty) {
+                              final groups = signals.groupedByLcp.value.keys;
+                              _expandedCabinets.addAll(groups);
+                            }
+                          },
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white : AppTheme.darkSlate,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: 'Search LCP, NAP, Barangay, City...',
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textMuted,
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      if (_searchController.text.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            _searchController.clear();
+                            setState(() {});
+                            signals.setSearch('');
+                          },
+                          child: const Icon(
+                            CupertinoIcons.clear_thick_circled,
+                            size: 16,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 10),
 
-                // View Toggle (List vs Map) & Filter Controls
+                // iOS Sliding Segmented Control & Cabinet Filter
                 Row(
                   children: [
                     Expanded(
-                      child: SegmentedButton<_LcpNapView>(
-                        segments: const [
-                          ButtonSegment(
-                            value: _LcpNapView.list,
-                            icon: Icon(Icons.account_tree_rounded, size: 16),
-                            label: Text('Grouped List'),
+                      child: CupertinoSlidingSegmentedControl<_LcpNapView>(
+                        groupValue: _view,
+                        backgroundColor: isDark
+                            ? AppTheme.darkInput
+                            : AppTheme.fillLight,
+                        thumbColor: isDark
+                            ? AppTheme.darkElevatedCard
+                            : Colors.white,
+                        children: {
+                          _LcpNapView.list: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.square_list,
+                                  size: 15,
+                                  color: _view == _LcpNapView.list
+                                      ? (isDark
+                                          ? Colors.white
+                                          : AppTheme.darkSlate)
+                                      : AppTheme.textMuted,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Grouped List',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: _view == _LcpNapView.list
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: _view == _LcpNapView.list
+                                        ? (isDark
+                                            ? Colors.white
+                                            : AppTheme.darkSlate)
+                                        : AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          ButtonSegment(
-                            value: _LcpNapView.map,
-                            icon: Icon(Icons.map_rounded, size: 16),
-                            label: Text('Plant Map'),
+                          _LcpNapView.map: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.map,
+                                  size: 15,
+                                  color: _view == _LcpNapView.map
+                                      ? (isDark
+                                          ? Colors.white
+                                          : AppTheme.darkSlate)
+                                      : AppTheme.textMuted,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Plant Map',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: _view == _LcpNapView.map
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: _view == _LcpNapView.map
+                                        ? (isDark
+                                            ? Colors.white
+                                            : AppTheme.darkSlate)
+                                        : AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                        selected: {_view},
-                        onSelectionChanged: (sel) =>
-                            setState(() => _view = sel.first),
+                        },
+                        onValueChanged: (val) {
+                          if (val != null) {
+                            setState(() => _view = val);
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -551,34 +639,65 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
       context: context,
       backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) {
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            // Clear the system navigation bar, which otherwise covers the
+            // last row of the sheet.
+            padding: EdgeInsets.fromLTRB(
+                16, 10, 16, 24 + MediaQuery.of(context).padding.bottom),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // iOS Grabber Pill
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF38383A)
+                          : const Color(0xFFD1D1D6),
+                      borderRadius: BorderRadius.circular(2.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.storage_rounded,
+                        Icon(CupertinoIcons.tray_2_fill,
                             color: AppTheme.primary, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'Filter by LCP Cabinet',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w800),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      onPressed: () => Navigator.pop(ctx),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(ctx),
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          CupertinoIcons.xmark,
+                          size: 13,
+                          color: isDark ? Colors.white : AppTheme.darkSlate,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -597,7 +716,8 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                   child: ListView.separated(
                     itemCount: cabinets.length,
                     separatorBuilder: (_, __) => Divider(
-                      height: 1,
+                      height: 0.5,
+                      thickness: 0.5,
                       color:
                           isDark ? AppTheme.borderDark : AppTheme.borderLight,
                     ),
@@ -614,14 +734,15 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                               ? 'All Cabinets (Show Everything)'
                               : cabinet,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight:
-                                isSelected ? FontWeight.w800 : FontWeight.w500,
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
                             color: isSelected ? AppTheme.primary : null,
+                            letterSpacing: -0.2,
                           ),
                         ),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle_rounded,
+                            ? const Icon(CupertinoIcons.checkmark_alt,
                                 color: AppTheme.primary, size: 18)
                             : null,
                         onTap: () {
@@ -651,7 +772,10 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: color.withValues(alpha: 0.25),
+            width: 0.5,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -683,18 +807,26 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.share_location_outlined,
+            const Icon(CupertinoIcons.map_pin_ellipse,
                 size: 44, color: AppTheme.textMuted),
             const SizedBox(height: 12),
             const Text(
               'No LCP NAP sites match',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
             ),
             const SizedBox(height: 6),
             const Text(
               'Try adjusting your search query or reset the LCP cabinet filter.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.textMuted,
+                height: 1.35,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
@@ -703,7 +835,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                 signals.setSearch('');
                 _searchController.clear();
               },
-              icon: const Icon(Icons.refresh_rounded, size: 16),
+              icon: const Icon(CupertinoIcons.arrow_2_circlepath, size: 15),
               label: const Text('Reset All Filters'),
             ),
           ],

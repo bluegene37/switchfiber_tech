@@ -58,11 +58,11 @@ void main() {
     expect(find.text('Tap to add photo'), findsOneWidget);
     await tester.tap(find.text('House Front'));
     await tester.pumpAndSettle();
-    expect(find.text('Take photo'), findsOneWidget);
+    expect(find.text('Take photo with GPS'), findsOneWidget);
     expect(find.text('Remove photo'), findsNothing,
         reason: 'nothing to remove yet');
 
-    await tester.tap(find.text('Take photo'));
+    await tester.tap(find.text('Take photo with GPS'));
     await tester.pumpAndSettle();
 
     expect(requested, ImageSource.camera);
@@ -79,7 +79,7 @@ void main() {
     ));
     await tester.tap(find.text('House Front'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose from gallery'));
+    await tester.tap(find.text('Choose from photo library'));
     await tester.pumpAndSettle();
     expect(changed, isFalse);
   });
@@ -100,7 +100,7 @@ void main() {
     await tester.tap(find.text('House Front'));
     await tester.pumpAndSettle();
     expect(find.text('Retake photo'), findsOneWidget);
-    expect(find.text('View photo'), findsOneWidget);
+    expect(find.text('View photo & EXIF details'), findsOneWidget);
 
     await tester.tap(find.text('Remove photo'));
     await tester.pumpAndSettle();
@@ -127,7 +127,7 @@ void main() {
     ));
     await tester.tap(find.text('House Front'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Take photo'));
+    await tester.tap(find.text('Take photo with GPS'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Could not open the camera'), findsOneWidget);
   });

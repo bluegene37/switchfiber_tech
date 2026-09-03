@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/database/app_database.dart';
 
 /// The two stages a job order moves through in the field.
@@ -14,7 +15,8 @@ import '../../../core/database/app_database.dart';
 /// as Scheduled; `Completed` is finished work and counts as Activated.
 enum JobStatus {
   scheduled('Scheduled'),
-  activated('Activated');
+  activated('Activated'),
+  completed('Completed');
 
   const JobStatus(this.wireValue);
 
@@ -23,10 +25,11 @@ enum JobStatus {
 
   String get label => wireValue;
 
-  /// The next stage. [activated] is terminal.
+  /// The next stage. [activated] and [completed] are terminal stages.
   JobStatus? get next => switch (this) {
         JobStatus.scheduled => JobStatus.activated,
         JobStatus.activated => null,
+        JobStatus.completed => null,
       };
 
   /// Match a raw `status` value to the workflow stages.
@@ -39,7 +42,8 @@ enum JobStatus {
       'pending' ||
       'inprogress' =>
         JobStatus.scheduled,
-      'activated' || 'completed' => JobStatus.activated,
+      'activated' => JobStatus.activated,
+      'completed' => JobStatus.completed,
       _ => null,
     };
   }
@@ -175,9 +179,11 @@ class JobOrderDto {
 
   bool get isScheduled => jobStatus == JobStatus.scheduled;
   bool get isActivated => jobStatus == JobStatus.activated;
+  bool get isCompleted => jobStatus == JobStatus.completed;
+  bool get isHistory => isActivated || isCompleted;
 
-  /// Anything not yet activated can be activated.
-  bool get canActivate => !isActivated;
+  /// Anything not yet in history can be activated.
+  bool get canActivate => !isHistory;
 
   /// The next stage when the technician advances this job. A job outside the
   /// workflow goes straight to Activated.
@@ -203,6 +209,14 @@ class JobOrderDto {
 
   bool get hasSignature => clientSignature?.trim().isNotEmpty == true;
 
+  /// Whether the on-site completion report has been filed for this job.
+  ///
+  /// These are the same two fields `ReportSignals.isFormValid` requires before
+  /// it will let a report be submitted, so the two agree on what "complete"
+  /// means. Activation is final, so it is gated on this.
+  bool get hasCompletedReport =>
+      hasSignature && modemRouterSN?.trim().isNotEmpty == true;
+
   /// Whether this job is assigned to the technician with [email].
   ///
   /// Compared case-insensitively and ignoring surrounding whitespace, since
@@ -220,6 +234,48 @@ class JobOrderDto {
   /// because it only says when the row was downloaded, not when the work
   /// happened.
   DateTime? get historyDate => dateInstalled ?? modifiedDate;
+
+  /// The subscriber or installation location fix, parsed from rawJson if present.
+  LatLng? get latLng {
+    if (rawJson != null) {
+      try {
+        final map = jsonDecode(rawJson!);
+        if (map is Map<String, dynamic>) {
+          final raw = map['coordinates'] ?? map['location'] ?? map['latLng'];
+          if (raw is String && raw.trim().isNotEmpty) {
+            final parts = raw
+                .replaceAll(RegExp(r'[^\d.,\s-]'), '')
+                .split(RegExp(r'[,;\s]+'));
+            if (parts.length >= 2) {
+              final lat = double.tryParse(parts[0]);
+              final lng = double.tryParse(parts[1]);
+              if (lat != null &&
+                  lng != null &&
+                  lat.abs() <= 90 &&
+                  lng.abs() <= 180 &&
+                  !(lat == 0 && lng == 0)) {
+                return LatLng(lat, lng);
+              }
+            }
+          }
+          final lat = map['latitude'] ?? map['lat'];
+          final lng = map['longitude'] ?? map['lng'] ?? map['lon'];
+          if (lat != null && lng != null) {
+            final latD = double.tryParse(lat.toString());
+            final lngD = double.tryParse(lng.toString());
+            if (latD != null &&
+                lngD != null &&
+                latD.abs() <= 90 &&
+                lngD.abs() <= 180 &&
+                !(latD == 0 && lngD == 0)) {
+              return LatLng(latD, lngD);
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
 
   factory JobOrderDto.fromJson(Map<String, dynamic> json) {
     final firstName = json['firstName']?.toString() ?? '';

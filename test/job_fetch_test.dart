@@ -32,6 +32,19 @@ class FakeJobOrdersApi implements JobOrdersApi {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> fetchByStatusDate({
+    String? status,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+  }) async {
+    if (status != null) return fetchByStatus(status);
+    if (failWith != null) throw failWith!;
+    return [
+      for (final list in byStatus.values) ...list,
+    ];
+  }
+
+  @override
   Future<Map<String, dynamic>?> fetchById(int id) async {
     if (failWith != null) throw failWith!;
     if (deletedIds.contains(id)) return null;
@@ -87,6 +100,10 @@ void main() {
         _record(11, 'Activated', email: 'someone.else@switchfiber.ph'),
         _record(12, 'Activated'),
       ],
+      'Completed': [
+        _record(20, 'Completed', email: 'me@switchfiber.ph'),
+        _record(21, 'Completed', email: 'other@switchfiber.ph'),
+      ],
     });
     repository = JobRepository(db.jobOrdersDao, api: api);
     signals = JobsSignals(repository);
@@ -99,18 +116,18 @@ void main() {
 
   test('pulls through the status endpoint, never the whole table', () async {
     await repository.fetchRemoteJobs(technicianEmail: 'me@switchfiber.ph');
-    expect(api.requestedStatuses, ['Scheduled', 'Activated']);
+    expect(api.requestedStatuses, ['Scheduled', 'Activated', 'Completed']);
   });
 
-  test('caches every scheduled job and only my activated ones', () async {
+  test('caches every scheduled job and only my activated and completed ones', () async {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();
 
-    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2, 10});
+    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2, 10, 20});
     expect(signals.scheduledCount.value, 2);
-    expect(signals.historyJobs.value.map((j) => j.id), [10],
-        reason: 'case-insensitive match on assignedEmail');
+    expect(signals.historyJobs.value.map((j) => j.id).toSet(), {10, 20},
+        reason: 'case-insensitive match on assignedEmail for history');
   });
 
   test('without a known email, no history is cached yet', () async {
@@ -123,15 +140,16 @@ void main() {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.length, 3);
+    expect(signals.allJobs.value.length, 4);
 
-    // The office cancels job 2 and reassigns job 10 to someone else.
+    // The office cancels job 2 and reassigns job 10 to someone else, and removes job 20.
     api.byStatus['Scheduled'] = [
       _record(1, 'Scheduled', email: 'me@switchfiber.ph'),
     ];
     api.byStatus['Activated'] = [
       _record(10, 'Activated', email: 'other@switchfiber.ph'),
     ];
+    api.byStatus['Completed'] = [];
     await signals.fetchRemote();
     await settle();
     expect(signals.allJobs.value.map((j) => j.id).toSet(), {1});
@@ -170,7 +188,7 @@ void main() {
     api.failWith = Exception('offline');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.length, 3);
+    expect(signals.allJobs.value.length, 4);
   });
 
   test('a refresh never overwrites an edit still waiting to sync', () async {
@@ -248,7 +266,7 @@ void main() {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2, 10});
+    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2, 10, 20});
   });
 
   test('sync replays the whole record with the two-status wording', () async {

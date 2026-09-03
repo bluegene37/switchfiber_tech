@@ -126,6 +126,36 @@ void main() {
     expect(find.text('SF-2'), findsOneWidget);
   });
 
+  testWidgets('status chips filter history between Activated and Completed',
+      (tester) async {
+    await seed(tester, [
+      _job(1, _me, 'Activated', installed: DateTime(2026, 9, 2, 9)),
+      _job(2, _me, 'Completed',
+          installed: DateTime(2026, 8, 20), city: 'Pasig'),
+    ]);
+    jobsSignals.setTechnicianEmail(_me);
+
+    await pumpScreen(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('SF-1'), findsOneWidget);
+    expect(find.text('SF-2'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Activated'));
+    await tester.pumpAndSettle();
+    expect(find.text('SF-1'), findsOneWidget);
+    expect(find.text('SF-2'), findsNothing);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Completed'));
+    await tester.pumpAndSettle();
+    expect(find.text('SF-1'), findsNothing);
+    expect(find.text('SF-2'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
+    await tester.pumpAndSettle();
+    expect(find.text('SF-1'), findsOneWidget);
+    expect(find.text('SF-2'), findsOneWidget);
+  });
+
   testWidgets('explains when the profile has no email to match on',
       (tester) async {
     await seed(tester, [_job(1, _me, 'Activated')]);
