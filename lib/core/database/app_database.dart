@@ -14,7 +14,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +48,10 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(jobOrders, jobOrders.portLabelImage);
             await m.addColumn(jobOrders, jobOrders.signedContractImage);
             await m.addColumn(jobOrders, jobOrders.houseFront);
+          }
+          if (from < 6) {
+            // Selected NAP from /api/Naps
+            await m.addColumn(jobOrders, jobOrders.nap);
           }
         },
       );

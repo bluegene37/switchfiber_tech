@@ -8,8 +8,9 @@ class ReportSignals {
   final selectedJobOrder = signal<JobOrderDto?>(null);
   final opticalPower = signal<double>(-19.5);
   final routerSerial = signal<String>('HWTC8829104');
-  final routerModel = signal<String>('Huawei HG8145V5');
-  final napPort = signal<String>('Port 2');
+  final routerModel = signal<String>('Huawei 5v5');
+  final napPort = signal<String>('Port 1');
+  final nap = signal<String?>(null);
   final remarks = signal<String>(
       'Fiber drop cable installed. Power verified. Client speedtest 100Mbps symmetrical.');
 
@@ -66,6 +67,13 @@ class ReportSignals {
     if (job.portId != null && job.portId!.isNotEmpty) {
       napPort.value = job.portId!;
     }
+    if (job.nap != null && job.nap!.isNotEmpty) {
+      nap.value = job.nap;
+    } else if (job.napId != null) {
+      nap.value = 'NAP-${job.napId}';
+    } else {
+      nap.value = null;
+    }
     // Start from what the job already carries; a fresh capture replaces it.
     photos.value = const {};
     signature.value = job.hasSignature ? job.clientSignature : null;
@@ -73,8 +81,9 @@ class ReportSignals {
 
   /// Submit report locally into Drift and initiate background sync.
   ///
-  /// A completion report is how a job gets Activated with full detail, so it
-  /// also stamps the technician who did the work.
+  /// Saves on-site measurements, photos and signature without automatically
+  /// updating the Job Order status. The job is marked Completed by the
+  /// technician via the "Complete" action on the Job Order details screen.
   Future<bool> submitReport(JobRepository repository,
       {String? technicianEmail}) async {
     final job = selectedJobOrder.value;
@@ -86,12 +95,12 @@ class ReportSignals {
     try {
       await repository.saveCompletionReport(
         id: job.id,
-        status: JobStatus.activated.wireValue,
         onsiteStatus: 'Done',
         onsiteRemarks: remarks.value.trim(),
         opticalPower: opticalPower.value,
         modemRouterSN: routerSerial.value.trim(),
         routerModel: routerModel.value.trim(),
+        nap: nap.value?.trim(),
         boxReadingImage: _finalPhoto(job, JobPhoto.boxReading),
         routerReadingImage: _finalPhoto(job, JobPhoto.routerReading),
         setupImage: _finalPhoto(job, JobPhoto.setup),
@@ -127,6 +136,7 @@ class ReportSignals {
     opticalPower.value = -19.5;
     routerSerial.value = '';
     remarks.value = '';
+    nap.value = null;
     signature.value = null;
     photos.value = const {};
     submissionMessage.value = null;

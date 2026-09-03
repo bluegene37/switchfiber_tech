@@ -557,10 +557,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: isDark
-                            ? MapTiles.streetDarkUrl
-                            : MapTiles.streetLightUrl,
-                        subdomains: MapTiles.cartoSubdomains,
+                        urlTemplate: MapTiles.streetUrl,
                         maxZoom: MapTiles.streetMaxZoom,
                         userAgentPackageName: MapTiles.userAgentPackageName,
                         tileProvider: tiles,

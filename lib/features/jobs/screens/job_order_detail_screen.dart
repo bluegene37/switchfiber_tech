@@ -9,10 +9,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../diagnostics/widgets/radius_connection_card.dart';
-import '../../toolkit/screens/fiber_color_code_tool.dart';
-import '../../toolkit/screens/optical_budget_tool.dart';
-import '../../toolkit/screens/drop_cable_tool.dart';
-import '../../toolkit/screens/network_diagnostic_tool.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_photo_gallery.dart';
@@ -192,11 +188,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // 5. Tech Toolkit & Field Utilities
-              _buildToolkitShortcutsCard(context, job, isDark),
-              const SizedBox(height: 14),
-
-              // 6. Optical Reading & Calibration
+              // 5. Optical Reading & Calibration
               if (job.opticalPower != null) ...[
                 _buildOpticalPowerCard(job, isDark),
                 const SizedBox(height: 14),
@@ -252,20 +244,20 @@ class JobOrderDetailScreen extends StatelessWidget {
             _buildAssignmentRow(job, isDark),
             const SizedBox(height: 12),
 
-            // The one field action: Scheduled -> Activated.
+            // The one field action: Scheduled -> Completed.
             if (readOnly)
               _buildViewOnlyNote(isDark)
             else if (job.canActivate) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  // Activation is final, so it stays disabled until the
+                  // Completion is final, so it stays disabled until the
                   // on-site report is filed.
                   onPressed: job.hasCompletedReport
-                      ? () => _handleActivate(context, job, isDark)
+                      ? () => _handleComplete(context, job, isDark)
                       : null,
-                  icon: const Icon(Icons.verified_rounded, size: 18),
-                  label: const Text('Mark as Activated',
+                  icon: const Icon(Icons.check_circle_rounded, size: 18),
+                  label: const Text('Complete',
                       style: TextStyle(fontWeight: FontWeight.w800)),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -319,7 +311,7 @@ class JobOrderDetailScreen extends StatelessWidget {
     final isFinished =
         status == JobStatus.activated || status == JobStatus.completed;
     final terminalLabel =
-        status == JobStatus.completed ? 'Completed' : 'Activated';
+        status == JobStatus.activated ? 'Activated' : 'Completed';
     final steps = [
       {'label': 'Scheduled', 'active': true},
       {'label': terminalLabel, 'active': isFinished},
@@ -724,8 +716,12 @@ class JobOrderDetailScreen extends StatelessWidget {
                 isDark),
             _buildSpecRow(
                 'NAP Box',
-                job.napId != null ? 'NAP-${job.napId}' : 'Unassigned',
-                Icons.router_rounded,
+                job.nap?.isNotEmpty == true
+                    ? job.nap!
+                    : (job.napId != null && job.napId! > 0
+                        ? 'NAP-${job.napId}'
+                        : 'Unassigned'),
+                Icons.hub_rounded,
                 isDark),
             _buildSpecRow('Port Assignment', job.portId ?? 'Port 1',
                 Icons.electrical_services_rounded, isDark),
@@ -740,84 +736,6 @@ class JobOrderDetailScreen extends StatelessWidget {
             if (job.routerModel != null && job.routerModel!.isNotEmpty)
               _buildSpecRow(
                   'ONT Model', job.routerModel!, Icons.devices_rounded, isDark),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToolkitShortcutsCard(
-      BuildContext context, JobOrderDto job, bool isDark) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.handyman_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'ISP Field Skills & Utilities',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ActionChip(
-                  avatar: const Icon(Icons.palette_rounded,
-                      size: 16, color: Color(0xFF0070BA)),
-                  label: const Text('Fiber Color Code',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const FiberColorCodeTool()),
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.speed_rounded,
-                      size: 16, color: AppTheme.primary),
-                  label: const Text('Link Budget Calc',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const OpticalBudgetTool()),
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.cable_rounded,
-                      size: 16, color: Color(0xFF10B981)),
-                  label: const Text('Drop Cable BOM',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DropCableTool()),
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.network_ping_rounded,
-                      size: 16, color: Color(0xFF8B5CF6)),
-                  label: const Text('Ping / Diagnostics',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const NetworkDiagnosticTool()),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -1145,19 +1063,19 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Confirm, then activate. Activation is terminal and moves the job into
-  /// the technician's read-only history, so it deserves a second look.
-  Future<void> _handleActivate(
+  /// Confirm, then complete. Completion is terminal and moves the job into
+  /// history, so it deserves a second look.
+  Future<void> _handleComplete(
       BuildContext context, JobOrderDto job, bool isDark) async {
     final confirmed = await showCupertinoDialog<bool>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Mark as Activated?'),
+        title: const Text('Mark as Completed?'),
         content: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Text(
             '${job.ticketNumber} for ${job.customerName} will be marked '
-            'Activated and moved to your job history. This cannot be undone '
+            'Completed and moved to your job history. This cannot be undone '
             'from the app.',
           ),
         ),
@@ -1169,19 +1087,19 @@ class JobOrderDetailScreen extends StatelessWidget {
           ),
           CupertinoDialogAction(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Activate'),
+            child: const Text('Complete'),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
 
-    await jobsSignals.activateJob(job);
+    await jobsSignals.completeJob(job);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            '${job.ticketNumber} activated. It now appears in My History.'),
+            '${job.ticketNumber} marked as completed. It now appears in History.'),
         backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
         behavior: SnackBarBehavior.floating,
       ),

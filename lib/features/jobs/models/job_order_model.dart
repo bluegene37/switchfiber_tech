@@ -116,6 +116,7 @@ class JobOrderDto {
   final String? routerModel;
   final int? lcpId;
   final int? napId;
+  final String? nap;
   final String? portId;
   final int? vlanId;
   final DateTime? dateInstalled;
@@ -156,6 +157,7 @@ class JobOrderDto {
     this.routerModel,
     this.lcpId,
     this.napId,
+    this.nap,
     this.portId,
     this.vlanId,
     this.dateInstalled,
@@ -278,27 +280,41 @@ class JobOrderDto {
   }
 
   factory JobOrderDto.fromJson(Map<String, dynamic> json) {
-    final firstName = json['firstName']?.toString() ?? '';
-    final lastName = json['lastName']?.toString() ?? '';
+    final id = json['id'] is int
+        ? json['id'] as int
+        : int.tryParse(json['id']?.toString() ?? '0') ?? 0;
+
+    final firstName = json['firstName']?.toString().trim() ?? '';
+    final lastName = json['lastName']?.toString().trim() ?? '';
     final name = '$firstName $lastName'.trim();
 
+    final rawAccountNo = json['accountNo']?.toString().trim() ?? '';
+    final rawTicket = json['ticketNumber']?.toString().trim() ?? '';
+    final ticketNumber = rawAccountNo.isNotEmpty
+        ? rawAccountNo
+        : (rawTicket.isNotEmpty ? rawTicket : 'JO-$id');
+
+    final customerName = name.isNotEmpty
+        ? name
+        : (json['fullName']?.toString().trim().isNotEmpty == true
+            ? json['fullName'].toString().trim()
+            : (json['customerName']?.toString().trim().isNotEmpty == true
+                ? json['customerName'].toString().trim()
+                : 'Subscriber #$id'));
+
+    final rawAddr = (json['address']?.toString() ??
+            json['installationAddress']?.toString() ??
+            '')
+        .trim();
+    final address = rawAddr.isNotEmpty ? rawAddr : 'N/A';
+
     return JobOrderDto(
-      id: json['id'] is int
-          ? json['id']
-          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      ticketNumber: json['accountNo']?.toString() ??
-          json['ticketNumber']?.toString() ??
-          'JO-${json['id'] ?? '000'}',
-      customerName: name.isNotEmpty
-          ? name
-          : json['fullName']?.toString() ??
-              json['customerName']?.toString() ??
-              'Subscriber',
+      id: id,
+      ticketNumber: ticketNumber,
+      customerName: customerName,
       contactNumber:
           json['contactNumber']?.toString() ?? json['mobileNumber']?.toString(),
-      address: json['address']?.toString() ??
-          json['installationAddress']?.toString() ??
-          'N/A',
+      address: address,
       barangay: json['barangay']?.toString(),
       city: json['city']?.toString(),
       planName: json['plan']?.toString() ??
@@ -325,6 +341,8 @@ class JobOrderDto {
       napId: json['napId'] is int
           ? json['napId']
           : int.tryParse(json['napId']?.toString() ?? ''),
+      nap: json['nap']?.toString() ??
+          (json['napId'] is String ? json['napId'] as String : null),
       portId: json['portId']?.toString() ?? json['port']?.toString(),
       vlanId: json['vlanId'] is int
           ? json['vlanId']
@@ -369,6 +387,7 @@ class JobOrderDto {
       routerModel: row.routerModel,
       lcpId: row.lcpId,
       napId: row.napId,
+      nap: row.nap,
       portId: row.portId,
       vlanId: row.vlanId,
       dateInstalled: row.dateInstalled,
@@ -407,6 +426,7 @@ class JobOrderDto {
       routerModel: Value(routerModel),
       lcpId: Value(lcpId),
       napId: Value(napId),
+      nap: Value(nap),
       portId: Value(portId),
       vlanId: Value(vlanId),
       dateInstalled: Value(dateInstalled),
@@ -434,6 +454,8 @@ class JobOrderDto {
         'onsiteRemarks': onsiteRemarks ?? '',
         'modemRouterSN': modemRouterSN ?? '',
         'routerModel': routerModel ?? '',
+        if (nap != null) 'nap': nap,
+        if (nap != null) 'napId': nap,
         'portId': portId ?? '',
         // Photos and the signature are sent only when the app holds a value
         // (an empty string clears one on purpose). A null means the column

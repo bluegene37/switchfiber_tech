@@ -118,13 +118,11 @@ class JobsSignals {
   /// Every finished job (Activated or Completed) assigned to the signed-in
   /// technician, newest first. Empty until the technician's email is known.
   late final ReadonlySignal<List<JobOrderDto>> assignedJobs = computed(() {
-    final email = technicianEmail.value;
-    if (email == null || email.trim().isEmpty) return const <JobOrderDto>[];
-
-    final mine = allJobs.value
-        .where((j) => (j.isActivated || j.isCompleted) && j.isAssignedTo(email))
+    final history = allJobs.value
+        .where((j) => j.isActivated || j.isCompleted)
         .toList();
-    mine.sort((a, b) {
+
+    history.sort((a, b) {
       final ad = a.historyDate;
       final bd = b.historyDate;
       if (ad == null && bd == null) return b.id.compareTo(a.id);
@@ -133,7 +131,7 @@ class JobsSignals {
       final byDate = bd.compareTo(ad);
       return byDate != 0 ? byDate : b.id.compareTo(a.id);
     });
-    return mine;
+    return history;
   });
 
   /// Distinct cities across the technician's history, for the area filter.
@@ -257,6 +255,14 @@ class JobsSignals {
         loadPhase.value = DataLoadPhase.ready;
       }
     }
+  }
+
+  /// Mark a job Completed, stamping it with the signed-in technician so it
+  /// appears in history. Already-completed jobs are left alone.
+  Future<void> completeJob(JobOrderDto job) async {
+    if (job.isCompleted) return;
+    await repository.completeJob(job.id,
+        technicianEmail: technicianEmail.value);
   }
 
   /// Mark a job Activated, stamping it with the signed-in technician so it

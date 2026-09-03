@@ -34,7 +34,14 @@ class DioJobOrdersApi implements JobOrdersApi {
 
   @override
   Future<List<Map<String, dynamic>>> fetchByStatus(String status) async {
-    return fetchByStatusDate(status: status);
+    final cleanStatus = Uri.encodeComponent(status.trim());
+    final response = await _api.get('/JobOrders/status/$cleanStatus');
+    final data = response.data;
+    if (data is! List) return const [];
+    return [
+      for (final item in data)
+        if (item is Map<String, dynamic>) item,
+    ];
   }
 
   @override

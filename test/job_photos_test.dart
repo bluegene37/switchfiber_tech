@@ -165,7 +165,8 @@ void main() {
       expect(saved.speedtestImage, '');
       expect(saved.boxReadingImage, 'uploads/813/boxReadingImage.jpg');
       expect(saved.clientSignature, _signature);
-      expect(saved.isActivated, isTrue);
+      expect(saved.isScheduled, isTrue,
+          reason: 'report submission does not auto-update Job Order status');
 
       final payload = saved.toApiJson();
       expect(payload['houseFront'], _photo);

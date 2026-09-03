@@ -101,4 +101,39 @@ class CatalogService {
     } catch (_) {}
     return _cachedRouters ?? fallbackRouters;
   }
+
+  List<NapDto>? _cachedNaps;
+
+  /// Bundled fallback NAPs matching the live Switch Fiber database
+  static const List<NapDto> fallbackNaps = [
+    NapDto(id: 2, name: 'NAP 001', description: 'NAP 001 Description'),
+    NapDto(id: 3, name: 'NAP 002', description: 'NAP 002 Description'),
+    NapDto(id: 4, name: 'NAP 003', description: 'NAP 003 Description'),
+    NapDto(id: 5, name: 'NAP 004', description: 'NAP 004 Description'),
+    NapDto(id: 6, name: 'NAP 005', description: 'NAP 005 Description'),
+    NapDto(id: 7, name: 'NAP 006', description: 'NAP 006 Description'),
+    NapDto(id: 8, name: 'NAP 007', description: 'NAP 007 Description'),
+    NapDto(id: 9, name: 'NAP 008', description: 'NAP 008 Description'),
+    NapDto(id: 1, name: 'NONE', description: 'NONE Description'),
+    NapDto(id: 10, name: 'test nap 1', description: 'test nap 1 Description'),
+  ];
+
+  /// Fetch active NAPs from `/api/Naps` with cache & fallback
+  Future<List<NapDto>> getNaps({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedNaps != null) {
+      return _cachedNaps!;
+    }
+    try {
+      final response = await _api.get('/Naps');
+      final data = response.data;
+      if (data is List) {
+        _cachedNaps = [
+          for (final item in data)
+            if (item is Map<String, dynamic>) NapDto.fromJson(item),
+        ];
+        return _cachedNaps!;
+      }
+    } catch (_) {}
+    return _cachedNaps ?? fallbackNaps;
+  }
 }

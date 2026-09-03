@@ -383,14 +383,21 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              '${allCabinetKeys.length} LCP Cabinet Group${allCabinetKeys.length == 1 ? "" : "s"} (${signals.filteredLocations.value.length} NAPs)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: isDark
-                                    ? AppTheme.textSecondaryDark
-                                    : AppTheme.textMuted,
+                            // The summary yields to the two buttons on its
+                            // right; with both at natural width a long count
+                            // ran a hair past the edge on a 392pt phone.
+                            Expanded(
+                              child: Text(
+                                '${allCabinetKeys.length} LCP Cabinet Group${allCabinetKeys.length == 1 ? "" : "s"} (${signals.filteredLocations.value.length} NAPs)',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? AppTheme.textSecondaryDark
+                                      : AppTheme.textMuted,
+                                ),
                               ),
                             ),
                             Row(

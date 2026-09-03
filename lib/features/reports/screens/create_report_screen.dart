@@ -41,6 +41,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   late final TextEditingController _remarksController;
   late final TextEditingController _dbmController;
   List<RouterDto> _availableRouters = CatalogService.fallbackRouters;
+  List<NapDto> _availableNaps = CatalogService.fallbackNaps;
 
   @override
   void initState() {
@@ -63,9 +64,14 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Future<void> _loadCatalog() async {
-    final list = await CatalogService.instance.getRouters();
+    final routersFuture = CatalogService.instance.getRouters();
+    final napsFuture = CatalogService.instance.getNaps();
+    final results = await Future.wait([routersFuture, napsFuture]);
     if (!mounted) return;
-    setState(() => _availableRouters = list);
+    setState(() {
+      _availableRouters = results[0] as List<RouterDto>;
+      _availableNaps = results[1] as List<NapDto>;
+    });
   }
 
   @override
@@ -240,7 +246,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                                   size: 20),
                               SizedBox(width: 8),
                               Text(
-                                'Save Report & Mark Activated',
+                                'Save Completion Report',
                                 style: TextStyle(
                                     fontSize: 16, fontWeight: FontWeight.w700),
                               ),
@@ -408,6 +414,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _buildHardwareSection(ReportSignals rep) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -418,9 +425,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               children: [
                 Icon(Icons.router_rounded, size: 18, color: AppTheme.primary),
                 SizedBox(width: 8),
-                Text(
-                  'Hardware & Terminal Assignment',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                Expanded(
+                  child: Text(
+                    'Hardware & Terminal Assignment',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             ),
@@ -531,8 +540,64 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+
+            // NAP Box Dropdown with Filter in List
+            SignalBuilder(
+              builder: (context) {
+                final selected = rep.nap.value;
+                return InkWell(
+                  key: const ValueKey('nap_dropdown_field'),
+                  onTap: () => _showNapFilterDialog(context, rep, isDark),
+                  borderRadius: BorderRadius.circular(12),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'NAP Box',
+                      hintText: 'Select or filter NAP...',
+                      prefixIcon: Icon(Icons.hub_rounded, size: 20),
+                      suffixIcon:
+                          Icon(Icons.arrow_drop_down_rounded, size: 24),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
+                    ),
+                    child: Text(
+                      selected?.isNotEmpty == true
+                          ? selected!
+                          : 'Select or filter NAP (e.g. NAP 001)...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: selected?.isNotEmpty == true
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: selected?.isNotEmpty == true
+                            ? null
+                            : (isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textMuted),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showNapFilterDialog(
+      BuildContext context, ReportSignals rep, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _NapFilterBottomSheet(
+        availableNaps: _availableNaps,
+        selectedNap: rep.nap.value,
+        onSelect: (napName) {
+          rep.nap.value = napName;
+        },
       ),
     );
   }
@@ -646,9 +711,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               children: [
                 Icon(Icons.draw_rounded, size: 18, color: AppTheme.primary),
                 SizedBox(width: 8),
-                Text(
-                  'Customer Sign-Off & Acceptance',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                Expanded(
+                  child: Text(
+                    'Customer Sign-Off & Acceptance',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             ),
@@ -766,3 +833,216 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     );
   }
 }
+
+class _NapFilterBottomSheet extends StatefulWidget {
+  final List<NapDto> availableNaps;
+  final String? selectedNap;
+  final ValueChanged<String> onSelect;
+
+  const _NapFilterBottomSheet({
+    required this.availableNaps,
+    required this.selectedNap,
+    required this.onSelect,
+  });
+
+  @override
+  State<_NapFilterBottomSheet> createState() => _NapFilterBottomSheetState();
+}
+
+class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppTheme.darkCard : Colors.white;
+    final textTheme = Theme.of(context).textTheme;
+
+    final filtered = widget.availableNaps.where((n) {
+      if (_query.isEmpty) return true;
+      final q = _query.toLowerCase();
+      return n.name.toLowerCase().contains(q) ||
+          n.description.toLowerCase().contains(q);
+    }).toList();
+
+    return Material(
+      color: bg,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+          // Drag handle
+          const SizedBox(height: 12),
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                const Icon(Icons.hub_rounded, size: 22, color: AppTheme.primary),
+                const SizedBox(width: 10),
+                Text(
+                  'Select NAP Box',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: 'Close',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Filter in list input
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _searchController,
+              autofocus: false,
+              decoration: InputDecoration(
+                hintText: 'Filter NAP list (e.g. 001, test)...',
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                suffixIcon: _query.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _query = '');
+                        },
+                      )
+                    : null,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                filled: true,
+                fillColor: isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.04),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (val) {
+                setState(() => _query = val.trim());
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1),
+
+          // NAP items list
+          Flexible(
+            child: filtered.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.search_off_rounded,
+                            size: 40,
+                            color: isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textMuted),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No NAP matching "$_query"',
+                          style: TextStyle(
+                            color: isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (ctx, i) {
+                      final item = filtered[i];
+                      final isSelected = widget.selectedNap == item.name;
+                      return ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.primary.withOpacity(0.15)
+                                : (isDark
+                                    ? Colors.white.withOpacity(0.06)
+                                    : Colors.black.withOpacity(0.04)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.hub_rounded,
+                            size: 20,
+                            color: isSelected
+                                ? AppTheme.primary
+                                : (isDark
+                                    ? AppTheme.textSecondaryDark
+                                    : AppTheme.textMuted),
+                          ),
+                        ),
+                        title: Text(
+                          item.name,
+                          style: TextStyle(
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
+                            color: isSelected ? AppTheme.primary : null,
+                          ),
+                        ),
+                        subtitle: item.description.isNotEmpty
+                            ? Text(
+                                item.description,
+                                style: const TextStyle(fontSize: 12),
+                              )
+                            : null,
+                        trailing: isSelected
+                            ? const Icon(Icons.check_circle_rounded,
+                                color: AppTheme.primary, size: 20)
+                            : null,
+                        onTap: () {
+                          widget.onSelect(item.name);
+                          Navigator.of(context).pop();
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+      ),
+    );
+  }
+}
+

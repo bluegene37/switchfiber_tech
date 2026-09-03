@@ -111,14 +111,21 @@ class OpticalPowerGauge extends StatelessWidget {
 
           // Gauge Labels
           const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('-35 dBm (Low)',
-                  style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-              Text('-24 dBm (Threshold)',
-                  style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-              Text('-12 dBm (Strong)',
-                  style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              Expanded(
+                child: Text('-35 dBm (Low)',
+                    style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              ),
+              Expanded(
+                child: Text('-24 dBm (Threshold)',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              ),
+              Expanded(
+                child: Text('-12 dBm (Strong)',
+                    textAlign: TextAlign.end,
+                    style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+              ),
             ],
           ),
           const SizedBox(height: 8),

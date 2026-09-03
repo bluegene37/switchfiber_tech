@@ -89,7 +89,7 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('Save Report & Mark Activated'), findsOneWidget);
+    expect(find.text('Save Completion Report'), findsOneWidget);
 
     // Submit through the signals in real async rather than tapping: the
     // form is long and the submit spinner animates forever, which makes a
@@ -107,7 +107,9 @@ void main() {
     expect(reportSignals.submissionMessage.value, contains('saved'));
 
     final saved = jobsSignals.allJobs.value.firstWhere((j) => j.id == 1);
-    expect(saved.isActivated, isTrue);
+    expect(saved.isScheduled, isTrue,
+        reason: 'report submit does not auto-update Job Order status');
+    expect(saved.hasCompletedReport, isTrue);
     expect(saved.clientSignature, _signature);
   });
 

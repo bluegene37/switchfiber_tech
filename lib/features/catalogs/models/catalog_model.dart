@@ -85,3 +85,45 @@ class RouterDto {
   /// Compact specification: e.g. "Huawei 5v5"
   String get compactName => [name, description].where((s) => s.isNotEmpty).join(' ');
 }
+
+/// Model for NAP items from `/api/Naps`.
+class NapDto {
+  final int id;
+  final String name; // e.g. "NAP 001", "NAP 002", "test nap 1"
+  final String description; // e.g. "NAP 001 Description"
+  final int? createdByUserId;
+  final DateTime? createdDate;
+
+  const NapDto({
+    required this.id,
+    required this.name,
+    this.description = '',
+    this.createdByUserId,
+    this.createdDate,
+  });
+
+  factory NapDto.fromJson(Map<String, dynamic> json) {
+    return NapDto(
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      name: json['name']?.toString().trim() ?? '',
+      description: json['description']?.toString().trim() ?? '',
+      createdByUserId: json['createdByUserId'] is int
+          ? json['createdByUserId'] as int
+          : int.tryParse(json['createdByUserId']?.toString() ?? ''),
+      createdDate: json['createdDate'] != null
+          ? DateTime.tryParse(json['createdDate'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        if (createdByUserId != null) 'createdByUserId': createdByUserId,
+        if (createdDate != null)
+          'createdDate': createdDate!.toIso8601String(),
+      };
+}

@@ -9,6 +9,7 @@ import '../services/map_clustering.dart';
 import '../services/map_tiles.dart';
 import '../signals/lcp_nap_signals.dart';
 import 'lcp_nap_pin_popup.dart';
+import 'map_search_bar.dart';
 
 /// Map of LCP NAP sites, driven by the same filtered signal as the list view.
 ///
@@ -19,11 +20,16 @@ class LcpNapMapView extends StatefulWidget {
   final TileProvider? tileProvider;
   final void Function(LcpNapDto location)? onOpenDetails;
 
+  /// Place search backend. Defaults to the phone's own geocoder; tests
+  /// inject a fake so they never touch the platform plugin.
+  final PlaceLookup? placeLookup;
+
   const LcpNapMapView({
     super.key,
     required this.signals,
     this.tileProvider,
     this.onOpenDetails,
+    this.placeLookup,
   });
 
   @override
@@ -44,6 +50,10 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
   bool _showLegend = false;
   double _zoom = 14;
 
+  /// Where the last place search landed, and what was typed to get there.
+  LatLng? _searchTarget;
+  String? _searchLabel;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +65,17 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
     final provider = await MapTiles.provider();
     if (!mounted) return;
     setState(() => _tiles = provider);
+  }
+
+  /// Drop a pin at a searched place and fly the map to it.
+  void _onPlaceLocated(LatLng target, String query) {
+    setState(() {
+      _searchTarget = target;
+      _searchLabel = query;
+      _selected = null;
+      _showLegend = false;
+    });
+    _mapController.move(target, 17);
   }
 
   void _fitToSites(List<LcpNapDto> sites) {
@@ -112,7 +133,6 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
   @override
   Widget build(BuildContext context) {
     final tiles = _tiles;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (tiles == null) {
       return const Center(
         child: CircularProgressIndicator(color: AppTheme.primary),
@@ -132,6 +152,10 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                 ? sites.firstWhere((s) => s.id == _selected!.id)
                 : null;
 
+        // The search bar takes the top strip, so everything that used to sit
+        // there moves down beneath it.
+        final controlsTop = unmapped > 0 ? 104.0 : 60.0;
+
         return Stack(
           children: [
             FlutterMap(
@@ -143,6 +167,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                 onTap: (_, __) => setState(() {
                   _selected = null;
                   _showLegend = false;
+                  _searchTarget = null;
                 }),
                 onPositionChanged: (camera, _) {
                   // Re-cluster as the technician zooms.
@@ -153,12 +178,8 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: _satellite
-                      ? MapTiles.satelliteUrl
-                      : (isDark
-                          ? MapTiles.streetDarkUrl
-                          : MapTiles.streetLightUrl),
-                  subdomains: _satellite ? const [] : MapTiles.cartoSubdomains,
+                  urlTemplate:
+                      _satellite ? MapTiles.satelliteUrl : MapTiles.streetUrl,
                   maxZoom: _satellite
                       ? MapTiles.satelliteMaxZoom
                       : MapTiles.streetMaxZoom,
@@ -192,13 +213,38 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
                       ),
                   ],
                 ),
+                // The searched place, if any.
+                if (_searchTarget != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        key: const Key('lcpNapSearchPin'),
+                        point: _searchTarget!,
+                        width: MapSearchPin.markerWidth,
+                        height: MapSearchPin.markerHeight,
+                        alignment: Alignment.topCenter,
+                        child: MapSearchPin(label: _searchLabel ?? ''),
+                      ),
+                    ],
+                  ),
               ],
+            ),
+
+            // Top: place search, using the phone's own geocoder.
+            Positioned(
+              top: 8,
+              left: 8,
+              right: 8,
+              child: MapSearchBar(
+                lookup: widget.placeLookup ?? nativePlaceLookup,
+                onLocated: _onPlaceLocated,
+              ),
             ),
 
             // Sites the map cannot place, so they are visibly missing.
             if (unmapped > 0)
               Positioned(
-                top: 8,
+                top: 60,
                 left: 8,
                 right: 8,
                 child: _UnmappedNotice(sites: unmappedSites),
@@ -206,7 +252,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
 
             // Top Right: Base Layer Toggle
             Positioned(
-              top: unmapped > 0 ? 52 : 8,
+              top: controlsTop,
               right: 8,
               child: _BaseLayerToggle(
                 satellite: _satellite,
@@ -216,7 +262,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
 
             // Top Left: Plant Legend Toggle
             Positioned(
-              top: unmapped > 0 ? 52 : 8,
+              top: controlsTop,
               left: 8,
               child: _PlantLegendButton(
                 expanded: _showLegend,
@@ -227,7 +273,7 @@ class _LcpNapMapViewState extends State<LcpNapMapView> {
             // Plant Legend Expanded Card
             if (_showLegend)
               Positioned(
-                top: (unmapped > 0 ? 52 : 8) + 40,
+                top: (controlsTop) + 40,
                 left: 8,
                 child: _PlantLegendOverlay(
                   signals: widget.signals,

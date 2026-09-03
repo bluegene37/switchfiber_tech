@@ -13,6 +13,7 @@ import '../lcp_nap/screens/lcp_nap_list_screen.dart';
 import '../lcp_nap/signals/lcp_nap_signals.dart';
 import '../reports/screens/create_report_screen.dart';
 import '../reports/signals/report_signals.dart';
+import '../service_orders/screens/service_orders_screen.dart';
 import '../service_orders/signals/service_orders_signals.dart';
 import '../settings/screens/settings_screen.dart';
 import '../toolkit/screens/toolkit_screen.dart';
@@ -36,7 +37,7 @@ class TechnicianShell extends StatefulWidget {
 
 class _TechnicianShellState extends State<TechnicianShell> {
   static const int _tabScheduled = 0;
-  static const int _tabHistory = 1;
+  static const int _tabRepairs = 1;
   static const int _tabLcpNap = 2;
   static const int _tabToolkit = 3;
   static const int _tabSettings = 4;
@@ -111,13 +112,13 @@ class _TechnicianShellState extends State<TechnicianShell> {
     final screens = [
       JobOrdersScreen(
         jobsSignals: jobs,
+        authSignals: auth,
         lcpNapSignals: widget.lcpNapSignals,
         serviceOrdersSignals: _serviceOrdersSignals,
         onSelectJobForReport: _openReportForJob,
       ),
-      JobHistoryScreen(
-        jobsSignals: jobs,
-        authSignals: auth,
+      ServiceOrdersScreen(
+        signals: _serviceOrdersSignals,
       ),
       LcpNapListScreen(signals: widget.lcpNapSignals),
       const ToolkitScreen(),
@@ -171,14 +172,14 @@ class _TechnicianShellState extends State<TechnicianShell> {
                 isDark: isDark,
               ),
 
-              // 2. Technician Job History
+              // 2. Service & Repair Tickets
               _buildIosTabItem(
-                index: _tabHistory,
-                icon: CupertinoIcons.clock,
-                activeIcon: CupertinoIcons.clock_fill,
-                label: 'My History',
-                badgeSignal: jobs.historyTotalCount,
-                badgeColor: AppTheme.success,
+                index: _tabRepairs,
+                icon: CupertinoIcons.hammer,
+                activeIcon: CupertinoIcons.hammer_fill,
+                label: 'Repairs',
+                badgeSignal: _serviceOrdersSignals.totalCount,
+                badgeColor: AppTheme.warning,
                 isDark: isDark,
               ),
 
@@ -393,33 +394,34 @@ class _TechnicianShellState extends State<TechnicianShell> {
           ),
 
           ListTile(
-            leading: const Icon(Icons.history_rounded, color: AppTheme.primary),
-            title: const Text('My Job History'),
+            leading: const Icon(Icons.home_repair_service_rounded,
+                color: AppTheme.primary),
+            title: const Text('Repairs & Service Orders'),
             trailing: SignalBuilder(
               builder: (context) {
-                final mine = jobs.historyTotalCount.value;
+                final repairs = _serviceOrdersSignals.totalCount.value;
                 return Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.successSubtle,
+                    color: AppTheme.warningSubtle,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '$mine activated',
+                    '$repairs active',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF92400E),
                     ),
                   ),
                 );
               },
             ),
-            selected: _currentIndex == _tabHistory,
+            selected: _currentIndex == _tabRepairs,
             onTap: () {
               Navigator.pop(context);
-              setState(() => _currentIndex = _tabHistory);
+              setState(() => _currentIndex = _tabRepairs);
             },
           ),
 

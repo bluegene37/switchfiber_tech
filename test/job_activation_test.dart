@@ -114,17 +114,30 @@ void main() {
     expect(twice.assignedEmail, 'tech@switchfiber.ph');
   });
 
-  test('submitting a completion report activates the job too', () async {
+  test(
+      'submitting a completion report does not auto-update status; completeJob marks it completed',
+      () async {
     final report = ReportSignals();
     report.setJobOrder(signals.allJobs.value.firstWhere((j) => j.id == 1));
+    report.setSignature('data:image/png;base64,abc');
+    report.routerSerial.value = 'SN-12345';
     final ok = await report.submitReport(repository,
         technicianEmail: 'tech@switchfiber.ph');
     await settle();
 
     expect(ok, isTrue);
-    final updated = signals.allJobs.value.firstWhere((j) => j.id == 1);
-    expect(updated.isActivated, isTrue);
-    expect(updated.onsiteStatus, 'Done');
-    expect(updated.assignedEmail, 'tech@switchfiber.ph');
+    final reportFiled = signals.allJobs.value.firstWhere((j) => j.id == 1);
+    expect(reportFiled.isScheduled, isTrue,
+        reason: 'report does not auto-update status');
+    expect(reportFiled.onsiteStatus, 'Done');
+    expect(reportFiled.assignedEmail, 'tech@switchfiber.ph');
+    expect(reportFiled.hasCompletedReport, isTrue);
+
+    // Let the Mark as Completed action do the work:
+    await signals.completeJob(reportFiled);
+    await settle();
+
+    final completed = signals.allJobs.value.firstWhere((j) => j.id == 1);
+    expect(completed.isCompleted, isTrue);
   });
 }

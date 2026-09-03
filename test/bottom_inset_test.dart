@@ -59,7 +59,7 @@ void main() {
     // Let the fling settle, so the form comes to rest at its true bottom.
     await tester.pumpAndSettle();
 
-    final button = find.text('Save Report & Mark Activated');
+    final button = find.text('Save Completion Report');
     expect(button, findsOneWidget);
 
     final rect = tester.getRect(button);

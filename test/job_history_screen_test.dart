@@ -67,7 +67,13 @@ void main() {
     await db.close();
   });
 
-  testWidgets('shows only my activated jobs, newest first', (tester) async {
+  testWidgets('shows history jobs, newest first, excluding scheduled',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await seed(tester, [
       _job(1, _me, 'Activated', installed: DateTime(2026, 8, 1)),
       _job(2, 'other@switchfiber.ph', 'Activated',
@@ -81,11 +87,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('My Job History'), findsOneWidget);
-    expect(find.text('Activated jobs for $_me'), findsOneWidget);
-    expect(find.text('SF-1'), findsOneWidget);
+    expect(find.text('SF-2'), findsOneWidget);
     expect(find.text('SF-3'), findsOneWidget);
-    expect(find.text('SF-2'), findsNothing,
-        reason: 'another technician\'s job must never appear');
+    expect(find.text('SF-1'), findsOneWidget);
     expect(find.text('SF-4'), findsNothing,
         reason: 'a job that is still scheduled is not history');
 
@@ -93,8 +97,8 @@ void main() {
         .widgetList<JobHistoryTile>(find.byType(JobHistoryTile))
         .map((t) => t.job.id)
         .toList();
-    expect(tiles, [3, 1], reason: 'most recent activation first');
-    expect(find.text('Aug 20, 2026'), findsOneWidget);
+    expect(tiles, [2, 3, 1], reason: 'most recent activation first');
+    expect(find.text('Aug 30, 2026'), findsOneWidget);
   });
 
   testWidgets('date and area chips narrow the list and clear together',
@@ -156,7 +160,7 @@ void main() {
     expect(find.text('SF-2'), findsOneWidget);
   });
 
-  testWidgets('explains when the profile has no email to match on',
+  testWidgets('displays history jobs even when technician email is not set',
       (tester) async {
     await seed(tester, [_job(1, _me, 'Activated')]);
     jobsSignals.setTechnicianEmail('');
@@ -164,8 +168,7 @@ void main() {
     await pumpScreen(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('No Email On Your Profile'), findsOneWidget);
-    expect(find.text('SF-1'), findsNothing);
+    expect(find.text('SF-1'), findsOneWidget);
   });
 
   testWidgets('tapping a tile opens the details in view-only mode',
@@ -183,8 +186,8 @@ void main() {
     final detail =
         tester.widget<JobOrderDetailScreen>(find.byType(JobOrderDetailScreen));
     expect(detail.readOnly, isTrue);
-    expect(find.text('Subscriber 1'), findsOneWidget);
     expect(find.textContaining('View only'), findsOneWidget);
+    expect(find.text('Complete'), findsNothing);
     expect(find.text('Mark as Activated'), findsNothing);
     expect(find.byTooltip('Field Completion Report'), findsNothing);
     expect(find.text('Fill / Update Completion Report'), findsNothing);

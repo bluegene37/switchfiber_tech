@@ -12,6 +12,7 @@ import '../../lcp_nap/services/map_tiles.dart';
 import '../../lcp_nap/signals/lcp_nap_signals.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
+import '../../lcp_nap/widgets/map_search_bar.dart';
 
 /// Interactive map view for field technician scheduled job orders,
 /// plotting subscriber locations, nearby NAP fiber distribution boxes, and technician GPS position.
@@ -20,11 +21,16 @@ class JobsMapView extends StatefulWidget {
   final LcpNapSignals? lcpNapSignals;
   final void Function(JobOrderDto job)? onOpenJob;
 
+  /// Place search backend. Defaults to the phone's own geocoder; tests
+  /// inject a fake so they never touch the platform plugin.
+  final PlaceLookup? placeLookup;
+
   const JobsMapView({
     super.key,
     required this.jobsSignals,
     this.lcpNapSignals,
     this.onOpenJob,
+    this.placeLookup,
   });
 
   @override
@@ -43,6 +49,10 @@ class _JobsMapViewState extends State<JobsMapView> {
   JobOrderDto? _selectedJob;
   LcpNapDto? _selectedNap;
   LatLng? _technicianPosition;
+
+  /// Where the last place search landed, and what was typed to get there.
+  LatLng? _searchTarget;
+  String? _searchLabel;
 
   bool _satellite = false;
   bool _showNaps = true;
@@ -97,6 +107,17 @@ class _JobsMapViewState extends State<JobsMapView> {
     );
   }
 
+  /// Drop a pin at a searched place and fly the map to it.
+  void _onPlaceLocated(LatLng target, String query) {
+    setState(() {
+      _searchTarget = target;
+      _searchLabel = query;
+      _selectedJob = null;
+      _selectedNap = null;
+    });
+    _mapController.move(target, 17);
+  }
+
   void _fitAllJobs(List<JobOrderDto> jobs, List<LcpNapDto> naps) {
     final points = <LatLng>[];
     for (final j in jobs) {
@@ -133,8 +154,6 @@ class _JobsMapViewState extends State<JobsMapView> {
       });
     }
 
-    final streetUrl = isDark ? MapTiles.streetDarkUrl : MapTiles.streetLightUrl;
-
     return Stack(
       children: [
         FlutterMap(
@@ -148,16 +167,19 @@ class _JobsMapViewState extends State<JobsMapView> {
               setState(() {
                 _selectedJob = null;
                 _selectedNap = null;
+                _searchTarget = null;
               });
             },
           ),
           children: [
             // Map Tile Layer
             TileLayer(
-              urlTemplate: _satellite ? MapTiles.satelliteUrl : streetUrl,
-              subdomains: MapTiles.cartoSubdomains,
+              urlTemplate:
+                  _satellite ? MapTiles.satelliteUrl : MapTiles.streetUrl,
               tileProvider: _tiles,
-              maxZoom: _satellite ? MapTiles.satelliteMaxZoom : MapTiles.streetMaxZoom,
+              maxZoom: _satellite
+                  ? MapTiles.satelliteMaxZoom
+                  : MapTiles.streetMaxZoom,
               userAgentPackageName: MapTiles.userAgentPackageName,
             ),
 
@@ -182,7 +204,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF0284C7),
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black26,
@@ -228,7 +251,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
                             decoration: BoxDecoration(
                               color: isDark ? AppTheme.darkCard : Colors.white,
                               borderRadius: BorderRadius.circular(4),
@@ -311,12 +335,37 @@ class _JobsMapViewState extends State<JobsMapView> {
                   ),
               ],
             ),
+            // The searched place, if any.
+            if (_searchTarget != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    key: const Key('jobsSearchPin'),
+                    point: _searchTarget!,
+                    width: MapSearchPin.markerWidth,
+                    height: MapSearchPin.markerHeight,
+                    alignment: Alignment.topCenter,
+                    child: MapSearchPin(label: _searchLabel ?? ''),
+                  ),
+                ],
+              ),
           ],
         ),
 
-        // Top Floating Control Buttons
+        // Top: place search, using the phone's own geocoder.
         Positioned(
           top: 16,
+          left: 16,
+          right: 16,
+          child: MapSearchBar(
+            lookup: widget.placeLookup ?? nativePlaceLookup,
+            onLocated: _onPlaceLocated,
+          ),
+        ),
+
+        // Top Floating Control Buttons, beneath the search bar.
+        Positioned(
+          top: 16 + MapSearchBar.height + 8,
           right: 16,
           child: Column(
             children: [
@@ -328,7 +377,9 @@ class _JobsMapViewState extends State<JobsMapView> {
               ),
               const SizedBox(height: 8),
               _buildMapButton(
-                icon: _showNaps ? CupertinoIcons.eye_slash_fill : CupertinoIcons.eye_fill,
+                icon: _showNaps
+                    ? CupertinoIcons.eye_slash_fill
+                    : CupertinoIcons.eye_fill,
                 tooltip: _showNaps ? 'Hide NAP Boxes' : 'Show NAP Boxes',
                 isDark: isDark,
                 onTap: () => setState(() => _showNaps = !_showNaps),
@@ -399,7 +450,8 @@ class _JobsMapViewState extends State<JobsMapView> {
       ),
       child: IconButton(
         padding: EdgeInsets.zero,
-        icon: Icon(icon, size: 20, color: isDark ? Colors.white : AppTheme.darkSlate),
+        icon: Icon(icon,
+            size: 20, color: isDark ? Colors.white : AppTheme.darkSlate),
         tooltip: tooltip,
         onPressed: onTap,
       ),
@@ -433,7 +485,8 @@ class _JobsMapViewState extends State<JobsMapView> {
           width: 0.5,
         ),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
         ],
       ),
       padding: const EdgeInsets.all(16),
@@ -449,7 +502,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                 decoration: BoxDecoration(
                   color: AppTheme.primarySubtleBg,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppTheme.primarySubtleBorder, width: 0.5),
+                  border: Border.all(
+                      color: AppTheme.primarySubtleBorder, width: 0.5),
                 ),
                 child: Text(
                   job.ticketNumber,
@@ -462,7 +516,8 @@ class _JobsMapViewState extends State<JobsMapView> {
               ),
               if (distanceStr != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
                     borderRadius: BorderRadius.circular(6),
@@ -470,11 +525,13 @@ class _JobsMapViewState extends State<JobsMapView> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(CupertinoIcons.location_solid, size: 10, color: AppTheme.primary),
+                      const Icon(CupertinoIcons.location_solid,
+                          size: 10, color: AppTheme.primary),
                       const SizedBox(width: 3),
                       Text(
                         distanceStr,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -487,7 +544,9 @@ class _JobsMapViewState extends State<JobsMapView> {
                     color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(CupertinoIcons.xmark, size: 12, color: isDark ? Colors.white : AppTheme.darkSlate),
+                  child: Icon(CupertinoIcons.xmark,
+                      size: 12,
+                      color: isDark ? Colors.white : AppTheme.darkSlate),
                 ),
               ),
             ],
@@ -495,7 +554,8 @@ class _JobsMapViewState extends State<JobsMapView> {
           const SizedBox(height: 8),
           Text(
             job.customerName,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2),
+            style: const TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2),
           ),
           const SizedBox(height: 2),
           Text(
@@ -521,9 +581,14 @@ class _JobsMapViewState extends State<JobsMapView> {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(CupertinoIcons.doc_text_fill, size: 15, color: Colors.white),
+                      Icon(CupertinoIcons.doc_text_fill,
+                          size: 15, color: Colors.white),
                       SizedBox(width: 6),
-                      Text('Open Ticket', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                      Text('Open Ticket',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
                     ],
                   ),
                 ),
@@ -533,13 +598,18 @@ class _JobsMapViewState extends State<JobsMapView> {
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isDark ? AppTheme.borderDark : AppTheme.borderLight, width: 0.5),
+                  border: Border.all(
+                      color:
+                          isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                      width: 0.5),
                 ),
                 child: IconButton(
                   tooltip: 'Navigate',
-                  icon: const Icon(CupertinoIcons.location_north_fill, color: AppTheme.primary, size: 18),
+                  icon: const Icon(CupertinoIcons.location_north_fill,
+                      color: AppTheme.primary, size: 18),
                   onPressed: () {
-                    final url = Uri.parse('https://maps.apple.com/?q=${jobPos.latitude},${jobPos.longitude}');
+                    final url = Uri.parse(
+                        'https://maps.apple.com/?q=${jobPos.latitude},${jobPos.longitude}');
                     launchUrl(url, mode: LaunchMode.externalApplication);
                   },
                 ),
@@ -561,7 +631,8 @@ class _JobsMapViewState extends State<JobsMapView> {
           width: 0.5,
         ),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
         ],
       ),
       padding: const EdgeInsets.all(16),
@@ -595,7 +666,9 @@ class _JobsMapViewState extends State<JobsMapView> {
                     color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(CupertinoIcons.xmark, size: 12, color: isDark ? Colors.white : AppTheme.darkSlate),
+                  child: Icon(CupertinoIcons.xmark,
+                      size: 12,
+                      color: isDark ? Colors.white : AppTheme.darkSlate),
                 ),
               ),
             ],

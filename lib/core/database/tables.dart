@@ -20,6 +20,7 @@ class JobOrders extends Table {
   TextColumn get routerModel => text().nullable()();
   IntColumn get lcpId => integer().nullable()();
   IntColumn get napId => integer().nullable()();
+  TextColumn get nap => text().nullable()();
   TextColumn get portId => text().nullable()();
   IntColumn get vlanId => integer().nullable()();
   DateTimeColumn get dateInstalled => dateTime().nullable()();

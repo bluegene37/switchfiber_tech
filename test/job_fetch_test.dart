@@ -119,28 +119,30 @@ void main() {
     expect(api.requestedStatuses, ['Scheduled', 'Activated', 'Completed']);
   });
 
-  test('caches every scheduled job and only my activated and completed ones', () async {
+  test('caches every scheduled, activated, and completed job from status endpoints', () async {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();
 
-    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2, 10, 20});
+    expect(signals.allJobs.value.map((j) => j.id).toSet(),
+        {1, 2, 10, 11, 12, 20, 21});
     expect(signals.scheduledCount.value, 2);
-    expect(signals.historyJobs.value.map((j) => j.id).toSet(), {10, 20},
-        reason: 'case-insensitive match on assignedEmail for history');
+    expect(signals.historyJobs.value.map((j) => j.id).toSet(),
+        {10, 11, 12, 20, 21});
   });
 
-  test('without a known email, no history is cached yet', () async {
+  test('caches all history jobs even without a known email', () async {
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2});
+    expect(signals.allJobs.value.map((j) => j.id).toSet(),
+        {1, 2, 10, 11, 12, 20, 21});
   });
 
   test('drops synced rows the server stopped returning', () async {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.length, 4);
+    expect(signals.allJobs.value.length, 7);
 
     // The office cancels job 2 and reassigns job 10 to someone else, and removes job 20.
     api.byStatus['Scheduled'] = [
@@ -152,7 +154,7 @@ void main() {
     api.byStatus['Completed'] = [];
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1});
+    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 10});
   });
 
   test('keeps a local edit that has not synced yet', () async {
@@ -188,7 +190,7 @@ void main() {
     api.failWith = Exception('offline');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.length, 4);
+    expect(signals.allJobs.value.length, 7);
   });
 
   test('a refresh never overwrites an edit still waiting to sync', () async {
@@ -255,18 +257,19 @@ void main() {
     expect(repository.syncWorker.pendingCount.value, 0);
   });
 
-  test('demo rows seeded offline are replaced by real data once online',
+  test('offline pull leaves the cache empty and does not seed test data',
       () async {
     api.failWith = Exception('offline');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.length, 6, reason: 'demo seed');
+    expect(signals.allJobs.value.length, 0, reason: 'no demo seed');
 
     api.failWith = null;
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 2, 10, 20});
+    expect(signals.allJobs.value.map((j) => j.id).toSet(),
+        {1, 2, 10, 11, 12, 20, 21});
   });
 
   test('sync replays the whole record with the two-status wording', () async {

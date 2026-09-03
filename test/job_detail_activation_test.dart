@@ -62,7 +62,7 @@ void main() {
   ElevatedButton activateButton(WidgetTester tester) =>
       tester.widget<ElevatedButton>(
         find.ancestor(
-          of: find.text('Mark as Activated'),
+          of: find.text('Complete'),
           matching: find.byType(ElevatedButton),
         ),
       );

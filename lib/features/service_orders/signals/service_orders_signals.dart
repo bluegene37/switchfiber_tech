@@ -29,6 +29,13 @@ class ServiceOrdersSignals {
   /// Logged-in technician email for matching
   final technicianEmail = signal<String?>(null);
 
+  /// Total count of all service orders
+  late final ReadonlySignal<int> totalCount = computed(() => allOrders.value.length);
+
+  /// Urgent service orders count
+  late final ReadonlySignal<int> urgentCount =
+      computed(() => allOrders.value.where((o) => o.isUrgent).length);
+
   /// Filtered and sorted service orders
   late final ReadonlySignal<List<ServiceOrderDto>> filteredOrders = computed(() {
     final query = searchQuery.value.trim().toLowerCase();

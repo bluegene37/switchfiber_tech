@@ -110,6 +110,11 @@ class $JobOrdersTable extends JobOrders
   late final GeneratedColumn<int> napId = GeneratedColumn<int>(
       'nap_id', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _napMeta = const VerificationMeta('nap');
+  @override
+  late final GeneratedColumn<String> nap = GeneratedColumn<String>(
+      'nap', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _portIdMeta = const VerificationMeta('portId');
   @override
   late final GeneratedColumn<String> portId = GeneratedColumn<String>(
@@ -229,6 +234,7 @@ class $JobOrdersTable extends JobOrders
         routerModel,
         lcpId,
         napId,
+        nap,
         portId,
         vlanId,
         dateInstalled,
@@ -344,6 +350,10 @@ class $JobOrdersTable extends JobOrders
     if (data.containsKey('nap_id')) {
       context.handle(
           _napIdMeta, napId.isAcceptableOrUnknown(data['nap_id']!, _napIdMeta));
+    }
+    if (data.containsKey('nap')) {
+      context.handle(
+          _napMeta, nap.isAcceptableOrUnknown(data['nap']!, _napMeta));
     }
     if (data.containsKey('port_id')) {
       context.handle(_portIdMeta,
@@ -474,6 +484,8 @@ class $JobOrdersTable extends JobOrders
           .read(DriftSqlType.int, data['${effectivePrefix}lcp_id']),
       napId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}nap_id']),
+      nap: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}nap']),
       portId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}port_id']),
       vlanId: attachedDatabase.typeMapping
@@ -533,6 +545,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
   final String? routerModel;
   final int? lcpId;
   final int? napId;
+  final String? nap;
   final String? portId;
   final int? vlanId;
   final DateTime? dateInstalled;
@@ -580,6 +593,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       this.routerModel,
       this.lcpId,
       this.napId,
+      this.nap,
       this.portId,
       this.vlanId,
       this.dateInstalled,
@@ -639,6 +653,9 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
     }
     if (!nullToAbsent || napId != null) {
       map['nap_id'] = Variable<int>(napId);
+    }
+    if (!nullToAbsent || nap != null) {
+      map['nap'] = Variable<String>(nap);
     }
     if (!nullToAbsent || portId != null) {
       map['port_id'] = Variable<String>(portId);
@@ -725,6 +742,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           lcpId == null && nullToAbsent ? const Value.absent() : Value(lcpId),
       napId:
           napId == null && nullToAbsent ? const Value.absent() : Value(napId),
+      nap: nap == null && nullToAbsent ? const Value.absent() : Value(nap),
       portId:
           portId == null && nullToAbsent ? const Value.absent() : Value(portId),
       vlanId:
@@ -791,6 +809,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       routerModel: serializer.fromJson<String?>(json['routerModel']),
       lcpId: serializer.fromJson<int?>(json['lcpId']),
       napId: serializer.fromJson<int?>(json['napId']),
+      nap: serializer.fromJson<String?>(json['nap']),
       portId: serializer.fromJson<String?>(json['portId']),
       vlanId: serializer.fromJson<int?>(json['vlanId']),
       dateInstalled: serializer.fromJson<DateTime?>(json['dateInstalled']),
@@ -832,6 +851,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
       'routerModel': serializer.toJson<String?>(routerModel),
       'lcpId': serializer.toJson<int?>(lcpId),
       'napId': serializer.toJson<int?>(napId),
+      'nap': serializer.toJson<String?>(nap),
       'portId': serializer.toJson<String?>(portId),
       'vlanId': serializer.toJson<int?>(vlanId),
       'dateInstalled': serializer.toJson<DateTime?>(dateInstalled),
@@ -869,6 +889,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           Value<String?> routerModel = const Value.absent(),
           Value<int?> lcpId = const Value.absent(),
           Value<int?> napId = const Value.absent(),
+          Value<String?> nap = const Value.absent(),
           Value<String?> portId = const Value.absent(),
           Value<int?> vlanId = const Value.absent(),
           Value<DateTime?> dateInstalled = const Value.absent(),
@@ -908,6 +929,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         routerModel: routerModel.present ? routerModel.value : this.routerModel,
         lcpId: lcpId.present ? lcpId.value : this.lcpId,
         napId: napId.present ? napId.value : this.napId,
+        nap: nap.present ? nap.value : this.nap,
         portId: portId.present ? portId.value : this.portId,
         vlanId: vlanId.present ? vlanId.value : this.vlanId,
         dateInstalled:
@@ -972,6 +994,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           data.routerModel.present ? data.routerModel.value : this.routerModel,
       lcpId: data.lcpId.present ? data.lcpId.value : this.lcpId,
       napId: data.napId.present ? data.napId.value : this.napId,
+      nap: data.nap.present ? data.nap.value : this.nap,
       portId: data.portId.present ? data.portId.value : this.portId,
       vlanId: data.vlanId.present ? data.vlanId.value : this.vlanId,
       dateInstalled: data.dateInstalled.present
@@ -1031,6 +1054,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           ..write('routerModel: $routerModel, ')
           ..write('lcpId: $lcpId, ')
           ..write('napId: $napId, ')
+          ..write('nap: $nap, ')
           ..write('portId: $portId, ')
           ..write('vlanId: $vlanId, ')
           ..write('dateInstalled: $dateInstalled, ')
@@ -1070,6 +1094,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
         routerModel,
         lcpId,
         napId,
+        nap,
         portId,
         vlanId,
         dateInstalled,
@@ -1108,6 +1133,7 @@ class JobOrder extends DataClass implements Insertable<JobOrder> {
           other.routerModel == this.routerModel &&
           other.lcpId == this.lcpId &&
           other.napId == this.napId &&
+          other.nap == this.nap &&
           other.portId == this.portId &&
           other.vlanId == this.vlanId &&
           other.dateInstalled == this.dateInstalled &&
@@ -1144,6 +1170,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
   final Value<String?> routerModel;
   final Value<int?> lcpId;
   final Value<int?> napId;
+  final Value<String?> nap;
   final Value<String?> portId;
   final Value<int?> vlanId;
   final Value<DateTime?> dateInstalled;
@@ -1178,6 +1205,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.routerModel = const Value.absent(),
     this.lcpId = const Value.absent(),
     this.napId = const Value.absent(),
+    this.nap = const Value.absent(),
     this.portId = const Value.absent(),
     this.vlanId = const Value.absent(),
     this.dateInstalled = const Value.absent(),
@@ -1213,6 +1241,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     this.routerModel = const Value.absent(),
     this.lcpId = const Value.absent(),
     this.napId = const Value.absent(),
+    this.nap = const Value.absent(),
     this.portId = const Value.absent(),
     this.vlanId = const Value.absent(),
     this.dateInstalled = const Value.absent(),
@@ -1250,6 +1279,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     Expression<String>? routerModel,
     Expression<int>? lcpId,
     Expression<int>? napId,
+    Expression<String>? nap,
     Expression<String>? portId,
     Expression<int>? vlanId,
     Expression<DateTime>? dateInstalled,
@@ -1285,6 +1315,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       if (routerModel != null) 'router_model': routerModel,
       if (lcpId != null) 'lcp_id': lcpId,
       if (napId != null) 'nap_id': napId,
+      if (nap != null) 'nap': nap,
       if (portId != null) 'port_id': portId,
       if (vlanId != null) 'vlan_id': vlanId,
       if (dateInstalled != null) 'date_installed': dateInstalled,
@@ -1324,6 +1355,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       Value<String?>? routerModel,
       Value<int?>? lcpId,
       Value<int?>? napId,
+      Value<String?>? nap,
       Value<String?>? portId,
       Value<int?>? vlanId,
       Value<DateTime?>? dateInstalled,
@@ -1358,6 +1390,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
       routerModel: routerModel ?? this.routerModel,
       lcpId: lcpId ?? this.lcpId,
       napId: napId ?? this.napId,
+      nap: nap ?? this.nap,
       portId: portId ?? this.portId,
       vlanId: vlanId ?? this.vlanId,
       dateInstalled: dateInstalled ?? this.dateInstalled,
@@ -1431,6 +1464,9 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
     if (napId.present) {
       map['nap_id'] = Variable<int>(napId.value);
     }
+    if (nap.present) {
+      map['nap'] = Variable<String>(nap.value);
+    }
     if (portId.present) {
       map['port_id'] = Variable<String>(portId.value);
     }
@@ -1503,6 +1539,7 @@ class JobOrdersCompanion extends UpdateCompanion<JobOrder> {
           ..write('routerModel: $routerModel, ')
           ..write('lcpId: $lcpId, ')
           ..write('napId: $napId, ')
+          ..write('nap: $nap, ')
           ..write('portId: $portId, ')
           ..write('vlanId: $vlanId, ')
           ..write('dateInstalled: $dateInstalled, ')
@@ -2766,6 +2803,7 @@ typedef $$JobOrdersTableCreateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> routerModel,
   Value<int?> lcpId,
   Value<int?> napId,
+  Value<String?> nap,
   Value<String?> portId,
   Value<int?> vlanId,
   Value<DateTime?> dateInstalled,
@@ -2801,6 +2839,7 @@ typedef $$JobOrdersTableUpdateCompanionBuilder = JobOrdersCompanion Function({
   Value<String?> routerModel,
   Value<int?> lcpId,
   Value<int?> napId,
+  Value<String?> nap,
   Value<String?> portId,
   Value<int?> vlanId,
   Value<DateTime?> dateInstalled,
@@ -2878,6 +2917,9 @@ class $$JobOrdersTableFilterComposer
 
   ColumnFilters<int> get napId => $composableBuilder(
       column: $table.napId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nap => $composableBuilder(
+      column: $table.nap, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get portId => $composableBuilder(
       column: $table.portId, builder: (column) => ColumnFilters(column));
@@ -3001,6 +3043,9 @@ class $$JobOrdersTableOrderingComposer
   ColumnOrderings<int> get napId => $composableBuilder(
       column: $table.napId, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get nap => $composableBuilder(
+      column: $table.nap, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get portId => $composableBuilder(
       column: $table.portId, builder: (column) => ColumnOrderings(column));
 
@@ -3119,6 +3164,9 @@ class $$JobOrdersTableAnnotationComposer
   GeneratedColumn<int> get napId =>
       $composableBuilder(column: $table.napId, builder: (column) => column);
 
+  GeneratedColumn<String> get nap =>
+      $composableBuilder(column: $table.nap, builder: (column) => column);
+
   GeneratedColumn<String> get portId =>
       $composableBuilder(column: $table.portId, builder: (column) => column);
 
@@ -3208,6 +3256,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> routerModel = const Value.absent(),
             Value<int?> lcpId = const Value.absent(),
             Value<int?> napId = const Value.absent(),
+            Value<String?> nap = const Value.absent(),
             Value<String?> portId = const Value.absent(),
             Value<int?> vlanId = const Value.absent(),
             Value<DateTime?> dateInstalled = const Value.absent(),
@@ -3243,6 +3292,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             routerModel: routerModel,
             lcpId: lcpId,
             napId: napId,
+            nap: nap,
             portId: portId,
             vlanId: vlanId,
             dateInstalled: dateInstalled,
@@ -3278,6 +3328,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             Value<String?> routerModel = const Value.absent(),
             Value<int?> lcpId = const Value.absent(),
             Value<int?> napId = const Value.absent(),
+            Value<String?> nap = const Value.absent(),
             Value<String?> portId = const Value.absent(),
             Value<int?> vlanId = const Value.absent(),
             Value<DateTime?> dateInstalled = const Value.absent(),
@@ -3313,6 +3364,7 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             routerModel: routerModel,
             lcpId: lcpId,
             napId: napId,
+            nap: nap,
             portId: portId,
             vlanId: vlanId,
             dateInstalled: dateInstalled,
@@ -3331,7 +3383,11 @@ class $$JobOrdersTableTableManager extends RootTableManager<
             updatedAt: updatedAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$JobOrdersTable, JobOrder>(table),
+                    BaseReferences<_$AppDatabase, $JobOrdersTable, JobOrder>(
+                        db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -3520,7 +3576,11 @@ class $$SyncQueuesTableTableManager extends RootTableManager<
             createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$SyncQueuesTable, SyncQueue>(table),
+                    BaseReferences<_$AppDatabase, $SyncQueuesTable, SyncQueue>(
+                        db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -3882,7 +3942,11 @@ class $$LcpNapLocationsTableTableManager extends RootTableManager<
             updatedAt: updatedAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$LcpNapLocationsTable, LcpNapLocation>(table),
+                    BaseReferences<_$AppDatabase, $LcpNapLocationsTable,
+                        LcpNapLocation>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));

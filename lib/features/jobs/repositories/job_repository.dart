@@ -44,6 +44,9 @@ class JobRepository {
   /// server's older copy nor dropped. They are replaced by the server's
   /// version once the edit has been delivered (see [SyncWorker]).
   Future<void> fetchRemoteJobs({String? technicianEmail}) async {
+    // Purge test/sample demo jobs (IDs 101-106) permanently
+    await _dao.deleteSampleJobs();
+
     try {
       final scheduled = await _api.fetchByStatus(JobStatus.scheduled.wireValue);
       final activated = await _api.fetchByStatus(JobStatus.activated.wireValue);
@@ -65,14 +68,10 @@ class JobRepository {
         take(JobOrderDto.fromJson(item));
       }
       for (final item in activated) {
-        final dto = JobOrderDto.fromJson(item);
-        if (email.isEmpty || !dto.isAssignedTo(email)) continue;
-        take(dto);
+        take(JobOrderDto.fromJson(item));
       }
       for (final item in completed) {
-        final dto = JobOrderDto.fromJson(item);
-        if (email.isEmpty || !dto.isAssignedTo(email)) continue;
-        take(dto);
+        take(JobOrderDto.fromJson(item));
       }
 
       if (companions.isNotEmpty) {
@@ -80,19 +79,31 @@ class JobRepository {
       }
       await _dao.deleteSyncedJobsNotIn(keep);
     } catch (_) {
-      // Offline fallback: check if local database is empty, seed demo data if needed
-      final count = (await _dao.getAllJobs()).length;
-      if (count == 0) {
-        await seedSampleJobs();
-      }
+      // Offline fallback: do not re-seed test data
     }
   }
 
   /// Activate a job: Scheduled -> Activated, the only transition in the field.
   ///
-  /// The activating technician's email is stamped on the record so the job
+  /// Complete a job: Scheduled -> Completed.
+  ///
+  /// The completing technician's email is stamped on the record so the job
   /// appears in their history, and the install date is set if it was not
   /// already. Queued for sync like every other edit.
+  Future<void> completeJob(int id, {String? technicianEmail}) async {
+    final existing = await _dao.getJobById(id);
+    final email = technicianEmail?.trim();
+    await _dao.completeJob(
+      id,
+      assignedEmail: (email == null || email.isEmpty) ? null : email,
+      installedAt: existing?.dateInstalled ?? DateTime.now(),
+      isSynced: false,
+    );
+    await syncWorker.refreshPendingCount();
+    unawaited(syncWorker.syncPendingJobs());
+  }
+
+  /// Activate a job: Scheduled -> Activated.
   Future<void> activateJob(int id, {String? technicianEmail}) async {
     final existing = await _dao.getJobById(id);
     final email = technicianEmail?.trim();
@@ -123,15 +134,17 @@ class JobRepository {
     unawaited(syncWorker.syncPendingJobs());
   }
 
-  /// Save completion report details locally and queue for sync
+  /// Save completion report details locally and queue for sync.
+  /// Does not change the job order status unless [status] is explicitly provided.
   Future<void> saveCompletionReport({
     required int id,
-    required String status,
+    String? status,
     required String onsiteStatus,
     required String onsiteRemarks,
     double? opticalPower,
     String? modemRouterSN,
     String? routerModel,
+    String? nap,
     String? boxReadingImage,
     String? routerReadingImage,
     String? clientSignature,
@@ -150,6 +163,7 @@ class JobRepository {
       opticalPower: opticalPower,
       modemRouterSN: modemRouterSN,
       routerModel: routerModel,
+      nap: nap,
       boxReadingImage: boxReadingImage,
       routerReadingImage: routerReadingImage,
       clientSignature: clientSignature,
