@@ -147,7 +147,13 @@ class PhotoCaptureTile extends StatelessWidget {
     final onServer = _hasValue && bytes == null;
 
     return InkWell(
-      onTap: () => _showActions(context),
+      // Tapping a photo opens it full screen, where it can be zoomed. An
+      // empty tile has nothing to show, so it goes straight to the camera.
+      // Retaking and removing stay on the overlay button and a long press.
+      onTap: bytes != null
+          ? () => showPhotoViewer(context, bytes, title: label)
+          : () => _showActions(context),
+      onLongPress: () => _showActions(context),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
@@ -218,6 +224,27 @@ class PhotoCaptureTile extends StatelessWidget {
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                        // Retake / remove. It sits apart from the image so a
+                        // plain tap can open the photo instead.
+                        Positioned(
+                          bottom: 6,
+                          right: 6,
+                          child: GestureDetector(
+                            onTap: () => _showActions(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.65),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.more_horiz_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ),

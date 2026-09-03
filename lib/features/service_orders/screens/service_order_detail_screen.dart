@@ -196,7 +196,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           body: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              // Clear the phone's navigation bar so the last control is not
+              // half covered.
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
               children: [
                 // 1. Concern & Subscriber Card
                 _buildSubscriberCard(order, isDark),

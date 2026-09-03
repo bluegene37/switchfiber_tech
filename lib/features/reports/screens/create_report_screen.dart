@@ -155,7 +155,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        // The submit button sits at the very bottom, so the scroll has to
+        // clear the phone's navigation bar or it stays half covered.
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
         child: Form(
           key: _formKey,
           child: Column(

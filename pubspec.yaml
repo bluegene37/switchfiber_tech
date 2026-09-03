@@ -35,6 +35,8 @@ dependencies:
   http_cache_drift_store: ^7.0.1
   url_launcher: ^6.3.2
   image_picker: ^1.2.3
+  geolocator: ^14.0.3
+  exif: ^3.3.0
 
 dev_dependencies:
   flutter_test:

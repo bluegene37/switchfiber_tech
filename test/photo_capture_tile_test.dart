@@ -97,7 +97,9 @@ void main() {
     expect(find.byType(Image), findsOneWidget);
     expect(find.text('Tap to add photo'), findsNothing);
 
-    await tester.tap(find.text('House Front'));
+    // Retake and remove moved behind the overlay button, because a plain tap
+    // on the tile now opens the photo full screen instead.
+    await tester.tap(find.byIcon(Icons.more_horiz_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Retake photo'), findsOneWidget);
     expect(find.text('View photo & EXIF details'), findsOneWidget);
@@ -105,6 +107,42 @@ void main() {
     await tester.tap(find.text('Remove photo'));
     await tester.pumpAndSettle();
     expect(received, '', reason: 'an empty string clears the field on sync');
+  });
+
+  testWidgets('tapping a photo opens it full screen and zoomable',
+      (tester) async {
+    await tester.pumpWidget(host(
+      value: _png,
+      pick: (_) async => null,
+      onChanged: (_) {},
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(Image).first);
+    // Not pumpAndSettle: the viewer reads EXIF behind a spinner.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byType(InteractiveViewer), findsOneWidget,
+        reason: 'a tap must open the big view, not the action sheet');
+    expect(find.text('Retake photo'), findsNothing,
+        reason: 'the action sheet belongs on the overlay button');
+  });
+
+  testWidgets('long pressing a photo still reaches retake and remove',
+      (tester) async {
+    await tester.pumpWidget(host(
+      value: _png,
+      pick: (_) async => null,
+      onChanged: (_) {},
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byType(Image).first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Retake photo'), findsOneWidget);
+    expect(find.text('Remove photo'), findsOneWidget);
   });
 
   testWidgets('a server path is reported as stored, not rendered',

@@ -158,7 +158,10 @@ class JobOrderDetailScreen extends StatelessWidget {
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            // The activate button sits at the very bottom, so the scroll has
+            // to clear the phone's navigation bar.
+            padding: EdgeInsets.fromLTRB(
+                16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
             children: [
               // 1. Status & Workflow Pipeline Card
               _buildWorkflowCard(context, job, isDark),
