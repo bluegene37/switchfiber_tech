@@ -118,6 +118,35 @@ class _JobsMapViewState extends State<JobsMapView> {
     _mapController.move(target, 17);
   }
 
+  /// Find the geographically closest LCP NAP to [jobPos].
+  ({LcpNapDto nap, double distanceMeters})? _findNearestNap(
+    LatLng jobPos,
+    List<LcpNapDto> naps,
+  ) {
+    LcpNapDto? nearest;
+    double minDistance = double.infinity;
+
+    for (final nap in naps) {
+      final napPos = nap.latLng;
+      if (napPos == null) continue;
+      final meters = LocationService.instance.distanceBetween(
+        startLat: jobPos.latitude,
+        startLng: jobPos.longitude,
+        endLat: napPos.latitude,
+        endLng: napPos.longitude,
+      );
+      if (meters < minDistance) {
+        minDistance = meters;
+        nearest = nap;
+      }
+    }
+
+    if (nearest != null && minDistance.isFinite) {
+      return (nap: nearest, distanceMeters: minDistance);
+    }
+    return null;
+  }
+
   void _fitAllJobs(List<JobOrderDto> jobs, List<LcpNapDto> naps) {
     final points = <LatLng>[];
     for (final j in jobs) {
@@ -146,6 +175,13 @@ class _JobsMapViewState extends State<JobsMapView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final jobs = widget.jobsSignals.filteredJobs.value;
     final naps = widget.lcpNapSignals?.allLocations.value ?? [];
+
+    final selectedJobPos = _selectedJob != null
+        ? _resolveJobLocation(_selectedJob!, naps)
+        : null;
+    final nearestNapInfo = selectedJobPos != null
+        ? _findNearestNap(selectedJobPos, naps)
+        : null;
 
     if (!_didInitialFit && jobs.isNotEmpty) {
       _didInitialFit = true;
@@ -183,16 +219,43 @@ class _JobsMapViewState extends State<JobsMapView> {
               userAgentPackageName: MapTiles.userAgentPackageName,
             ),
 
-            // NAP Boxes Layer (Optional Overlay)
-            if (_showNaps && naps.isNotEmpty)
+            // Connection Polyline to Nearest LCP NAP (when a job is selected)
+            if (_selectedJob != null &&
+                selectedJobPos != null &&
+                nearestNapInfo != null &&
+                nearestNapInfo.nap.latLng != null)
+              PolylineLayer(
+                polylines: [
+                  // Outer subtle halo
+                  Polyline(
+                    points: [selectedJobPos, nearestNapInfo.nap.latLng!],
+                    strokeWidth: 6.0,
+                    color: AppTheme.primary.withValues(alpha: 0.25),
+                  ),
+                  // Inner dashed line
+                  Polyline(
+                    points: [selectedJobPos, nearestNapInfo.nap.latLng!],
+                    strokeWidth: 2.5,
+                    color: AppTheme.primary,
+                    pattern: StrokePattern.dashed(segments: const [8, 4]),
+                  ),
+                ],
+              ),
+
+            // NAP Boxes Layer
+            if ((_showNaps || _selectedJob != null) && naps.isNotEmpty)
               MarkerLayer(
                 markers: [
                   for (final nap in naps)
-                    if (nap.latLng != null)
+                    if (nap.latLng != null &&
+                        (_showNaps || nap.id == nearestNapInfo?.nap.id))
                       Marker(
                         point: nap.latLng!,
-                        width: 30,
-                        height: 30,
+                        width: nap.id == nearestNapInfo?.nap.id ? 140 : 30,
+                        height: nap.id == nearestNapInfo?.nap.id ? 56 : 30,
+                        alignment: nap.id == nearestNapInfo?.nap.id
+                            ? Alignment.bottomCenter
+                            : Alignment.center,
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -200,26 +263,79 @@ class _JobsMapViewState extends State<JobsMapView> {
                               _selectedJob = null;
                             });
                           },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0284C7),
-                              shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: Colors.white, width: 1.5),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
+                          child: nap.id == nearestNapInfo?.nap.id &&
+                                  nearestNapInfo != null
+                              ? Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981),
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 4,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        'Nearest NAP • ${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.white, width: 2),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0x6610B981),
+                                            blurRadius: 8,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.hub_rounded,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0284C7),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.white, width: 1.5),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.hub_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.hub_rounded,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
                         ),
                       ),
                 ],
@@ -465,6 +581,7 @@ class _JobsMapViewState extends State<JobsMapView> {
     List<LcpNapDto> naps,
   ) {
     final jobPos = _resolveJobLocation(job, naps);
+    final nearestNapInfo = _findNearestNap(jobPos, naps);
     String? distanceStr;
     if (_technicianPosition != null) {
       final meters = LocationService.instance.distanceBetween(
@@ -545,8 +662,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(CupertinoIcons.xmark,
-                      size: 12,
-                      color: isDark ? Colors.white : AppTheme.darkSlate),
+                       size: 12,
+                       color: isDark ? Colors.white : AppTheme.darkSlate),
                 ),
               ),
             ],
@@ -567,6 +684,139 @@ class _JobsMapViewState extends State<JobsMapView> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          if (nearestNapInfo != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF064E3B).withValues(alpha: 0.35)
+                    : const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                      : const Color(0xFFA7F3D0),
+                  width: 0.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.hub_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'NEAREST LCP NAP',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                                color: isDark
+                                    ? const Color(0xFF6EE7B7)
+                                    : const Color(0xFF047857),
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)} away',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          nearestNapInfo.nap.lcpNap,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (nearestNapInfo.nap.street?.isNotEmpty == true ||
+                            nearestNapInfo.nap.barangay?.isNotEmpty == true)
+                          Text(
+                            [
+                              if (nearestNapInfo.nap.street?.isNotEmpty == true)
+                                nearestNapInfo.nap.street,
+                              if (nearestNapInfo.nap.barangay?.isNotEmpty == true)
+                                nearestNapInfo.nap.barangay,
+                            ].join(', '),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textMuted,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // Button to center map on the pole
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(30, 30),
+                    onPressed: () {
+                      if (nearestNapInfo.nap.latLng != null) {
+                        _mapController.move(nearestNapInfo.nap.latLng!, 17.5);
+                        setState(() {
+                          _selectedNap = nearestNapInfo.nap;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF047857).withValues(alpha: 0.5)
+                            : const Color(0xFFD1FAE5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        CupertinoIcons.scope,
+                        size: 14,
+                        color: isDark
+                            ? const Color(0xFF6EE7B7)
+                            : const Color(0xFF047857),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 14),
           Row(
             children: [
@@ -604,7 +854,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                       width: 0.5),
                 ),
                 child: IconButton(
-                  tooltip: 'Navigate',
+                  tooltip: 'Navigate to Job',
                   icon: const Icon(CupertinoIcons.location_north_fill,
                       color: AppTheme.primary, size: 18),
                   onPressed: () {
@@ -614,6 +864,33 @@ class _JobsMapViewState extends State<JobsMapView> {
                   },
                 ),
               ),
+              if (nearestNapInfo != null && nearestNapInfo.nap.latLng != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF064E3B).withValues(alpha: 0.5)
+                        : const Color(0xFFECFDF5),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                            : const Color(0xFFA7F3D0),
+                        width: 0.5),
+                  ),
+                  child: IconButton(
+                    tooltip: 'Directions to Pole',
+                    icon: const Icon(CupertinoIcons.arrow_turn_up_right,
+                        color: Color(0xFF10B981), size: 18),
+                    onPressed: () {
+                      final polePos = nearestNapInfo.nap.latLng!;
+                      final url = Uri.parse(
+                          'https://maps.apple.com/?q=${polePos.latitude},${polePos.longitude}');
+                      launchUrl(url, mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ],

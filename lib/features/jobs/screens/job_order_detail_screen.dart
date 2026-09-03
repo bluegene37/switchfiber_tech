@@ -9,6 +9,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../diagnostics/widgets/radius_connection_card.dart';
+import '../../lcp_nap/models/lcp_nap_model.dart';
+import '../../lcp_nap/signals/lcp_nap_signals.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_photo_gallery.dart';
@@ -23,6 +25,7 @@ import '../widgets/status_badge.dart';
 class JobOrderDetailScreen extends StatelessWidget {
   final int jobId;
   final JobsSignals jobsSignals;
+  final LcpNapSignals? lcpNapSignals;
   final void Function(JobOrderDto job)? onOpenReport;
   final bool readOnly;
 
@@ -30,6 +33,7 @@ class JobOrderDetailScreen extends StatelessWidget {
     super.key,
     required this.jobId,
     required this.jobsSignals,
+    this.lcpNapSignals,
     this.onOpenReport,
     this.readOnly = false,
   });
@@ -669,10 +673,177 @@ class JobOrderDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            // Nearest LCP NAP Pole Details & Navigation
+            () {
+              final nearestNapInfo = _findNearestNap(job);
+              if (nearestNapInfo == null) return const SizedBox.shrink();
+
+              return Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF064E3B).withValues(alpha: 0.35)
+                          : const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                            : const Color(0xFFA7F3D0),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.hub_rounded,
+                                size: 16, color: Color(0xFF10B981)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Nearest LCP NAP Pole',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: isDark
+                                    ? const Color(0xFF6EE7B7)
+                                    : const Color(0xFF047857),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (nearestNapInfo.distanceMeters > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)} away',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          nearestNapInfo.nap.lcpNap,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (nearestNapInfo.nap.street?.isNotEmpty == true ||
+                            nearestNapInfo.nap.barangay?.isNotEmpty == true) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            [
+                              if (nearestNapInfo.nap.street?.isNotEmpty == true)
+                                nearestNapInfo.nap.street,
+                              if (nearestNapInfo.nap.barangay?.isNotEmpty ==
+                                  true)
+                                nearestNapInfo.nap.barangay,
+                            ].join(', '),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textMuted,
+                            ),
+                          ),
+                        ],
+                        if (nearestNapInfo.nap.latLng != null) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: Color(0xFF10B981), width: 1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              icon: const Icon(
+                                  CupertinoIcons.arrow_turn_up_right,
+                                  size: 14,
+                                  color: Color(0xFF10B981)),
+                              label: const Text(
+                                'Directions to NAP Pole',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF10B981),
+                                ),
+                              ),
+                              onPressed: () {
+                                final p = nearestNapInfo.nap.latLng!;
+                                final uri = Uri.parse(
+                                    'https://maps.apple.com/?q=${p.latitude},${p.longitude}');
+                                launchUrl(uri,
+                                    mode: LaunchMode.externalApplication);
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }(),
           ],
         ),
       ),
     );
+  }
+
+  ({LcpNapDto nap, double distanceMeters})? _findNearestNap(JobOrderDto job) {
+    if (lcpNapSignals == null) return null;
+    final naps = lcpNapSignals!.allLocations.value;
+    if (naps.isEmpty) return null;
+
+    final targetPos = job.latLng;
+    if (targetPos != null) {
+      double minD = double.infinity;
+      LcpNapDto? nearest;
+      for (final n in naps) {
+        if (n.latLng == null) continue;
+        final d = LocationService.instance.distanceBetween(
+          startLat: targetPos.latitude,
+          startLng: targetPos.longitude,
+          endLat: n.latLng!.latitude,
+          endLng: n.latLng!.longitude,
+        );
+        if (d < minD) {
+          minD = d;
+          nearest = n;
+        }
+      }
+      if (nearest != null && minD.isFinite) {
+        return (nap: nearest, distanceMeters: minD);
+      }
+    }
+
+    if (job.napId != null) {
+      for (final n in naps) {
+        if (n.id == job.napId) {
+          return (nap: n, distanceMeters: 0.0);
+        }
+      }
+    }
+
+    return null;
   }
 
   Future<void> _openNavigation(JobOrderDto job) async {

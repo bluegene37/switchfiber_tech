@@ -10,9 +10,12 @@ import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_card.dart';
 import '../widgets/job_history_view.dart';
+import '../widgets/jobs_map_view.dart';
 import 'job_order_detail_screen.dart';
 
 enum _JobsCategory { scheduled, history }
+
+enum _ScheduledViewMode { list, map }
 
 /// The scheduled queue & history hub: includes both the scheduled tickets waiting
 /// to be activated and the technician's activated history records.
@@ -41,6 +44,7 @@ class JobOrdersScreen extends StatefulWidget {
 class _JobOrdersScreenState extends State<JobOrdersScreen> {
   final TextEditingController _searchController = TextEditingController();
   _JobsCategory _category = _JobsCategory.scheduled;
+  _ScheduledViewMode _viewMode = _ScheduledViewMode.list;
 
   @override
   void dispose() {
@@ -60,6 +64,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
         builder: (_) => JobOrderDetailScreen(
           jobId: job.id,
           jobsSignals: widget.jobsSignals,
+          lcpNapSignals: widget.lcpNapSignals,
           onOpenReport: widget.onSelectJobForReport,
           readOnly: _category == _JobsCategory.history,
         ),
@@ -97,6 +102,26 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           ],
         ),
         actions: [
+          // List / Map View Toggle for Scheduled Jobs
+          if (_category == _JobsCategory.scheduled)
+            IconButton(
+              tooltip: _viewMode == _ScheduledViewMode.list
+                  ? 'Switch to Map View'
+                  : 'Switch to List View',
+              icon: Icon(
+                _viewMode == _ScheduledViewMode.list
+                    ? CupertinoIcons.map
+                    : CupertinoIcons.list_bullet,
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _viewMode = _viewMode == _ScheduledViewMode.list
+                      ? _ScheduledViewMode.map
+                      : _ScheduledViewMode.list;
+                });
+              },
+            ),
           // Manual Sync & Refresh Action Button
           SignalBuilder(
             builder: (context) {
@@ -198,136 +223,240 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
 
                 if (_category == _JobsCategory.scheduled) ...[
                   const SizedBox(height: 10),
-                  // iOS Capsule Search Bar for Scheduled Queue
-                  Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.search,
-                          size: 16,
-                          color: AppTheme.textMuted,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (text) {
-                              setState(() {});
-                              signals.setSearch(text);
-                            },
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isDark ? Colors.white : AppTheme.darkSlate,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText:
-                                  'Search subscriber, ticket #, address...',
-                              hintStyle: TextStyle(
-                                fontSize: 14,
+                  // iOS Capsule Search Bar & Map/List Toggle Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color:
+                                isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                CupertinoIcons.search,
+                                size: 16,
                                 color: AppTheme.textMuted,
                               ),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                              isDense: true,
-                            ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (text) {
+                                    setState(() {});
+                                    signals.setSearch(text);
+                                  },
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppTheme.darkSlate,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        'Search subscriber, ticket #, address...',
+                                    hintStyle: TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                              if (_searchController.text.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    _searchController.clear();
+                                    setState(() {});
+                                    signals.setSearch('');
+                                  },
+                                  child: const Icon(
+                                    CupertinoIcons.clear_thick_circled,
+                                    size: 16,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                        if (_searchController.text.isNotEmpty)
-                          GestureDetector(
-                            onTap: () {
-                              _searchController.clear();
-                              setState(() {});
-                              signals.setSearch('');
-                            },
-                            child: const Icon(
-                              CupertinoIcons.clear_thick_circled,
-                              size: 16,
-                              color: AppTheme.textMuted,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Scheduled Queue iOS Widget Banner
-                  SignalBuilder(
-                    builder: (context) {
-                      final scheduledCount = signals.scheduledCount.value;
-
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 9),
+                      ),
+                      const SizedBox(width: 8),
+                      // Prominent Segmented Toggle for List vs Map
+                      Container(
+                        height: 38,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1C2230)
-                              : const Color(0xFFF0F6FF),
-                          borderRadius: BorderRadius.circular(12),
+                          color:
+                              isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isDark
-                                ? const Color(0xFF2563EB).withValues(alpha: 0.3)
-                                : const Color(0xFFBFDBFE),
+                                ? AppTheme.borderDark
+                                : AppTheme.borderLight,
                             width: 0.5,
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0284C7),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                CupertinoIcons.calendar,
-                                color: Colors.white,
-                                size: 17,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        padding: const EdgeInsets.all(2),
+                        child: CupertinoSlidingSegmentedControl<
+                            _ScheduledViewMode>(
+                          groupValue: _viewMode,
+                          backgroundColor: Colors.transparent,
+                          thumbColor: isDark ? AppTheme.darkCard : Colors.white,
+                          children: {
+                            _ScheduledViewMode.list: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: -0.2,
-                                      color: isDark
-                                          ? const Color(0xFF93C5FD)
-                                          : const Color(0xFF1E40AF),
-                                    ),
+                                  Icon(
+                                    CupertinoIcons.list_bullet,
+                                    size: 14,
+                                    color: _viewMode == _ScheduledViewMode.list
+                                        ? AppTheme.primary
+                                        : (isDark
+                                            ? Colors.white70
+                                            : AppTheme.darkSlate),
                                   ),
-                                  const SizedBox(height: 1),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    'Tap ticket to verify optical specs & activate subscriber.',
+                                    'List',
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark
-                                          ? AppTheme.textSecondaryDark
-                                          : const Color(0xFF3B82F6),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          _viewMode == _ScheduledViewMode.list
+                                              ? AppTheme.primary
+                                              : (isDark
+                                                  ? Colors.white70
+                                                  : AppTheme.darkSlate),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                            _ScheduledViewMode.map: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.map_fill,
+                                    size: 14,
+                                    color: _viewMode == _ScheduledViewMode.map
+                                        ? AppTheme.primary
+                                        : (isDark
+                                            ? Colors.white70
+                                            : AppTheme.darkSlate),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Map',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          _viewMode == _ScheduledViewMode.map
+                                              ? AppTheme.primary
+                                              : (isDark
+                                                  ? Colors.white70
+                                                  : AppTheme.darkSlate),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          },
+                          onValueChanged: (val) {
+                            if (val != null) setState(() => _viewMode = val);
+                          },
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
+
+                  // Scheduled Queue iOS Widget Banner (shown only in list view)
+                  if (_viewMode == _ScheduledViewMode.list) ...[
+                    const SizedBox(height: 10),
+                    SignalBuilder(
+                      builder: (context) {
+                        final scheduledCount = signals.scheduledCount.value;
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 9),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1C2230)
+                                : const Color(0xFFF0F6FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF2563EB)
+                                      .withValues(alpha: 0.3)
+                                  : const Color(0xFFBFDBFE),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0284C7),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  CupertinoIcons.calendar,
+                                  color: Colors.white,
+                                  size: 17,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.2,
+                                        color: isDark
+                                            ? const Color(0xFF93C5FD)
+                                            : const Color(0xFF1E40AF),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      'Tap ticket to verify optical specs & activate subscriber.',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: isDark
+                                            ? AppTheme.textSecondaryDark
+                                            : const Color(0xFF3B82F6),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -393,7 +522,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               },
             ),
 
-          // 3. Main Body: Scheduled Jobs List OR History View
+          // 3. Main Body: Scheduled Jobs List / Map OR History View
           Expanded(
             child: _category == _JobsCategory.history
                 ? JobHistoryView(
@@ -416,6 +545,14 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
 
                       if (phase == DataLoadPhase.skeleton) {
                         return const SkeletonCardList();
+                      }
+
+                      if (_viewMode == _ScheduledViewMode.map) {
+                        return JobsMapView(
+                          jobsSignals: signals,
+                          lcpNapSignals: widget.lcpNapSignals,
+                          onOpenJob: _openDetails,
+                        );
                       }
 
                       if (jobs.isEmpty) {

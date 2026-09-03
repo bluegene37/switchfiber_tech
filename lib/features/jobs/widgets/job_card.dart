@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 import 'status_badge.dart';
@@ -170,6 +171,140 @@ class JobCard extends StatelessWidget {
                           ],
                         ),
                       ],
+                      const SizedBox(height: 10),
+                      // Quick Action Pills
+                      Row(
+                        children: [
+                          if (job.contactNumber?.isNotEmpty == true) ...[
+                            GestureDetector(
+                              onTap: () async {
+                                final uri =
+                                    Uri.parse('tel:${job.contactNumber!}');
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri);
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppTheme.borderDark
+                                        : AppTheme.borderLight,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(CupertinoIcons.phone_fill,
+                                        size: 11, color: Color(0xFF10B981)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Call',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppTheme.darkSlate,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          GestureDetector(
+                            onTap: () async {
+                              final latLng = job.latLng;
+                              final Uri uri;
+                              if (latLng != null) {
+                                uri = Uri.parse(
+                                    'https://maps.apple.com/?q=${latLng.latitude},${latLng.longitude}');
+                              } else {
+                                final fullAddr =
+                                    '${job.address}${job.barangay != null ? ", ${job.barangay}" : ""}${job.city != null ? ", ${job.city}" : ""}, Philippines';
+                                uri = Uri.parse(
+                                    'https://maps.apple.com/?q=${Uri.encodeComponent(fullAddr)}');
+                              }
+                              await launchUrl(uri,
+                                  mode: LaunchMode.externalApplication);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF1E293B)
+                                    : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isDark
+                                      ? AppTheme.borderDark
+                                      : AppTheme.borderLight,
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(CupertinoIcons.location_north_fill,
+                                      size: 11, color: AppTheme.primary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Directions',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white
+                                          : AppTheme.darkSlate,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (job.nap?.isNotEmpty == true ||
+                              (job.napId != null && job.napId! > 0)) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0284C7)
+                                    .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.hub_rounded,
+                                      size: 11, color: Color(0xFF0284C7)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    job.nap?.isNotEmpty == true
+                                        ? job.nap!
+                                        : 'NAP-${job.napId}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0284C7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
