@@ -91,13 +91,16 @@ void main() {
     expect(await dao.countUnsynced(), 0);
   });
 
-  test('ServiceOrdersDao deletes synced orders while preserving unsynced edits', () async {
+  test('ServiceOrdersDao deletes synced orders while preserving unsynced edits',
+      () async {
     final dao = db.serviceOrdersDao;
 
     // Order 501 is synced; Order 502 has an unsynced local edit
     await dao.insertOrUpdateOrder(dummyOrder.toCompanion(synced: true));
     await dao.insertOrUpdateOrder(
-      dummyOrder.copyWith(id: 502, accountNumber: 'SO-002').toCompanion(synced: false),
+      dummyOrder
+          .copyWith(id: 502, accountNumber: 'SO-002')
+          .toCompanion(synced: false),
     );
 
     // Server returns only order 503 (501 and 502 are not returned)
@@ -130,13 +133,17 @@ void main() {
     expect(fromDb!.fullName, 'Maria Santos');
   });
 
-  test('ServiceOrdersSignals submitCompletion saves locally and offloads photos', () async {
+  test(
+      'ServiceOrdersSignals submitCompletion saves locally and offloads photos',
+      () async {
     final dao = db.serviceOrdersDao;
     final signals = ServiceOrdersSignals(api: mockApi, dao: dao);
     addTearDown(signals.dispose);
 
-    final dummyPngBytes = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
-    final signatureDataUrl = DataUrl.encode(dummyPngBytes, mimeType: 'image/png');
+    final dummyPngBytes =
+        Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    final signatureDataUrl =
+        DataUrl.encode(dummyPngBytes, mimeType: 'image/png');
 
     final updated = dummyOrder.copyWith(
       visitStatus: 'Done',

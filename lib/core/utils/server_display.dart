@@ -20,8 +20,7 @@ class ServerDisplay {
       final labels = host.split('.');
       final first = labels.first;
       final head = first.length > 2 ? first.substring(0, 2) : first;
-      maskedHost =
-          labels.length > 1 ? '$head***.${labels.last}' : '$head***';
+      maskedHost = labels.length > 1 ? '$head***.${labels.last}' : '$head***';
     }
 
     final port = uri!.hasPort ? ':${uri.port}' : '';

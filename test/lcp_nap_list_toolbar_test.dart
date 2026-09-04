@@ -14,7 +14,8 @@ const double _screenWidth = 423.5;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('the grouping toolbar keeps its buttons on screen on a 424dp phone',
+  testWidgets(
+      'the grouping toolbar keeps its buttons on screen on a 424dp phone',
       (tester) async {
     // With 16dp of list padding each side the toolbar Row gets 391.5dp, the
     // exact width at which a full plant's summary used to run 1.3px past the

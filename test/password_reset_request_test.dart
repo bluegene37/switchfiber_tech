@@ -23,10 +23,9 @@ class _RecordingAdapter implements HttpClientAdapter {
   Future<ResponseBody> fetch(RequestOptions options,
       Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
     captured = options;
-    return ResponseBody.fromString('{}', 200,
-        headers: {
-          Headers.contentTypeHeader: [Headers.jsonContentType]
-        });
+    return ResponseBody.fromString('{}', 200, headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType]
+    });
   }
 
   @override

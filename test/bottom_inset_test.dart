@@ -63,8 +63,8 @@ void main() {
     expect(button, findsOneWidget);
 
     final rect = tester.getRect(button);
-    final sc = tester.widget<SingleChildScrollView>(
-        find.byType(SingleChildScrollView));
+    final sc = tester
+        .widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
     // The scroll must reserve at least the navigation bar's height below its
     // last child. The form's own trailing gap used to cover most, but not
     // all, of a real bar, which is why only part of the button was hidden.

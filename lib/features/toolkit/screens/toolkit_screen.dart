@@ -34,8 +34,7 @@ class ToolkitScreen extends StatelessWidget {
               color: isDark ? AppTheme.darkCard : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color:
-                    isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
                 width: 0.5,
               ),
             ),

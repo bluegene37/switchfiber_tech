@@ -16,7 +16,9 @@ class PlanDto {
 
   factory PlanDto.fromJson(Map<String, dynamic> json) {
     return PlanDto(
-      id: json['id'] is int ? json['id'] as int : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       name: json['name']?.toString().trim() ?? '',
       description: json['description']?.toString().trim() ?? '',
       amount: json['amount'] is num
@@ -57,7 +59,9 @@ class RouterDto {
 
   factory RouterDto.fromJson(Map<String, dynamic> json) {
     return RouterDto(
-      id: json['id'] is int ? json['id'] as int : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       name: json['name']?.toString().trim() ?? '',
       description: json['description']?.toString().trim() ?? '',
       brand: json['brand']?.toString().trim() ?? '',
@@ -83,7 +87,8 @@ class RouterDto {
   }
 
   /// Compact specification: e.g. "Huawei 5v5"
-  String get compactName => [name, description].where((s) => s.isNotEmpty).join(' ');
+  String get compactName =>
+      [name, description].where((s) => s.isNotEmpty).join(' ');
 }
 
 /// Model for NAP items from `/api/Naps`.
@@ -123,8 +128,7 @@ class NapDto {
         'name': name,
         'description': description,
         if (createdByUserId != null) 'createdByUserId': createdByUserId,
-        if (createdDate != null)
-          'createdDate': createdDate!.toIso8601String(),
+        if (createdDate != null) 'createdDate': createdDate!.toIso8601String(),
       };
 }
 
@@ -165,8 +169,6 @@ class PortDto {
         'name': name,
         'description': description,
         if (createdByUserId != null) 'createdByUserId': createdByUserId,
-        if (createdDate != null)
-          'createdDate': createdDate!.toIso8601String(),
+        if (createdDate != null) 'createdDate': createdDate!.toIso8601String(),
       };
 }
-

@@ -20,7 +20,8 @@ void main() {
     }
   });
 
-  test('saving null returns null, empty returns empty string for deletion', () async {
+  test('saving null returns null, empty returns empty string for deletion',
+      () async {
     expect(await service.savePhotoLocally(null, tag: 'box'), isNull);
     expect(await service.savePhotoLocally('', tag: 'box'), '');
     expect(await service.savePhotoLocally('   ', tag: 'box'), '');
@@ -33,10 +34,12 @@ void main() {
   });
 
   test('data URL is saved as a discrete file on disk', () async {
-    final dummyBytes = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46]);
+    final dummyBytes =
+        Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46]);
     final dataUrl = DataUrl.encode(dummyBytes, mimeType: 'image/jpeg');
 
-    final filePath = await service.savePhotoLocally(dataUrl, tag: 'box_reading', entityId: 42);
+    final filePath = await service.savePhotoLocally(dataUrl,
+        tag: 'box_reading', entityId: 42);
     expect(filePath, isNotNull);
     expect(filePath, contains('id_42_box_reading_'));
     expect(filePath, endsWith('.jpg'));
@@ -59,10 +62,12 @@ void main() {
   });
 
   test('PNG signature data URL is saved as .png file', () async {
-    final dummyPngBytes = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+    final dummyPngBytes =
+        Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
     final dataUrl = DataUrl.encode(dummyPngBytes, mimeType: 'image/png');
 
-    final filePath = await service.savePhotoLocally(dataUrl, tag: 'signature', entityId: 101);
+    final filePath = await service.savePhotoLocally(dataUrl,
+        tag: 'signature', entityId: 101);
     expect(filePath, endsWith('.png'));
     expect(File(filePath!).existsSync(), isTrue);
 

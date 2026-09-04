@@ -185,7 +185,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
               SizedBox(width: 10),
               Expanded(
-                child: Text('Customer signature is required before saving report.'),
+                child: Text(
+                    'Customer signature is required before saving report.'),
               ),
             ],
           ),
@@ -613,9 +614,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           : portNames.firstWhere(
                               (p) =>
                                   p.toLowerCase().replaceAll(' ', '') ==
-                                  currentVal
-                                      .toLowerCase()
-                                      .replaceAll(' ', ''),
+                                  currentVal.toLowerCase().replaceAll(' ', ''),
                               orElse: () => portNames.isNotEmpty
                                   ? portNames.first
                                   : currentVal,

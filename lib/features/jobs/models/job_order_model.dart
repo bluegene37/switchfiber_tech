@@ -402,10 +402,10 @@ class JobOrderDto {
           .resolveToDataUrlSync(row.clientSignature),
       setupImage:
           PhotoStorageService.instance.resolveToDataUrlSync(row.setupImage),
-      speedtestImage: PhotoStorageService.instance
-          .resolveToDataUrlSync(row.speedtestImage),
-      portLabelImage: PhotoStorageService.instance
-          .resolveToDataUrlSync(row.portLabelImage),
+      speedtestImage:
+          PhotoStorageService.instance.resolveToDataUrlSync(row.speedtestImage),
+      portLabelImage:
+          PhotoStorageService.instance.resolveToDataUrlSync(row.portLabelImage),
       signedContractImage: PhotoStorageService.instance
           .resolveToDataUrlSync(row.signedContractImage),
       houseFront:
@@ -454,6 +454,66 @@ class JobOrderDto {
       isSynced: Value(synced),
       updatedAt: Value(updatedAt ?? DateTime.now()),
     );
+  }
+
+  /// Fields `PUT /api/JobOrders/{id}` accepts as null.
+  ///
+  /// Everything else in UpdateJobOrderRequest is a non-nullable string, so a
+  /// null fails validation where an empty string passes.
+  static const Set<String> _nullableApiFields = {
+    'modifiedDate',
+    'startTimeStamp',
+    'endTimeStamp',
+    'dateInstalled',
+    'createdBy',
+    'createdDate',
+  };
+
+  /// Fields the PUT requires that the matching GET does not always return.
+  ///
+  /// The endpoint is not a clean round trip: `GET /api/JobOrders/{id}` hands
+  /// back `duration`, `billingDay` and `installationFee` as null and omits
+  /// `applicationId` entirely, then the PUT rejects the very record it just
+  /// gave out with "The Duration field is required". Replaying the server's
+  /// own response therefore fails with HTTP 400 unless these are filled in.
+  static const Set<String> _requiredApiFields = {
+    'duration',
+    'billingDay',
+    'applicationId',
+    'installationFee',
+  };
+
+  /// Billing day used when the record carries none.
+  ///
+  /// A subscriber that already has a billing day keeps it: overwriting one
+  /// would change real billing data to satisfy a validator.
+  static const String defaultBillingDay = '27';
+
+  /// Makes [body] satisfy UpdateJobOrderRequest without changing any value
+  /// the server actually holds.
+  ///
+  /// Nulls become empty strings, except for the six fields the endpoint
+  /// genuinely accepts as null, and the required fields the GET leaves out
+  /// are added empty.
+  static Map<String, dynamic> normalizeForApi(Map<String, dynamic> body) {
+    final out = Map<String, dynamic>.from(body);
+
+    for (final key in _requiredApiFields) {
+      out.putIfAbsent(key, () => null);
+    }
+
+    for (final entry in out.entries.toList()) {
+      if (entry.value == null && !_nullableApiFields.contains(entry.key)) {
+        out[entry.key] = '';
+      }
+    }
+
+    final billingDay = out['billingDay'];
+    if (billingDay == null || billingDay.toString().trim().isEmpty) {
+      out['billingDay'] = defaultBillingDay;
+    }
+
+    return out;
   }
 
   /// Fields the technician's app is allowed to change on the server.
@@ -511,21 +571,22 @@ class JobOrderDto {
       }.entries) {
         if (e.value != null) fallback[e.key] = e.value;
       }
-      return fallback;
+      return normalizeForApi(fallback);
     }
 
     final decoded = json.decode(original);
     if (decoded is! Map<String, dynamic>) {
-      return <String, dynamic>{'id': id, ..._technicianEdits()};
+      return normalizeForApi(
+          <String, dynamic>{'id': id, ..._technicianEdits()});
     }
 
-    return <String, dynamic>{
+    return normalizeForApi(<String, dynamic>{
       ...decoded,
       ..._technicianEdits(),
       if (dateInstalled != null)
         'dateInstalled': dateInstalled!.toIso8601String(),
       if (opticalPower != null) 'opticalPower': opticalPower,
-    };
+    });
   }
 
   /// Converts fields to API JSON map, resolving local photo and signature file

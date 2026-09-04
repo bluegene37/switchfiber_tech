@@ -45,7 +45,8 @@ void main() {
   });
 
   group('Step 2: Service Orders (Repairs & Swaps)', () {
-    test('ServiceOrderDto deserializes fields and extracts materials slots', () {
+    test('ServiceOrderDto deserializes fields and extracts materials slots',
+        () {
       final json = {
         'id': 42,
         'accountNumber': '202300042',
@@ -76,7 +77,8 @@ void main() {
       expect(order.latLng!.longitude, closeTo(121.2150, 0.0001));
     });
 
-    test('ServiceOrderDto serializes materials back to itemName1..10 slots', () {
+    test('ServiceOrderDto serializes materials back to itemName1..10 slots',
+        () {
       const order = ServiceOrderDto(
         id: 10,
         accountNumber: 'ACC10',
@@ -99,7 +101,9 @@ void main() {
   });
 
   group('Step 3: Live RADIUS Telemetry', () {
-    test('RadiusUserDto parses group correctly and detects Connected vs Disconnected', () {
+    test(
+        'RadiusUserDto parses group correctly and detects Connected vs Disconnected',
+        () {
       final connectedJson = {
         'id': '',
         'name': 'accountt0601261206',

@@ -110,7 +110,8 @@ void main() {
           reason: '$label button');
     }
     final activate = find.ancestor(
-        of: find.text('Mark as Completed'), matching: find.byType(ElevatedButton));
+        of: find.text('Mark as Completed'),
+        matching: find.byType(ElevatedButton));
     expect(tester.getSize(activate).height, greaterThanOrEqualTo(52),
         reason: 'primary action');
   });

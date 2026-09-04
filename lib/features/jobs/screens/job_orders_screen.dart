@@ -210,345 +210,339 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
     return Column(
       children: [
         // 1. Top Category Segmented Control & Search (when Scheduled)
-          Container(
-            color: isDark ? AppTheme.darkCard : Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: Column(
-              children: [
-                // Top Category Toggle: Scheduled vs History
-                SignalBuilder(
-                  builder: (context) {
-                    final scheduledCount = signals.scheduledCount.value;
-                    final historyCount = signals.historyTotalCount.value;
+        Container(
+          color: isDark ? AppTheme.darkCard : Colors.white,
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Column(
+            children: [
+              // Top Category Toggle: Scheduled vs History
+              SignalBuilder(
+                builder: (context) {
+                  final scheduledCount = signals.scheduledCount.value;
+                  final historyCount = signals.historyTotalCount.value;
 
-                    return SizedBox(
-                      width: double.infinity,
-                      child: CupertinoSlidingSegmentedControl<_JobsCategory>(
-                        groupValue: _category,
-                        backgroundColor:
-                            isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                  return SizedBox(
+                    width: double.infinity,
+                    child: CupertinoSlidingSegmentedControl<_JobsCategory>(
+                      groupValue: _category,
+                      backgroundColor:
+                          isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                      thumbColor: isDark ? AppTheme.darkCard : Colors.white,
+                      children: {
+                        _JobsCategory.scheduled: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          child: Text(
+                            'Scheduled ($scheduledCount)',
+                            style: context.text.labelLarge,
+                          ),
+                        ),
+                        _JobsCategory.history: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          child: Text(
+                            'History ($historyCount)',
+                            style: context.text.labelLarge,
+                          ),
+                        ),
+                      },
+                      onValueChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _category = val;
+                            _selectedJobId = null;
+                          });
+                        }
+                      },
+                    ),
+                  );
+                },
+              ),
+
+              if (_category == _JobsCategory.scheduled) ...[
+                const SizedBox(height: 10),
+                // iOS Capsule Search Bar & Map/List Toggle Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppSearchField(
+                        controller: _searchController,
+                        hintText: 'Search subscriber, ticket #, address',
+                        onChanged: (text) {
+                          setState(() {});
+                          signals.setSearch(text);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Prominent Segmented Toggle for List vs Map
+                    Container(
+                      constraints: const BoxConstraints(
+                          minHeight: AppSearchField.minHeight),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight,
+                          width: 0.5,
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child:
+                          CupertinoSlidingSegmentedControl<_ScheduledViewMode>(
+                        groupValue: _viewMode,
+                        backgroundColor: Colors.transparent,
                         thumbColor: isDark ? AppTheme.darkCard : Colors.white,
                         children: {
-                          _JobsCategory.scheduled: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            child: Text(
-                              'Scheduled ($scheduledCount)',
-                              style: context.text.labelLarge,
+                          _ScheduledViewMode.list: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.list_bullet,
+                                  size: 24,
+                                  color: _viewMode == _ScheduledViewMode.list
+                                      ? AppTheme.primary
+                                      : (isDark
+                                          ? Colors.white70
+                                          : AppTheme.darkSlate),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'List',
+                                  style: context.text.labelLarge!.copyWith(
+                                    color: _viewMode == _ScheduledViewMode.list
+                                        ? AppTheme.brandInkOf(context)
+                                        : (isDark
+                                            ? Colors.white70
+                                            : AppTheme.darkSlate),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          _JobsCategory.history: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            child: Text(
-                              'History ($historyCount)',
-                              style: context.text.labelLarge,
+                          _ScheduledViewMode.map: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.map_fill,
+                                  size: 24,
+                                  color: _viewMode == _ScheduledViewMode.map
+                                      ? AppTheme.primary
+                                      : (isDark
+                                          ? Colors.white70
+                                          : AppTheme.darkSlate),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Map',
+                                  style: context.text.labelLarge!.copyWith(
+                                    color: _viewMode == _ScheduledViewMode.map
+                                        ? AppTheme.brandInkOf(context)
+                                        : (isDark
+                                            ? Colors.white70
+                                            : AppTheme.darkSlate),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         },
                         onValueChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              _category = val;
-                              _selectedJobId = null;
-                            });
-                          }
+                          if (val != null) setState(() => _viewMode = val);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Scheduled Queue iOS Widget Banner (shown only in list view)
+                if (_viewMode == _ScheduledViewMode.list) ...[
+                  const SizedBox(height: 10),
+                  SignalBuilder(
+                    builder: (context) {
+                      final scheduledCount = signals.scheduledCount.value;
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1C2230)
+                              : const Color(0xFFF0F6FF),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF2563EB).withValues(alpha: 0.3)
+                                : const Color(0xFFBFDBFE),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0284C7),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                CupertinoIcons.calendar,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
+                                    style: context.text.titleSmall!.copyWith(
+                                      color: AppTheme.infoInkOf(context),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    'Tap ticket to verify optical specs & activate subscriber.',
+                                    style: context.text.bodySmall!.copyWith(
+                                      color: isDark
+                                          ? AppTheme.textSecondaryDark
+                                          : AppTheme.infoInkOf(context),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ],
+          ),
+        ),
+
+        // 2. Offline Sync Status Banner (when on scheduled and items are pending)
+        if (_category == _JobsCategory.scheduled)
+          SignalBuilder(
+            builder: (context) {
+              final pending = signals.unsyncedCount.value;
+              if (pending == 0) return const SizedBox.shrink();
+
+              return Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color:
+                    isDark ? const Color(0xFF3B2506) : AppTheme.warningSubtle,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_off_rounded,
+                      size: 20,
+                      color: AppTheme.warningInkOf(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '$pending local update(s) awaiting server sync.',
+                        style: context.text.bodySmall!.copyWith(
+                          color: AppTheme.warningInkOf(context),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        signals.repository.syncWorker.syncPendingJobs();
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: Text(
+                        'Sync Now',
+                        style: context.text.labelLarge!.copyWith(
+                          color: AppTheme.brandInkOf(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+        // 3. Main Body: Scheduled Jobs List / Map OR History View
+        Expanded(
+          child: _category == _JobsCategory.history
+              ? JobHistoryView(
+                  jobsSignals: signals,
+                  authSignals: widget.authSignals,
+                  onSelectJob: _openDetails,
+                )
+              : SignalBuilder(
+                  builder: (context) {
+                    final jobs = signals.filteredJobs.value;
+                    final phase = signals.loadPhase.value;
+
+                    if (phase == DataLoadPhase.downloading) {
+                      return const DownloadingIndicator(
+                        title: 'Downloading Job Orders',
+                        subtitle:
+                            'Fetching your scheduled dispatches from the server...',
+                      );
+                    }
+
+                    if (phase == DataLoadPhase.skeleton) {
+                      return const SkeletonCardList();
+                    }
+
+                    if (_viewMode == _ScheduledViewMode.map) {
+                      return JobsMapView(
+                        jobsSignals: signals,
+                        lcpNapSignals: widget.lcpNapSignals,
+                        onOpenJob: _openDetails,
+                      );
+                    }
+
+                    if (jobs.isEmpty) {
+                      final query = _searchController.text.trim();
+                      if (query.isNotEmpty) {
+                        return _buildSearchEmptyState(signals, query, isDark);
+                      }
+                      return _buildEmptyState(signals, isDark);
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: signals.fetchRemote,
+                      color: AppTheme.primary,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: jobs.length,
+                        itemBuilder: (context, index) {
+                          final job = jobs[index];
+                          return JobCard(
+                            job: job,
+                            onTap: () => _openDetails(job),
+                          );
                         },
                       ),
                     );
                   },
                 ),
-
-                if (_category == _JobsCategory.scheduled) ...[
-                  const SizedBox(height: 10),
-                  // iOS Capsule Search Bar & Map/List Toggle Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppSearchField(
-                          controller: _searchController,
-                          hintText: 'Search subscriber, ticket #, address',
-                          onChanged: (text) {
-                            setState(() {});
-                            signals.setSearch(text);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Prominent Segmented Toggle for List vs Map
-                      Container(
-                        constraints: const BoxConstraints(
-                            minHeight: AppSearchField.minHeight),
-                        decoration: BoxDecoration(
-                          color:
-                              isDark ? AppTheme.darkInput : AppTheme.fillLight,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isDark
-                                ? AppTheme.borderDark
-                                : AppTheme.borderLight,
-                            width: 0.5,
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(2),
-                        child: CupertinoSlidingSegmentedControl<
-                            _ScheduledViewMode>(
-                          groupValue: _viewMode,
-                          backgroundColor: Colors.transparent,
-                          thumbColor: isDark ? AppTheme.darkCard : Colors.white,
-                          children: {
-                            _ScheduledViewMode.list: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.list_bullet,
-                                    size: 24,
-                                    color: _viewMode == _ScheduledViewMode.list
-                                        ? AppTheme.primary
-                                        : (isDark
-                                            ? Colors.white70
-                                            : AppTheme.darkSlate),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'List',
-                                    style: context.text.labelLarge!.copyWith(
-                                      color:
-                                          _viewMode == _ScheduledViewMode.list
-                                              ? AppTheme.brandInkOf(context)
-                                              : (isDark
-                                                  ? Colors.white70
-                                                  : AppTheme.darkSlate),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _ScheduledViewMode.map: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.map_fill,
-                                    size: 24,
-                                    color: _viewMode == _ScheduledViewMode.map
-                                        ? AppTheme.primary
-                                        : (isDark
-                                            ? Colors.white70
-                                            : AppTheme.darkSlate),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Map',
-                                    style: context.text.labelLarge!.copyWith(
-                                      color: _viewMode == _ScheduledViewMode.map
-                                          ? AppTheme.brandInkOf(context)
-                                          : (isDark
-                                              ? Colors.white70
-                                              : AppTheme.darkSlate),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          },
-                          onValueChanged: (val) {
-                            if (val != null) setState(() => _viewMode = val);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Scheduled Queue iOS Widget Banner (shown only in list view)
-                  if (_viewMode == _ScheduledViewMode.list) ...[
-                    const SizedBox(height: 10),
-                    SignalBuilder(
-                      builder: (context) {
-                        final scheduledCount = signals.scheduledCount.value;
-
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 9),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1C2230)
-                                : const Color(0xFFF0F6FF),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF2563EB)
-                                      .withValues(alpha: 0.3)
-                                  : const Color(0xFFBFDBFE),
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0284C7),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  CupertinoIcons.calendar,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
-                                      style: context.text.titleSmall!.copyWith(
-                                        color: AppTheme.infoInkOf(context),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 1),
-                                    Text(
-                                      'Tap ticket to verify optical specs & activate subscriber.',
-                                      style: context.text.bodySmall!.copyWith(
-                                        color: isDark
-                                            ? AppTheme.textSecondaryDark
-                                            : AppTheme.infoInkOf(context),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ],
-              ],
-            ),
-          ),
-
-          // 2. Offline Sync Status Banner (when on scheduled and items are pending)
-          if (_category == _JobsCategory.scheduled)
-            SignalBuilder(
-              builder: (context) {
-                final pending = signals.unsyncedCount.value;
-                if (pending == 0) return const SizedBox.shrink();
-
-                return Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  color: isDark
-                      ? const Color(0xFF3B2506)
-                      : AppTheme.warningSubtle,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.cloud_off_rounded,
-                        size: 20,
-                        color: AppTheme.warningInkOf(context),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '$pending local update(s) awaiting server sync.',
-                          style: context.text.bodySmall!.copyWith(
-                            color: AppTheme.warningInkOf(context),
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          signals.repository.syncWorker.syncPendingJobs();
-                        },
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: Text(
-                          'Sync Now',
-                          style: context.text.labelLarge!.copyWith(
-                            color: AppTheme.brandInkOf(context),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-
-          // 3. Main Body: Scheduled Jobs List / Map OR History View
-          Expanded(
-            child: _category == _JobsCategory.history
-                ? JobHistoryView(
-                    jobsSignals: signals,
-                    authSignals: widget.authSignals,
-                    onSelectJob: _openDetails,
-                  )
-                : SignalBuilder(
-                    builder: (context) {
-                      final jobs = signals.filteredJobs.value;
-                      final phase = signals.loadPhase.value;
-
-                      if (phase == DataLoadPhase.downloading) {
-                        return const DownloadingIndicator(
-                          title: 'Downloading Job Orders',
-                          subtitle:
-                              'Fetching your scheduled dispatches from the server...',
-                        );
-                      }
-
-                      if (phase == DataLoadPhase.skeleton) {
-                        return const SkeletonCardList();
-                      }
-
-                      if (_viewMode == _ScheduledViewMode.map) {
-                        return JobsMapView(
-                          jobsSignals: signals,
-                          lcpNapSignals: widget.lcpNapSignals,
-                          onOpenJob: _openDetails,
-                        );
-                      }
-
-                      if (jobs.isEmpty) {
-                        final query = _searchController.text.trim();
-                        if (query.isNotEmpty) {
-                          return _buildSearchEmptyState(signals, query, isDark);
-                        }
-                        return _buildEmptyState(signals, isDark);
-                      }
-
-                      return RefreshIndicator(
-                        onRefresh: signals.fetchRemote,
-                        color: AppTheme.primary,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: jobs.length,
-                          itemBuilder: (context, index) {
-                            final job = jobs[index];
-                            return JobCard(
-                              job: job,
-                              onTap: () => _openDetails(job),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget _buildNoJobSelectedPlaceholder(BuildContext context, bool isDark) {

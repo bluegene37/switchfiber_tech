@@ -142,8 +142,7 @@ class _MapSearchBarState extends State<MapSearchBar> {
                     : IconButton(
                         tooltip: 'Clear search',
                         icon: Icon(Icons.close_rounded,
-                            size: 18,
-                            color: AppTheme.secondaryInkOf(context)),
+                            size: 18, color: AppTheme.secondaryInkOf(context)),
                         onPressed: () => setState(_controller.clear),
                       ),
           ),

@@ -169,7 +169,8 @@ void main() {
     ]);
   });
 
-  test('server filtering by assigned email caches only technician assigned jobs',
+  test(
+      'server filtering by assigned email caches only technician assigned jobs',
       () async {
     api.filterByAssignedEmail = true;
     signals.setTechnicianEmail('me@switchfiber.ph');
@@ -182,7 +183,9 @@ void main() {
     expect(signals.historyJobs.value.map((j) => j.id).toSet(), {10, 20});
   });
 
-  test('caches every scheduled, activated, and completed job from status endpoints', () async {
+  test(
+      'caches every scheduled, activated, and completed job from status endpoints',
+      () async {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();

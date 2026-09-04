@@ -34,8 +34,11 @@ const _target = LatLng(14.5850, 121.0560);
 
 Future<LatLng?> _fakeLookup(String _) async => _target;
 
-LatLng _cameraCenter(WidgetTester tester) =>
-    tester.widget<FlutterMap>(find.byType(FlutterMap)).mapController!.camera.center;
+LatLng _cameraCenter(WidgetTester tester) => tester
+    .widget<FlutterMap>(find.byType(FlutterMap))
+    .mapController!
+    .camera
+    .center;
 
 Future<void> _searchFor(WidgetTester tester, String query) async {
   await tester.enterText(find.byType(TextField), query);

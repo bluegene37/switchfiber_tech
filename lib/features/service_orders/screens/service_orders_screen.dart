@@ -242,8 +242,7 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                 }
 
                 if (orders.isEmpty) {
-                  final hasQuery =
-                      signals.searchQuery.value.trim().isNotEmpty;
+                  final hasQuery = signals.searchQuery.value.trim().isNotEmpty;
                   if (hasQuery) {
                     return Center(
                       child: Padding(

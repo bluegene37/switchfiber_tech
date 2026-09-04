@@ -475,7 +475,8 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                               ? Icons.keyboard_arrow_up_rounded
                                               : Icons
                                                   .keyboard_arrow_down_rounded,
-                                          color: AppTheme.secondaryInkOf(context),
+                                          color:
+                                              AppTheme.secondaryInkOf(context),
                                         ),
                                       ],
                                     ),

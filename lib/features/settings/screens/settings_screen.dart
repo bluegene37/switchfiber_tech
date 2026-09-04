@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/server_display.dart';
 import '../../auth/signals/auth_signals.dart';
 import '../signals/settings_signals.dart';
+import '../../diagnostics/screens/sync_error_log_screen.dart';
 import '../../jobs/signals/jobs_signals.dart';
 
 /// Settings & Technician Terminal Diagnostics screen.
@@ -532,6 +533,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 isDark: isDark,
                 showDivider: false,
                 onTap: _showOpticalPowerStandards,
+                trailing: Icon(
+                  CupertinoIcons.chevron_forward,
+                  size: 24,
+                  color: AppTheme.secondaryInkOf(context),
+                ),
+              ),
+            ],
+          ),
+
+          // Section 3b: Why a pending push was refused. Sits next to the
+          // offline cache because that is the question it answers: the edit
+          // is saved, so what is the server objecting to?
+          _buildIosSectionHeader('Sync Diagnostics'),
+          _buildIosGroupedCard(
+            isDark: isDark,
+            children: [
+              _buildIosSettingRow(
+                icon: CupertinoIcons.exclamationmark_triangle,
+                iconBg: AppTheme.warning,
+                title: 'Sync Error Log',
+                subtitle: 'What the server said when a push was refused',
+                isDark: isDark,
+                showDivider: false,
+                onTap: () {
+                  final dao = widget.jobsSignals.repository.errorLog;
+                  if (dao == null) return;
+                  Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: (_) => SyncErrorLogScreen(dao: dao),
+                    ),
+                  );
+                },
                 trailing: Icon(
                   CupertinoIcons.chevron_forward,
                   size: 24,

@@ -120,7 +120,9 @@ class PhotoStorageService {
     if (DataUrl.isDataUrl(trimmed)) return trimmed;
 
     // Remote server relative path (e.g. "uploads/job_813.jpg")
-    if (!trimmed.startsWith('/') && !trimmed.startsWith('file://') && !trimmed.contains(':\\')) {
+    if (!trimmed.startsWith('/') &&
+        !trimmed.startsWith('file://') &&
+        !trimmed.contains(':\\')) {
       return trimmed;
     }
 

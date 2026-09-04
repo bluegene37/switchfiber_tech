@@ -25,7 +25,9 @@ void main() {
       expect(out['description'], 'PORT 004 Description');
     });
 
-    test('CatalogService provides fallback Ports matching live API (PORT 001..PORT 016)', () async {
+    test(
+        'CatalogService provides fallback Ports matching live API (PORT 001..PORT 016)',
+        () async {
       final catalog = CatalogService();
       final ports = await catalog.getPorts();
       expect(ports.length, 16);

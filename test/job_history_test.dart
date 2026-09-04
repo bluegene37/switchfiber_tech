@@ -158,14 +158,18 @@ void main() {
       await db.close();
     });
 
-    test('contains all downloaded history jobs (Activated and Completed), excluding Scheduled', () {
+    test(
+        'contains all downloaded history jobs (Activated and Completed), excluding Scheduled',
+        () {
       expect(signals.allJobs.value.length, 7);
       expect(signals.historyJobs.value.map((j) => j.id).toSet(),
           {1, 2, 3, 5, 6, 7});
       expect(signals.historyTotalCount.value, 6);
     });
 
-    test('lists all history jobs (Activated and Completed), newest first, undated last', () {
+    test(
+        'lists all history jobs (Activated and Completed), newest first, undated last',
+        () {
       expect(signals.historyJobs.value.map((j) => j.id), [1, 5, 2, 3, 7, 6]);
       expect(signals.historyTotalCount.value, 6);
       expect(signals.historyActivatedCount.value, 5);

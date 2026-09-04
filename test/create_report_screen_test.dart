@@ -276,4 +276,3 @@ void main() {
             'routerSerial must be reset to empty string when job has no serial');
   });
 }
-

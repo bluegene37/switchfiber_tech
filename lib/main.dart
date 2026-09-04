@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'core/database/app_database.dart';
+import 'core/database/daos/sync_error_logs_dao.dart';
 import 'core/database/daos/lcp_nap_dao.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/secure_storage_service.dart';
@@ -23,7 +24,9 @@ void main() async {
   final database = AppDatabase();
   await database.jobOrdersDao.deleteSampleJobs();
   await database.lcpNapLocationsDao.deleteSampleLocations();
-  final jobRepository = JobRepository(database.jobOrdersDao);
+  final syncErrorLogsDao = SyncErrorLogsDao(database);
+  final jobRepository =
+      JobRepository(database.jobOrdersDao, errorLog: syncErrorLogsDao);
   final lcpNapRepository = LcpNapRepository(LcpNapLocationsDao(database));
   final serviceOrdersSignals =
       ServiceOrdersSignals(dao: database.serviceOrdersDao);

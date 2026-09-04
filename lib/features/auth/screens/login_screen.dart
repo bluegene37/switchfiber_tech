@@ -431,8 +431,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         height: 24,
                                         width: 24,
                                         child: Checkbox(
-                                          value:
-                                              authSignals.rememberMe.value,
+                                          value: authSignals.rememberMe.value,
                                           activeColor: AppTheme.primary,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:

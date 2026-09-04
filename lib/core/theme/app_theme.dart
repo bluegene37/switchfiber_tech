@@ -8,12 +8,15 @@ import 'package:flutter/material.dart';
 /// inset grouped card styling, and high-contrast light and dark surfaces.
 class AppTheme {
   // Brand Color Palette (Modern Electric Fiber Red - High-Energy Telecom Standard)
-  static const Color primary = Color(0xFFE02424); // Bold, punchy Electric Fiber Red
+  static const Color primary =
+      Color(0xFFE02424); // Bold, punchy Electric Fiber Red
   static const Color primaryDark = Color(0xFFC81E1E);
   static const Color primaryActive = Color(0xFF9B1C1C);
-  static const Color primarySubtleBg = Color(0xFFFEF2F2); // Soft luminous rose-white
+  static const Color primarySubtleBg =
+      Color(0xFFFEF2F2); // Soft luminous rose-white
   static const Color primarySubtleBorder = Color(0xFFFECACA);
-  static const Color primarySubtleBgDark = Color(0xFF2D1214); // Deep crimson-tinted dark
+  static const Color primarySubtleBgDark =
+      Color(0xFF2D1214); // Deep crimson-tinted dark
   static const Color primarySubtleBorderDark = Color(0xFF5C1D24);
 
   // Light Surface & Neutral Tokens (Crisp Modern Slate Canvas)
@@ -41,10 +44,8 @@ class AppTheme {
   static const Color darkElevatedCard = darkCardElevated;
   static const Color darkInput =
       Color(0xFF1B2538); // Modern Slate dark input fill
-  static const Color textSecondaryDark =
-      Color(0xFF94A3B8); // Slate 400
-  static const Color textTertiaryDark =
-      Color(0xFF64748B); // Slate 500
+  static const Color textSecondaryDark = Color(0xFF94A3B8); // Slate 400
+  static const Color textTertiaryDark = Color(0xFF64748B); // Slate 500
   static const Color borderDark =
       Color(0xFF283548); // Precision dark hairline border
   static const Color fillDark = Color(0xFF202B3F);
@@ -92,8 +93,7 @@ class AppTheme {
       Color(0xFF0369A1); // Sky 700 - 5.93:1 white, 5.67:1 page
   static const Color infoInkDark =
       Color(0xFF38BDF8); // Sky 400 - 7.70:1 card, 8.94:1 page
-  static const Color violetInk =
-      Color(0xFF6D28D9); // 7.10:1 white, 6.79:1 page
+  static const Color violetInk = Color(0xFF6D28D9); // 7.10:1 white, 6.79:1 page
   static const Color violetInkDark =
       Color(0xFFC084FC); // 6.24:1 card, 7.25:1 page
 
@@ -120,8 +120,7 @@ class AppTheme {
       _isDark(c) ? primarySubtleBgDark : primarySubtleBg;
   static Color primarySubtleBorderOf(BuildContext c) =>
       _isDark(c) ? primarySubtleBorderDark : primarySubtleBorder;
-  static Color fillOf(BuildContext c) =>
-      _isDark(c) ? fillDark : fillLight;
+  static Color fillOf(BuildContext c) => _isDark(c) ? fillDark : fillLight;
 
   /// Standard iOS Page Transitions Theme
   static const PageTransitionsTheme _pageTransitionsTheme =

@@ -69,7 +69,8 @@ class ServiceOrdersSignals {
       computed(() => allOrders.value.where((o) => o.isUrgent).length);
 
   /// Filtered and sorted service orders
-  late final ReadonlySignal<List<ServiceOrderDto>> filteredOrders = computed(() {
+  late final ReadonlySignal<List<ServiceOrderDto>> filteredOrders =
+      computed(() {
     final query = searchQuery.value.trim().toLowerCase();
     final priority = priorityFilter.value.trim().toLowerCase();
     final onlyMe = onlyAssignedToMe.value;
