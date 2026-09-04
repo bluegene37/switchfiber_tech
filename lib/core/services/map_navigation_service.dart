@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
 
 /// Service to handle launching external GPS navigation apps (Google Maps, Waze, Apple Maps).
@@ -148,13 +149,11 @@ class MapNavigationService {
                       children: [
                         Text(
                           'Start Navigation',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w800),
+                          style: ctx.text.titleSmall,
                         ),
                         Text(
                           title,
-                          style: const TextStyle(
-                              fontSize: 12, color: AppTheme.textMuted),
+                          style: ctx.text.bodySmall,
                         ),
                       ],
                     ),
@@ -170,7 +169,7 @@ class MapNavigationService {
             if (subtitle != null && subtitle.isNotEmpty) ...[
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                style: ctx.text.bodySmall,
               ),
               const SizedBox(height: 14),
             ],
@@ -294,20 +293,18 @@ class MapNavigationService {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700),
+                    style: context.text.labelLarge,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppTheme.textMuted),
+                    style: context.text.labelSmall,
                   ),
                 ],
               ),
             ),
             const Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: AppTheme.textMuted),
+                size: 24, color: AppTheme.textMuted),
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/completion_report.dart';
 
@@ -17,6 +18,7 @@ class OpticalPowerGauge extends StatelessWidget {
     final quality = _evaluateQuality(dbm);
 
     Color statusColor;
+    Color statusInk;
     String statusTitle;
     String statusDescription;
     IconData statusIcon;
@@ -24,6 +26,7 @@ class OpticalPowerGauge extends StatelessWidget {
     switch (quality) {
       case OpticalReadingQuality.optimal:
         statusColor = AppTheme.success;
+        statusInk = AppTheme.successInkOf(context);
         statusTitle = 'Optimal Signal (PASS)';
         statusDescription =
             'Excellent optical link budget within GPON standard (-12 to -24 dBm).';
@@ -31,6 +34,7 @@ class OpticalPowerGauge extends StatelessWidget {
         break;
       case OpticalReadingQuality.marginal:
         statusColor = AppTheme.warning;
+        statusInk = AppTheme.warningInkOf(context);
         statusTitle = 'Marginal Signal (WARNING)';
         statusDescription =
             'Acceptable but near sensitivity threshold (-24.1 to -27 dBm). Verify fiber bend radius.';
@@ -38,6 +42,7 @@ class OpticalPowerGauge extends StatelessWidget {
         break;
       case OpticalReadingQuality.outOfSpec:
         statusColor = AppTheme.danger;
+        statusInk = AppTheme.dangerInkOf(context);
         statusTitle = 'Out of Spec (FAIL)';
         statusDescription =
             'High attenuation (<-27 dBm) or saturation (>-8 dBm). Clean SC/APC connector and check splice.';
@@ -69,10 +74,8 @@ class OpticalPowerGauge extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     statusTitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: statusColor,
+                    style: context.text.labelLarge!.copyWith(
+                      color: statusInk,
                     ),
                   ),
                 ],
@@ -86,10 +89,8 @@ class OpticalPowerGauge extends StatelessWidget {
                 ),
                 child: Text(
                   '${dbm.toStringAsFixed(1)} dBm',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                  style: context.text.headlineSmall!.copyWith(
+                    color: AppTheme.darkSlate,
                   ),
                 ),
               ),
@@ -110,21 +111,19 @@ class OpticalPowerGauge extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Gauge Labels
-          const Row(
+          Row(
             children: [
               Expanded(
-                child: Text('-35 dBm (Low)',
-                    style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+                child: Text('-35 dBm (Low)', style: context.text.labelSmall),
               ),
               Expanded(
                 child: Text('-24 dBm (Threshold)',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+                    style: context.text.labelSmall),
               ),
               Expanded(
                 child: Text('-12 dBm (Strong)',
-                    textAlign: TextAlign.end,
-                    style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+                    textAlign: TextAlign.end, style: context.text.labelSmall),
               ),
             ],
           ),
@@ -132,11 +131,7 @@ class OpticalPowerGauge extends StatelessWidget {
 
           Text(
             statusDescription,
-            style: TextStyle(
-              fontSize: 12,
-              color: statusColor.withValues(alpha: 0.9),
-              fontWeight: FontWeight.w500,
-            ),
+            style: context.text.bodySmall!.copyWith(color: statusInk),
           ),
         ],
       ),

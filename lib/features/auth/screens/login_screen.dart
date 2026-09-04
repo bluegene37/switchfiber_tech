@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/server_display.dart';
 import '../services/auth_service.dart';
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Expanded(
                 child: Text(
                   authSignals.authError.value!,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: context.text.bodySmall!.copyWith(color: Colors.white),
                 ),
               ),
             ],
@@ -125,18 +126,14 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(CupertinoIcons.question_circle_fill,
+                      const Icon(CupertinoIcons.question_circle_fill,
                           color: AppTheme.primary, size: 22),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'Dispatch & Terminal Help',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                        ),
+                        style: ctx.text.titleSmall,
                       ),
                     ],
                   ),
@@ -150,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Icon(
                         CupertinoIcons.xmark,
-                        size: 13,
+                        size: 24,
                         color: isDark ? Colors.white : AppTheme.darkSlate,
                       ),
                     ),
@@ -158,16 +155,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Forgot technician password or having connectivity issues? Enter your username to get a reset link by email, or contact Dispatch Operations.',
-                style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                style: ctx.text.bodyMedium!
+                    .copyWith(color: AppTheme.secondaryInkOf(ctx)),
               ),
               const SizedBox(height: 16),
 
               // Password reset request
-              const Text(
+              Text(
                 'Request Password Reset Link',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                style: ctx.text.labelMedium,
               ),
               const SizedBox(height: 6),
               Row(
@@ -229,9 +227,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 14),
 
               // Dispatch Hotline
-              const Text(
+              Text(
                 'Operations Dispatch Hotline',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                style: ctx.text.labelMedium,
               ),
               const SizedBox(height: 8),
               Container(
@@ -248,16 +246,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Icon(Icons.phone_in_talk_rounded,
                         color: AppTheme.primary, size: 20),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Switch Fiber Operations',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w700, fontSize: 13)),
+                              style: ctx.text.labelMedium),
                           Text('+63 2 8888 3423 • Toll-Free 1800-SWITCH',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppTheme.textMuted)),
+                              style: ctx.text.bodySmall),
                         ],
                       ),
                     ),
@@ -333,10 +329,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: Text(
                                   err,
-                                  style: const TextStyle(
-                                    color: Color(0xFF8B1A25),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
+                                  style: context.text.bodySmall!.copyWith(
+                                    color: AppTheme.dangerInkOf(context),
                                   ),
                                 ),
                               ),
@@ -355,21 +349,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Text(
+                              Text(
                                 'Technician Sign In',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                ),
+                                style: context.text.titleLarge,
                               ),
                               const SizedBox(height: 6),
-                              const Text(
+                              Text(
                                 'Enter your field credentials to access assigned work orders.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.textMuted,
-                                ),
+                                style: context.text.bodyMedium!.copyWith(
+                                    color: AppTheme.secondaryInkOf(context)),
                               ),
                               const SizedBox(height: 20),
 
@@ -457,12 +445,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Text(
+                                          Text(
                                             'Remember me',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: AppTheme.textMuted,
-                                            ),
+                                            style: context.text.bodySmall,
                                           ),
                                         ],
                                       );
@@ -474,13 +459,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _passwordController.text = 'Switch@2026';
                                     },
                                     icon: const Icon(Icons.flash_on_rounded,
-                                        size: 14, color: AppTheme.primary),
-                                    label: const Text(
+                                        size: 24, color: AppTheme.primary),
+                                    label: Text(
                                       'Demo Tech',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.w700,
+                                      style: context.text.labelLarge!.copyWith(
+                                        color: AppTheme.brandInkOf(context),
                                       ),
                                     ),
                                     style: TextButton.styleFrom(
@@ -528,13 +511,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               Center(
                                 child: TextButton(
                                   onPressed: _showHelpModal,
-                                  child: const Text(
+                                  child: Text(
                                     'Need help or forgot password?',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppTheme.textMuted,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: context.text.bodySmall,
                                   ),
                                 ),
                               ),
@@ -574,11 +553,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(width: 6),
                             Text(
                               'Server: ${ServerDisplay.mask(_baseUrl)}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontFamily: 'monospace',
-                                color: AppTheme.textMuted,
-                              ),
+                              style: context.text.labelSmall!
+                                  .copyWith(fontFamily: 'monospace'),
                             ),
                           ],
                         ),
@@ -587,14 +563,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 16),
                     // Footer
-                    const Center(
+                    Center(
                       child: Text(
                         'Switch Fiber Network Operations • 2026',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppTheme.textMuted,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: context.text.labelSmall,
                       ),
                     ),
                   ],
@@ -643,22 +615,13 @@ class _LoginScreenState extends State<LoginScreen> {
         Text(
           'Switch Fiber',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: isDark ? Colors.white : AppTheme.darkSlate,
-            letterSpacing: -0.5,
-          ),
+          style: context.text.titleLarge,
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Field Technician Terminal',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.textMuted,
-          ),
+          style: context.text.bodySmall,
         ),
       ],
     );

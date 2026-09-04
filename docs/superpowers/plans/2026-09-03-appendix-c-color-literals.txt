@@ -1,0 +1,254 @@
+lib/core/services/map_navigation_service.dart:184:              iconColor: const Color(0xFF1A73E8),
+lib/core/services/map_navigation_service.dart:212:              iconColor: const Color(0xFF33CCFF),
+lib/features/settings/screens/settings_screen.dart:101:                      ? const Color(0xFF38383A)
+lib/features/settings/screens/settings_screen.dart:102:                      : const Color(0xFFD1D1D6),
+lib/features/settings/screens/settings_screen.dart:231:                ? const Color(0xFF34C759).withValues(alpha: 0.2)
+lib/features/settings/screens/settings_screen.dart:233:            : (isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg),
+lib/features/settings/screens/settings_screen.dart:238:                  ? const Color(0xFF34C759).withValues(alpha: 0.3)
+lib/features/settings/screens/settings_screen.dart:239:                  : const Color(0xFFBBF7D0))
+lib/features/settings/screens/settings_screen.dart:252:              ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534))
+lib/features/settings/screens/settings_screen.dart:253:              : (isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive),
+lib/features/settings/screens/settings_screen.dart:449:                            ? const Color(0xFF3F2327)
+lib/features/settings/screens/settings_screen.dart:533:                    iconBg: const Color(0xFF5856D6), // iOS Indigo
+lib/features/settings/screens/settings_screen.dart:749:                                  ? const Color(0xFF34C759)
+lib/features/settings/screens/settings_screen.dart:753:                                  ? const Color(0xFFFF3B30)
+lib/features/settings/screens/settings_screen.dart:838:            ? const Color(0xFF34C759).withValues(alpha: 0.2)
+lib/features/settings/screens/settings_screen.dart:843:              ? const Color(0xFF34C759).withValues(alpha: 0.35)
+lib/features/settings/screens/settings_screen.dart:844:              : const Color(0xFFBBF7D0),
+lib/features/settings/screens/settings_screen.dart:854:            color: isDark ? const Color(0xFF4ADE80) : AppTheme.success,
+lib/features/settings/screens/settings_screen.dart:862:              color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534),
+lib/features/auth/screens/login_screen.dart:118:                        ? const Color(0xFF38383A)
+lib/features/auth/screens/login_screen.dart:119:                        : const Color(0xFFD1D1D6),
+lib/features/auth/screens/login_screen.dart:325:                            border: Border.all(color: const Color(0xFFFCA5A5)),
+lib/features/auth/screens/login_screen.dart:337:                                    color: Color(0xFF8B1A25),
+lib/features/shell/technician_shell.dart:144:    final barBg = isDark ? const Color(0xEB1C1C1E) : const Color(0xF2FFFFFF);
+lib/features/shell/technician_shell.dart:235:        isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
+lib/features/shell/technician_shell.dart:282:                                    ? const Color(0xFF1C1C1E)
+lib/features/shell/technician_shell.dart:415:                      color: Color(0xFF92400E),
+lib/features/shell/technician_shell.dart:493:                      color: Color(0xFF92400E),
+lib/features/service_orders/screens/service_orders_screen.dart:212:                            ? const Color(0xFF1E293B)
+lib/features/service_orders/screens/service_orders_screen.dart:213:                            : const Color(0xFFF1F5F9),
+lib/features/service_orders/screens/service_orders_screen.dart:217:                              ? const Color(0xFF334155)
+lib/features/service_orders/screens/service_orders_screen.dart:218:                              : const Color(0xFFE2E8F0),
+lib/features/service_orders/screens/service_orders_screen.dart:227:                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+lib/features/service_orders/screens/service_orders_screen.dart:236:                                  ? const Color(0xFFE2E8F0)
+lib/features/service_orders/screens/service_orders_screen.dart:237:                                  : const Color(0xFF1E293B),
+lib/features/service_orders/screens/service_orders_screen.dart:293:                                  ? const Color(0xFF3F2327)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:87:                          ? const Color(0xFF059669).withValues(alpha: 0.25)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:90:                          ? const Color(0xFF78350F).withValues(alpha: 0.25)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:96:                            ? const Color(0xFF059669).withValues(alpha: 0.4)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:97:                            : const Color(0xFFBBF7D0))
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:99:                            ? const Color(0xFFD97706).withValues(alpha: 0.4)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:100:                            : const Color(0xFFFDE68A)),
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:113:                              ? const Color(0xFF4ADE80)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:116:                              ? const Color(0xFFFDE68A)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:117:                              : const Color(0xFF92400E)),
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:127:                                ? const Color(0xFF4ADE80)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:130:                                ? const Color(0xFFFDE68A)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:131:                                : const Color(0xFF92400E)),
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:200:                                  ? const Color(0xFF3F2327)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:205:                                    ? const Color(0xFF882933)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:215:                                    ? const Color(0xFFFF8591)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:296:                                  ? const Color(0xFFFF8591)
+lib/features/lcp_nap/screens/lcp_nap_detail_screen.dart:579:                                    color: Color(0x66000000),
+lib/features/lcp_nap/screens/lcp_nap_list_screen.dart:119:                          color: const Color(0xFF0EA5E9),
+lib/features/lcp_nap/screens/lcp_nap_list_screen.dart:125:                          color: const Color(0xFF10B981),
+lib/features/lcp_nap/screens/lcp_nap_list_screen.dart:303:                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+lib/features/lcp_nap/screens/lcp_nap_list_screen.dart:669:                          ? const Color(0xFF38383A)
+lib/features/lcp_nap/screens/lcp_nap_list_screen.dart:670:                          : const Color(0xFFD1D1D6),
+lib/features/lcp_nap/widgets/lcp_nap_map_view.dart:368:                  color: Color(0x55000000),
+lib/features/lcp_nap/widgets/lcp_nap_map_view.dart:409:                  color: Color(0x55000000),
+lib/features/lcp_nap/widgets/lcp_nap_map_view.dart:512:        border: Border.all(color: const Color(0xFFFDE68A)),
+lib/features/lcp_nap/widgets/lcp_nap_map_view.dart:518:              size: 16, color: Color(0xFF92400E)),
+lib/features/lcp_nap/widgets/lcp_nap_map_view.dart:527:                color: Color(0xFF92400E),
+lib/features/lcp_nap/widgets/lcp_nap_card.dart:50:                            ? const Color(0xFF3F2327)
+lib/features/lcp_nap/widgets/lcp_nap_card.dart:86:                            ? const Color(0xFF3F2327)
+lib/features/lcp_nap/widgets/lcp_nap_card.dart:91:                              ? const Color(0xFF882933)
+lib/features/lcp_nap/widgets/lcp_nap_card.dart:102:                              ? const Color(0xFFFF8591)
+lib/features/lcp_nap/widgets/lcp_nap_pin_popup.dart:243:        color: isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+lib/features/lcp_nap/widgets/lcp_nap_pin_popup.dart:252:            color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
+lib/features/lcp_nap/widgets/lcp_nap_pin_popup.dart:260:              color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
+lib/features/diagnostics/screens/radius_disconnections_screen.dart:277:                                              ? (isDark ? const Color(0xFF143823) : const Color(0xFFE8F5E9))
+lib/features/jobs/screens/job_order_detail_screen.dart:94:                          ? const Color(0xFF059669).withValues(alpha: 0.25)
+lib/features/jobs/screens/job_order_detail_screen.dart:97:                          ? const Color(0xFF78350F).withValues(alpha: 0.25)
+lib/features/jobs/screens/job_order_detail_screen.dart:103:                            ? const Color(0xFF059669).withValues(alpha: 0.4)
+lib/features/jobs/screens/job_order_detail_screen.dart:104:                            : const Color(0xFFBBF7D0))
+lib/features/jobs/screens/job_order_detail_screen.dart:106:                            ? const Color(0xFFD97706).withValues(alpha: 0.4)
+lib/features/jobs/screens/job_order_detail_screen.dart:107:                            : const Color(0xFFFDE68A)),
+lib/features/jobs/screens/job_order_detail_screen.dart:120:                              ? const Color(0xFF4ADE80)
+lib/features/jobs/screens/job_order_detail_screen.dart:123:                              ? const Color(0xFFFDE68A)
+lib/features/jobs/screens/job_order_detail_screen.dart:124:                              : const Color(0xFF92400E)),
+lib/features/jobs/screens/job_order_detail_screen.dart:134:                                ? const Color(0xFF4ADE80)
+lib/features/jobs/screens/job_order_detail_screen.dart:137:                                ? const Color(0xFFFDE68A)
+lib/features/jobs/screens/job_order_detail_screen.dart:138:                                : const Color(0xFF92400E)),
+lib/features/jobs/screens/job_order_detail_screen.dart:405:                ? const Color(0xFF78350F).withValues(alpha: 0.3)
+lib/features/jobs/screens/job_order_detail_screen.dart:406:                : const Color(0xFF7F1D1D).withValues(alpha: 0.3))
+lib/features/jobs/screens/job_order_detail_screen.dart:412:                  ? const Color(0xFFD97706).withValues(alpha: 0.5)
+lib/features/jobs/screens/job_order_detail_screen.dart:413:                  : const Color(0xFFDC2626).withValues(alpha: 0.5))
+lib/features/jobs/screens/job_order_detail_screen.dart:415:                  ? const Color(0xFFFDE68A)
+lib/features/jobs/screens/job_order_detail_screen.dart:416:                  : const Color(0xFFFECACA)),
+lib/features/jobs/screens/job_order_detail_screen.dart:441:                            ? const Color(0xFFFDE68A)
+lib/features/jobs/screens/job_order_detail_screen.dart:442:                            : const Color(0xFFFCA5A5))
+lib/features/jobs/screens/job_order_detail_screen.dart:444:                            ? const Color(0xFF92400E)
+lib/features/jobs/screens/job_order_detail_screen.dart:445:                            : const Color(0xFF991B1B)),
+lib/features/jobs/screens/job_order_detail_screen.dart:457:                              ? const Color(0xFFFCD34D)
+lib/features/jobs/screens/job_order_detail_screen.dart:458:                              : const Color(0xFFFECACA))
+lib/features/jobs/screens/job_order_detail_screen.dart:460:                              ? const Color(0xFF78350F)
+lib/features/jobs/screens/job_order_detail_screen.dart:461:                              : const Color(0xFF7F1D1D)),
+lib/features/jobs/screens/job_order_detail_screen.dart:688:                          ? const Color(0xFF064E3B).withValues(alpha: 0.35)
+lib/features/jobs/screens/job_order_detail_screen.dart:689:                          : const Color(0xFFECFDF5),
+lib/features/jobs/screens/job_order_detail_screen.dart:693:                            ? const Color(0xFF10B981).withValues(alpha: 0.4)
+lib/features/jobs/screens/job_order_detail_screen.dart:694:                            : const Color(0xFFA7F3D0),
+lib/features/jobs/screens/job_order_detail_screen.dart:704:                                size: 16, color: Color(0xFF10B981)),
+lib/features/jobs/screens/job_order_detail_screen.dart:712:                                    ? const Color(0xFF6EE7B7)
+lib/features/jobs/screens/job_order_detail_screen.dart:713:                                    : const Color(0xFF047857),
+lib/features/jobs/screens/job_order_detail_screen.dart:722:                                  color: const Color(0xFF10B981),
+lib/features/jobs/screens/job_order_detail_screen.dart:770:                                    color: Color(0xFF10B981), width: 1),
+lib/features/jobs/screens/job_order_detail_screen.dart:780:                                  color: Color(0xFF10B981)),
+lib/features/jobs/screens/job_order_detail_screen.dart:786:                                  color: Color(0xFF10B981),
+lib/features/jobs/screens/job_order_detail_screen.dart:1206:            ? const Color(0xFF059669).withValues(alpha: 0.2)
+lib/features/jobs/screens/job_order_detail_screen.dart:1211:              ? const Color(0xFF059669).withValues(alpha: 0.4)
+lib/features/jobs/screens/job_order_detail_screen.dart:1212:              : const Color(0xFFBBF7D0),
+lib/features/jobs/screens/job_order_detail_screen.dart:1219:              color: isDark ? const Color(0xFF4ADE80) : AppTheme.success),
+lib/features/jobs/screens/job_order_detail_screen.dart:1228:                    isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534),
+lib/features/jobs/screens/job_order_detail_screen.dart:1350:                  color: const Color(0xFF1A73E8).withValues(alpha: 0.12),
+lib/features/jobs/screens/job_order_detail_screen.dart:1354:                    color: Color(0xFF1A73E8), size: 20),
+lib/features/jobs/screens/job_order_detail_screen.dart:1385:                      ? const Color(0xFF3F2327)
+lib/features/jobs/screens/job_orders_screen.dart:398:                                ? const Color(0xFF1C2230)
+lib/features/jobs/screens/job_orders_screen.dart:399:                                : const Color(0xFFF0F6FF),
+lib/features/jobs/screens/job_orders_screen.dart:403:                                  ? const Color(0xFF2563EB)
+lib/features/jobs/screens/job_orders_screen.dart:405:                                  : const Color(0xFFBFDBFE),
+lib/features/jobs/screens/job_orders_screen.dart:415:                                  color: const Color(0xFF0284C7),
+lib/features/jobs/screens/job_orders_screen.dart:437:                                            ? const Color(0xFF93C5FD)
+lib/features/jobs/screens/job_orders_screen.dart:438:                                            : const Color(0xFF1E40AF),
+lib/features/jobs/screens/job_orders_screen.dart:448:                                            : const Color(0xFF3B82F6),
+lib/features/jobs/screens/job_orders_screen.dart:477:                      ? const Color(0xFF78350F).withValues(alpha: 0.3)
+lib/features/jobs/screens/job_orders_screen.dart:485:                            ? const Color(0xFFFDE68A)
+lib/features/jobs/screens/job_orders_screen.dart:486:                            : const Color(0xFF92400E),
+lib/features/jobs/screens/job_orders_screen.dart:496:                                ? const Color(0xFFFDE68A)
+lib/features/jobs/screens/job_orders_screen.dart:497:                                : const Color(0xFF92400E),
+lib/features/jobs/screens/job_orders_screen.dart:596:                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+lib/features/jobs/widgets/status_badge.dart:43:                    ? const Color(0xFFDC2626).withValues(alpha: 0.25)
+lib/features/jobs/widgets/status_badge.dart:44:                    : const Color(0xFF7C3AED).withValues(alpha: 0.25))
+lib/features/jobs/widgets/status_badge.dart:47:                    : const Color(0xFFF5F3FF)),
+lib/features/jobs/widgets/status_badge.dart:50:                    ? const Color(0xFFF87171)
+lib/features/jobs/widgets/status_badge.dart:51:                    : const Color(0xFFA78BFA))
+lib/features/jobs/widgets/status_badge.dart:53:                    ? const Color(0xFF8B1A25)
+lib/features/jobs/widgets/status_badge.dart:54:                    : const Color(0xFF5B21B6)),
+lib/features/jobs/widgets/status_badge.dart:57:                    ? const Color(0xFFDC2626).withValues(alpha: 0.4)
+lib/features/jobs/widgets/status_badge.dart:58:                    : const Color(0xFF7C3AED).withValues(alpha: 0.4))
+lib/features/jobs/widgets/status_badge.dart:60:                    ? const Color(0xFFFCA5A5)
+lib/features/jobs/widgets/status_badge.dart:61:                    : const Color(0xFFDDD6FE)),
+lib/features/jobs/widgets/status_badge.dart:77:        JobStatus.scheduled => const Color(0xFF0369A1).withValues(alpha: 0.25),
+lib/features/jobs/widgets/status_badge.dart:78:        JobStatus.activated => const Color(0xFF4F46E5).withValues(alpha: 0.25),
+lib/features/jobs/widgets/status_badge.dart:79:        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.25),
+lib/features/jobs/widgets/status_badge.dart:80:        null => const Color(0xFF0369A1).withValues(alpha: 0.25),
+lib/features/jobs/widgets/status_badge.dart:84:      JobStatus.scheduled => const Color(0xFFF0F9FF),
+lib/features/jobs/widgets/status_badge.dart:85:      JobStatus.activated => const Color(0xFFEFF6FF),
+lib/features/jobs/widgets/status_badge.dart:87:      null => const Color(0xFFF0F9FF),
+lib/features/jobs/widgets/status_badge.dart:94:        JobStatus.scheduled => const Color(0xFF38BDF8),
+lib/features/jobs/widgets/status_badge.dart:95:        JobStatus.activated => const Color(0xFF818CF8),
+lib/features/jobs/widgets/status_badge.dart:96:        JobStatus.completed => const Color(0xFF4ADE80),
+lib/features/jobs/widgets/status_badge.dart:97:        null => const Color(0xFF38BDF8),
+lib/features/jobs/widgets/status_badge.dart:101:      JobStatus.scheduled => const Color(0xFF0369A1),
+lib/features/jobs/widgets/status_badge.dart:102:      JobStatus.activated => const Color(0xFF1E40AF),
+lib/features/jobs/widgets/status_badge.dart:103:      JobStatus.completed => const Color(0xFF166534),
+lib/features/jobs/widgets/status_badge.dart:104:      null => const Color(0xFF0369A1),
+lib/features/jobs/widgets/status_badge.dart:111:        JobStatus.scheduled => const Color(0xFF0284C7).withValues(alpha: 0.4),
+lib/features/jobs/widgets/status_badge.dart:112:        JobStatus.activated => const Color(0xFF4F46E5).withValues(alpha: 0.4),
+lib/features/jobs/widgets/status_badge.dart:113:        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.4),
+lib/features/jobs/widgets/status_badge.dart:114:        null => const Color(0xFF0284C7).withValues(alpha: 0.4),
+lib/features/jobs/widgets/status_badge.dart:118:      JobStatus.scheduled => const Color(0xFFBAE6FD),
+lib/features/jobs/widgets/status_badge.dart:119:      JobStatus.activated => const Color(0xFFBFDBFE),
+lib/features/jobs/widgets/status_badge.dart:120:      JobStatus.completed => const Color(0xFF86EFAC),
+lib/features/jobs/widgets/status_badge.dart:121:      null => const Color(0xFFBAE6FD),
+lib/features/jobs/widgets/job_card.dart:55:                            ? const Color(0xFF34C759).withValues(alpha: 0.18)
+lib/features/jobs/widgets/job_card.dart:56:                            : const Color(0xFF3F2327))
+lib/features/jobs/widgets/job_card.dart:64:                              ? const Color(0xFF34C759).withValues(alpha: 0.3)
+lib/features/jobs/widgets/job_card.dart:67:                              ? const Color(0xFFBBF7D0)
+lib/features/jobs/widgets/job_card.dart:192:                                      ? const Color(0xFF1E293B)
+lib/features/jobs/widgets/job_card.dart:193:                                      : const Color(0xFFF1F5F9),
+lib/features/jobs/widgets/job_card.dart:206:                                        size: 11, color: Color(0xFF10B981)),
+lib/features/jobs/widgets/job_card.dart:245:                                    ? const Color(0xFF1E293B)
+lib/features/jobs/widgets/job_card.dart:246:                                    : const Color(0xFFF1F5F9),
+lib/features/jobs/widgets/job_card.dart:282:                                color: const Color(0xFF0284C7)
+lib/features/jobs/widgets/job_card.dart:290:                                      size: 11, color: Color(0xFF0284C7)),
+lib/features/jobs/widgets/job_card.dart:299:                                      color: Color(0xFF0284C7),
+lib/features/toolkit/models/fiber_color_code.dart:21:      color: Color(0xFF0070BA),
+lib/features/toolkit/models/fiber_color_code.dart:27:      color: Color(0xFFFF7900),
+lib/features/toolkit/models/fiber_color_code.dart:33:      color: Color(0xFF00A344),
+lib/features/toolkit/models/fiber_color_code.dart:39:      color: Color(0xFF8C593B),
+lib/features/toolkit/models/fiber_color_code.dart:45:      color: Color(0xFF708090),
+lib/features/toolkit/models/fiber_color_code.dart:51:      color: Color(0xFFF8F9FA),
+lib/features/toolkit/models/fiber_color_code.dart:52:      textColor: Color(0xFF212529),
+lib/features/toolkit/models/fiber_color_code.dart:57:      color: Color(0xFFE52421),
+lib/features/toolkit/models/fiber_color_code.dart:63:      color: Color(0xFF212529),
+lib/features/toolkit/models/fiber_color_code.dart:69:      color: Color(0xFFFFD700),
+lib/features/toolkit/models/fiber_color_code.dart:70:      textColor: Color(0xFF212529),
+lib/features/toolkit/models/fiber_color_code.dart:75:      color: Color(0xFF8A2BE2),
+lib/features/toolkit/models/fiber_color_code.dart:81:      color: Color(0xFFFF69B4),
+lib/features/toolkit/models/fiber_color_code.dart:87:      color: Color(0xFF00BFFF),
+lib/features/toolkit/models/fiber_color_code.dart:88:      textColor: Color(0xFF212529),
+lib/features/jobs/widgets/jobs_map_view.dart:275:                                        color: const Color(0xFF10B981),
+lib/features/jobs/widgets/jobs_map_view.dart:299:                                        color: const Color(0xFF10B981),
+lib/features/jobs/widgets/jobs_map_view.dart:305:                                            color: Color(0x6610B981),
+lib/features/jobs/widgets/jobs_map_view.dart:321:                                    color: const Color(0xFF0284C7),
+lib/features/jobs/widgets/jobs_map_view.dart:439:                        color: const Color(0xFF2563EB),
+lib/features/jobs/widgets/jobs_map_view.dart:444:                            color: Color(0x662563EB),
+lib/features/jobs/widgets/jobs_map_view.dart:693:                    ? const Color(0xFF064E3B).withValues(alpha: 0.35)
+lib/features/jobs/widgets/jobs_map_view.dart:694:                    : const Color(0xFFECFDF5),
+lib/features/jobs/widgets/jobs_map_view.dart:698:                      ? const Color(0xFF10B981).withValues(alpha: 0.4)
+lib/features/jobs/widgets/jobs_map_view.dart:699:                      : const Color(0xFFA7F3D0),
+lib/features/jobs/widgets/jobs_map_view.dart:709:                      color: const Color(0xFF10B981),
+lib/features/jobs/widgets/jobs_map_view.dart:732:                                    ? const Color(0xFF6EE7B7)
+lib/features/jobs/widgets/jobs_map_view.dart:733:                                    : const Color(0xFF047857),
+lib/features/jobs/widgets/jobs_map_view.dart:741:                                color: const Color(0xFF10B981),
+lib/features/jobs/widgets/jobs_map_view.dart:803:                            ? const Color(0xFF047857).withValues(alpha: 0.5)
+lib/features/jobs/widgets/jobs_map_view.dart:804:                            : const Color(0xFFD1FAE5),
+lib/features/jobs/widgets/jobs_map_view.dart:811:                            ? const Color(0xFF6EE7B7)
+lib/features/jobs/widgets/jobs_map_view.dart:812:                            : const Color(0xFF047857),
+lib/features/jobs/widgets/jobs_map_view.dart:872:                        ? const Color(0xFF064E3B).withValues(alpha: 0.5)
+lib/features/jobs/widgets/jobs_map_view.dart:873:                        : const Color(0xFFECFDF5),
+lib/features/jobs/widgets/jobs_map_view.dart:877:                            ? const Color(0xFF10B981).withValues(alpha: 0.4)
+lib/features/jobs/widgets/jobs_map_view.dart:878:                            : const Color(0xFFA7F3D0),
+lib/features/jobs/widgets/jobs_map_view.dart:884:                        color: Color(0xFF10B981), size: 18),
+lib/features/jobs/widgets/jobs_map_view.dart:926:                  color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+lib/features/jobs/widgets/jobs_map_view.dart:934:                    color: Color(0xFF0284C7),
+lib/features/jobs/widgets/job_history_tile.dart:182:          const Color(0xFF7C3AED),
+lib/features/jobs/widgets/job_history_tile.dart:187:              const Color(0xFF4F46E5),
+lib/features/toolkit/screens/network_diagnostic_tool.dart:242:                                          ? const Color(0xFF059669)
+lib/features/toolkit/screens/network_diagnostic_tool.dart:246:                                          ? const Color(0xFF78350F)
+lib/features/toolkit/screens/network_diagnostic_tool.dart:268:                                      ? const Color(0xFF7F1D1D)
+lib/features/toolkit/models/field_troubleshooting_guide.dart:30:      badgeColor: Color(0xFFEF4444),
+lib/features/toolkit/models/field_troubleshooting_guide.dart:70:      badgeColor: Color(0xFFF59E0B),
+lib/features/toolkit/models/field_troubleshooting_guide.dart:104:      badgeColor: Color(0xFF0EA5E9),
+lib/features/toolkit/models/field_troubleshooting_guide.dart:137:      badgeColor: Color(0xFF8B5CF6),
+lib/features/jobs/widgets/job_history_view.dart:262:                      const Color(0xFF064E3B).withValues(alpha: 0.5),
+lib/features/jobs/widgets/job_history_view.dart:263:                      const Color(0xFF022C22).withValues(alpha: 0.35),
+lib/features/jobs/widgets/job_history_view.dart:265:                  : [AppTheme.successSubtle, const Color(0xFFF7FEF9)],
+lib/features/jobs/widgets/job_history_view.dart:272:                  ? const Color(0xFF059669).withValues(alpha: 0.4)
+lib/features/jobs/widgets/job_history_view.dart:273:                  : const Color(0xFFBBF7D0),
+lib/features/jobs/widgets/job_history_view.dart:282:                color: const Color(0xFF4F46E5),
+lib/features/jobs/widgets/job_history_view.dart:496:                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+lib/features/jobs/widgets/job_history_view.dart:564:                      isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+lib/features/toolkit/screens/toolkit_screen.dart:35:                    ? [const Color(0xFF3F2327), const Color(0xFF2B3035)]
+lib/features/toolkit/screens/toolkit_screen.dart:96:            color: const Color(0xFF0070BA),
+lib/features/toolkit/screens/toolkit_screen.dart:130:            color: const Color(0xFF10B981),
+lib/features/toolkit/screens/toolkit_screen.dart:147:            color: const Color(0xFF8B5CF6),
+lib/features/toolkit/screens/toolkit_screen.dart:164:            color: const Color(0xFFF59E0B),
+lib/features/toolkit/screens/toolkit_screen.dart:182:            color: const Color(0xFFEF4444),
+lib/features/toolkit/screens/drop_cable_tool.dart:84:                    ? [const Color(0xFF2B3035), const Color(0xFF25292E)]
+lib/features/toolkit/screens/fiber_color_code_tool.dart:154:                    ? [const Color(0xFF2B3035), const Color(0xFF25292E)]
+lib/features/toolkit/screens/fiber_color_code_tool.dart:291:                                        ? const Color(0xFFADB5BD)
+lib/features/toolkit/screens/fiber_color_code_tool.dart:378:                    ? const Color(0xFFADB5BD)
+lib/features/reports/widgets/photo_capture_tile.dart:83:                        ? const Color(0xFF38383A)
+lib/features/reports/widgets/photo_capture_tile.dart:84:                        : const Color(0xFFD1D1D6),
+lib/features/reports/widgets/photo_capture_tile.dart:103:                    color: Color(0xFF0070BA)),
+lib/features/reports/widgets/photo_capture_tile.dart:374:                        ? const Color(0xFF38383A)
+lib/features/reports/widgets/photo_capture_tile.dart:375:                        : const Color(0xFFD1D1D6),
+lib/features/reports/widgets/signature_pad.dart:52:        Offset.zero & size, Paint()..color = const Color(0xFFFFFFFF));
+lib/features/reports/widgets/signature_pad.dart:54:        color: const Color(0xFF111827), strokeWidth: 2.6);
+lib/features/reports/widgets/signature_pad.dart:115:                            color: Color(0xFF9CA3AF),
+lib/features/reports/widgets/signature_pad.dart:162:        color: const Color(0xFF111827), strokeWidth: 2.6);
+lib/features/reports/screens/create_report_screen.dart:765:                                color: Color(0xFF166534),
+lib/features/reports/screens/create_report_screen.dart:810:                                  padHasInk ? const Color(0xFF166534) : muted,

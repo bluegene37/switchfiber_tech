@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
 
@@ -108,13 +109,16 @@ class SignaturePad extends StatelessWidget {
               builder: (context, _) => CustomPaint(
                 painter: SignaturePainter(controller.strokes),
                 child: controller.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
                           'Sign here',
-                          style: TextStyle(
-                            color: Color(0xFF9CA3AF),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          // The plain (non-`Of`) const is deliberate: this
+                          // canvas is always white regardless of theme (see
+                          // `color: Colors.white` above), so the placeholder
+                          // must stay a fixed, theme-invariant ink rather
+                          // than follow dark mode like `secondaryInkOf` would.
+                          style: context.text.titleSmall!.copyWith(
+                            color: AppTheme.secondaryInk,
                             letterSpacing: 1,
                           ),
                         ),

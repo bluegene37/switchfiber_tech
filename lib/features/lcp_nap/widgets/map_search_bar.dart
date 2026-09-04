@@ -41,7 +41,7 @@ class MapSearchBar extends StatefulWidget {
   });
 
   /// Height of the bar, so maps can place their other overlays beneath it.
-  static const double height = 44;
+  static const double height = 52;
 
   /// What is actually sent to the geocoder for [query].
   static String biasedQuery(String query) {
@@ -108,25 +108,23 @@ class _MapSearchBarState extends State<MapSearchBar> {
       elevation: 2,
       shadowColor: Colors.black26,
       borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        height: MapSearchBar.height,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: MapSearchBar.height),
         child: TextField(
           controller: _controller,
           focusNode: _focus,
           textInputAction: TextInputAction.search,
           onSubmitted: (_) => _search(),
           onChanged: (_) => setState(() {}),
-          style: const TextStyle(fontSize: 14),
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: InputDecoration(
             hintText: 'Search a place or address',
-            hintStyle: TextStyle(fontSize: 14, color: muted),
-            isDense: true,
             filled: false,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            prefixIcon: Icon(Icons.search_rounded, size: 20, color: muted),
+            prefixIcon: Icon(Icons.search_rounded, size: 22, color: muted),
             suffixIcon: _busy
                 ? const Padding(
                     padding: EdgeInsets.all(12),
@@ -187,10 +185,10 @@ class MapSearchPin extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textScaler: TextScaler.noScaling,
-            style: const TextStyle(
-              fontSize: 11,
+            style: TextStyle(
+              fontSize: 11, // map furniture
               fontWeight: FontWeight.w700,
-              color: AppTheme.primary,
+              color: AppTheme.brandInkOf(context),
             ),
           ),
         ),

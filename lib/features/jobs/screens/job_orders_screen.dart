@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/loading_states.dart';
 import '../../auth/signals/auth_signals.dart';
 import '../../lcp_nap/signals/lcp_nap_signals.dart';
@@ -86,18 +88,12 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               _category == _JobsCategory.scheduled
                   ? 'Job Orders'
                   : 'Job History',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              style: context.text.titleMedium,
             ),
             if (_category == _JobsCategory.history)
               Text(
                 'Completed & Activated History',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: isDark
-                      ? AppTheme.textSecondaryDark
-                      : AppTheme.textMuted,
-                ),
+                style: context.text.bodySmall,
               ),
           ],
         ),
@@ -112,7 +108,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                 _viewMode == _ScheduledViewMode.list
                     ? CupertinoIcons.map
                     : CupertinoIcons.list_bullet,
-                size: 20,
+                size: 24,
               ),
               onPressed: () {
                 setState(() {
@@ -199,8 +195,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 horizontal: 10, vertical: 6),
                             child: Text(
                               'Scheduled ($scheduledCount)',
-                              style: const TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w700),
+                              style: context.text.labelLarge,
                             ),
                           ),
                           _JobsCategory.history: Padding(
@@ -208,8 +203,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 horizontal: 10, vertical: 6),
                             child: Text(
                               'History ($historyCount)',
-                              style: const TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w700),
+                              style: context.text.labelLarge,
                             ),
                           ),
                         },
@@ -227,71 +221,19 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Container(
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color:
-                                isDark ? AppTheme.darkInput : AppTheme.fillLight,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                CupertinoIcons.search,
-                                size: 16,
-                                color: AppTheme.textMuted,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextField(
-                                  controller: _searchController,
-                                  onChanged: (text) {
-                                    setState(() {});
-                                    signals.setSearch(text);
-                                  },
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: isDark
-                                        ? Colors.white
-                                        : AppTheme.darkSlate,
-                                  ),
-                                  decoration: const InputDecoration(
-                                    hintText:
-                                        'Search subscriber, ticket #, address...',
-                                    hintStyle: TextStyle(
-                                      fontSize: 13,
-                                      color: AppTheme.textMuted,
-                                    ),
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                    isDense: true,
-                                  ),
-                                ),
-                              ),
-                              if (_searchController.text.isNotEmpty)
-                                GestureDetector(
-                                  onTap: () {
-                                    _searchController.clear();
-                                    setState(() {});
-                                    signals.setSearch('');
-                                  },
-                                  child: const Icon(
-                                    CupertinoIcons.clear_thick_circled,
-                                    size: 16,
-                                    color: AppTheme.textMuted,
-                                  ),
-                                ),
-                            ],
-                          ),
+                        child: AppSearchField(
+                          controller: _searchController,
+                          hintText: 'Search subscriber, ticket #, address',
+                          onChanged: (text) {
+                            setState(() {});
+                            signals.setSearch(text);
+                          },
                         ),
                       ),
                       const SizedBox(width: 8),
                       // Prominent Segmented Toggle for List vs Map
                       Container(
-                        height: 38,
+                        height: AppSearchField.minHeight,
                         decoration: BoxDecoration(
                           color:
                               isDark ? AppTheme.darkInput : AppTheme.fillLight,
@@ -318,7 +260,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 children: [
                                   Icon(
                                     CupertinoIcons.list_bullet,
-                                    size: 14,
+                                    size: 24,
                                     color: _viewMode == _ScheduledViewMode.list
                                         ? AppTheme.primary
                                         : (isDark
@@ -328,12 +270,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     'List',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
+                                    style: context.text.labelLarge!.copyWith(
                                       color:
                                           _viewMode == _ScheduledViewMode.list
-                                              ? AppTheme.primary
+                                              ? AppTheme.brandInkOf(context)
                                               : (isDark
                                                   ? Colors.white70
                                                   : AppTheme.darkSlate),
@@ -350,7 +290,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 children: [
                                   Icon(
                                     CupertinoIcons.map_fill,
-                                    size: 14,
+                                    size: 24,
                                     color: _viewMode == _ScheduledViewMode.map
                                         ? AppTheme.primary
                                         : (isDark
@@ -360,15 +300,12 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     'Map',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color:
-                                          _viewMode == _ScheduledViewMode.map
-                                              ? AppTheme.primary
-                                              : (isDark
-                                                  ? Colors.white70
-                                                  : AppTheme.darkSlate),
+                                    style: context.text.labelLarge!.copyWith(
+                                      color: _viewMode == _ScheduledViewMode.map
+                                          ? AppTheme.brandInkOf(context)
+                                          : (isDark
+                                              ? Colors.white70
+                                              : AppTheme.darkSlate),
                                     ),
                                   ),
                                 ],
@@ -419,7 +356,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                 child: const Icon(
                                   CupertinoIcons.calendar,
                                   color: Colors.white,
-                                  size: 17,
+                                  size: 20,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -429,10 +366,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                   children: [
                                     Text(
                                       '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -0.2,
+                                      // Raw hex, not a semantic ink token: no
+                                      // AppTheme equivalent for this blue.
+                                      // Reported in task-6-report.md per brief §5.
+                                      style: context.text.titleSmall!.copyWith(
                                         color: isDark
                                             ? const Color(0xFF93C5FD)
                                             : const Color(0xFF1E40AF),
@@ -441,8 +378,9 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                     const SizedBox(height: 1),
                                     Text(
                                       'Tap ticket to verify optical specs & activate subscriber.',
-                                      style: TextStyle(
-                                        fontSize: 11,
+                                      // Light-mode value is raw hex with no
+                                      // matching ink; reported per brief §5.
+                                      style: context.text.bodySmall!.copyWith(
                                         color: isDark
                                             ? AppTheme.textSecondaryDark
                                             : const Color(0xFF3B82F6),
@@ -480,7 +418,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                     children: [
                       Icon(
                         Icons.cloud_off_rounded,
-                        size: 16,
+                        size: 20,
                         color: isDark
                             ? const Color(0xFFFDE68A)
                             : const Color(0xFF92400E),
@@ -489,9 +427,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       Expanded(
                         child: Text(
                           '$pending local update(s) awaiting server sync.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          // Raw hex, not a semantic ink token: no AppTheme
+                          // equivalent for this amber. Reported in
+                          // task-6-report.md per brief §5.
+                          style: context.text.bodySmall!.copyWith(
                             color: isDark
                                 ? const Color(0xFFFDE68A)
                                 : const Color(0xFF92400E),
@@ -507,12 +446,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        child: const Text(
+                        child: Text(
                           'Sync Now',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.primary,
+                          style: context.text.labelLarge!.copyWith(
+                            color: AppTheme.brandInkOf(context),
                           ),
                         ),
                       ),
@@ -609,30 +546,22 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No Scheduled Jobs Pending',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-              ),
+              style: context.text.titleMedium,
             ),
             const SizedBox(height: 6),
             Text(
               'Every scheduled job has been activated. Pull down to refresh from the server.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                height: 1.35,
-              ),
+              style: context.text.bodySmall,
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
                 signals.fetchRemote();
               },
-              icon: const Icon(CupertinoIcons.arrow_2_circlepath, size: 15),
+              icon: const Icon(CupertinoIcons.arrow_2_circlepath, size: 24),
               label: const Text('Pull Scheduled From Server'),
             ),
           ],

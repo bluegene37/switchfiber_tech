@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/lcp_nap_model.dart';
 
@@ -57,12 +58,11 @@ class LcpNapCard extends StatelessWidget {
                           width: 0.5,
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'LCP',
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: context.text.labelSmall!.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: AppTheme.primary,
+                          color: AppTheme.brandInkOf(context),
                         ),
                       ),
                     ),
@@ -70,37 +70,31 @@ class LcpNapCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '${location.lcp} - ${location.nap}',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                        ),
+                        style: context.text.titleSmall,
                       ),
                     ),
                     // Port capacity pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF3F2327)
-                            : AppTheme.primarySubtleBg,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2.5),
+                        decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF882933)
-                              : AppTheme.primarySubtleBorder,
-                          width: 0.5,
+                              ? const Color(0xFF3F2327)
+                              : AppTheme.primarySubtleBg,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF882933)
+                                : AppTheme.primarySubtleBorder,
+                            width: 0.5,
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        '${location.portTotal} ports',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? const Color(0xFFFF8591)
-                              : AppTheme.primaryActive,
+                        child: Text(
+                          '${location.portTotal} ports',
+                          style: context.text.headlineSmall!.copyWith(
+                            color: AppTheme.brandInkOf(context),
+                          ),
                         ),
                       ),
                     ),
@@ -114,7 +108,7 @@ class LcpNapCard extends StatelessWidget {
                     children: [
                       Icon(
                         CupertinoIcons.location,
-                        size: 14,
+                        size: 20,
                         color: isDark
                             ? AppTheme.textSecondaryDark
                             : AppTheme.textMuted,
@@ -125,11 +119,7 @@ class LcpNapCard extends StatelessWidget {
                           [location.barangay, location.city]
                               .where((s) => s != null && s.isNotEmpty)
                               .join(', '),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? Colors.white : AppTheme.darkSlate,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: context.text.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -145,20 +135,17 @@ class LcpNapCard extends StatelessWidget {
                     children: [
                       Icon(
                         CupertinoIcons.scope,
-                        size: 13,
+                        size: 20,
                         color: isDark
                             ? AppTheme.textSecondaryDark
                             : AppTheme.textMuted,
                       ),
                       const SizedBox(width: 5),
-                      Text(
-                        location.coordinates!,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
+                      Expanded(
+                        child: Text(
+                          location.coordinates!,
+                          style: context.text.labelSmall!
+                              .copyWith(fontFamily: 'monospace'),
                         ),
                       ),
                     ],
@@ -177,19 +164,15 @@ class LcpNapCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'View Details & GPS',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppTheme.textSecondaryDark
-                            : AppTheme.textMuted,
+                    Expanded(
+                      child: Text(
+                        'View Details & GPS',
+                        style: context.text.bodySmall,
                       ),
                     ),
                     Icon(
                       CupertinoIcons.chevron_forward,
-                      size: 13,
+                      size: 24,
                       color: isDark
                           ? AppTheme.textSecondaryDark
                           : AppTheme.textMuted,

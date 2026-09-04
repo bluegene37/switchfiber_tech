@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
 import '../../reports/widgets/photo_capture_tile.dart' show showPhotoViewer;
@@ -41,10 +42,9 @@ class JobPhotoGallery extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(CupertinoIcons.camera, size: 18, color: muted),
+            Icon(CupertinoIcons.camera, size: 20, color: muted),
             const SizedBox(width: 8),
-            Text('No photos attached yet',
-                style: TextStyle(fontSize: 12, color: muted)),
+            Text('No photos attached yet', style: context.text.bodySmall),
           ],
         ),
       );
@@ -91,7 +91,6 @@ class _PhotoThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     final data = bytes;
     return InkWell(
       onTap: onTap,
@@ -130,19 +129,16 @@ class _PhotoThumb extends StatelessWidget {
                               color: AppTheme.success.withValues(alpha: 0.85),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(CupertinoIcons.location_fill,
-                                    color: Colors.white, size: 8),
-                                SizedBox(width: 2),
+                                const Icon(CupertinoIcons.location_fill,
+                                    color: Colors.white, size: 20),
+                                const SizedBox(width: 2),
                                 Text(
                                   'GPS',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: context.text.labelMedium!
+                                      .copyWith(color: Colors.white),
                                 ),
                               ],
                             ),
@@ -157,8 +153,7 @@ class _PhotoThumb extends StatelessWidget {
                           const Icon(Icons.cloud_done_rounded,
                               size: 22, color: AppTheme.success),
                           const SizedBox(height: 4),
-                          Text('On server',
-                              style: TextStyle(fontSize: 10, color: muted)),
+                          Text('On server', style: context.text.labelSmall),
                         ],
                       ),
                     ),
@@ -168,8 +163,7 @@ class _PhotoThumb extends StatelessWidget {
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+                style: context.text.labelMedium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

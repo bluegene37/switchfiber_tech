@@ -7,16 +7,15 @@ import 'package:swithfiber_tech/features/lcp_nap/widgets/map_search_bar.dart';
 void main() {
   group('biasedQuery', () {
     test('appends the country to a bare place name', () {
-      expect(MapSearchBar.biasedQuery('SM Megamall'),
-          'SM Megamall, Philippines');
+      expect(
+          MapSearchBar.biasedQuery('SM Megamall'), 'SM Megamall, Philippines');
     });
 
-    test('trims and passes through a query that already names the country',
-        () {
+    test('trims and passes through a query that already names the country', () {
       expect(MapSearchBar.biasedQuery('  Pasig City Hall, Philippines '),
           'Pasig City Hall, Philippines');
-      expect(MapSearchBar.biasedQuery('Maynila, PILIPINAS'),
-          'Maynila, PILIPINAS');
+      expect(
+          MapSearchBar.biasedQuery('Maynila, PILIPINAS'), 'Maynila, PILIPINAS');
     });
   });
 
@@ -114,5 +113,11 @@ void main() {
     await submit(tester, '   ');
 
     expect(asked, isFalse);
+  });
+
+  testWidgets('is at least 52 tall', (tester) async {
+    await pumpBar(tester, lookup: (_) async => null, onLocated: (_, __) {});
+    expect(tester.getSize(find.byType(MapSearchBar)).height,
+        greaterThanOrEqualTo(52));
   });
 }

@@ -4,6 +4,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/server_display.dart';
 import '../../auth/signals/auth_signals.dart';
@@ -108,18 +109,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(CupertinoIcons.speedometer,
+                    const Icon(CupertinoIcons.speedometer,
                         color: AppTheme.primary, size: 22),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'GPON Optical Power Standards',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                      ),
+                      style: ctx.text.titleSmall,
                     ),
                   ],
                 ),
@@ -133,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Icon(
                       CupertinoIcons.xmark,
-                      size: 13,
+                      size: 24,
                       color: isDark ? Colors.white : AppTheme.darkSlate,
                     ),
                   ),
@@ -177,6 +174,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color subtle,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // The three call sites only ever pass one of these three brand/status
+    // fills; route the text to the ink that matches so it never renders in
+    // the bright colour itself.
+    final Color textInk = color == AppTheme.success
+        ? AppTheme.successInkOf(context)
+        : color == AppTheme.warning
+            ? AppTheme.warningInkOf(context)
+            : AppTheme.dangerInkOf(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -192,17 +197,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(CupertinoIcons.circle_fill, color: color, size: 9),
+              Icon(CupertinoIcons.circle_fill, color: color, size: 20),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                    letterSpacing: -0.2,
-                  ),
+                  style: context.text.labelLarge!.copyWith(color: textInk),
                 ),
               ),
             ],
@@ -210,11 +210,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 4),
           Text(
             description,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              height: 1.3,
-            ),
+            style: context.text.bodyMedium!
+                .copyWith(color: AppTheme.secondaryInkOf(context)),
           ),
         ],
       ),
@@ -245,12 +242,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+        style: context.text.labelMedium!.copyWith(
           color: success
-              ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534))
-              : (isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive),
+              ? AppTheme.successInkOf(context)
+              : AppTheme.brandInkOf(context),
         ),
       ),
     );
@@ -261,12 +256,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 15, color: AppTheme.textMuted),
+            Icon(icon, size: 20, color: AppTheme.textMuted),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(fontSize: 13),
+                style: context.text.bodySmall,
               ),
             ),
           ],
@@ -309,12 +304,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 6),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.textMuted,
-          letterSpacing: 0.2,
-        ),
+        style: context.text.labelSmall,
       ),
     );
   }
@@ -378,22 +368,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.2,
-                        ),
+                        style: context.text.titleMedium,
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
                         Text(
                           subtitle,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? AppTheme.textSecondaryDark
-                                : AppTheme.textMuted,
-                          ),
+                          style: context.text.bodySmall,
                         ),
                       ],
                     ],
@@ -424,9 +405,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Settings',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: context.text.titleMedium,
         ),
       ),
       body: ListView(
@@ -450,11 +431,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             : AppTheme.primarySubtleBg,
                         child: Text(
                           user?.initials ?? 'T',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.primary,
-                          ),
+                          style: context.text.titleLarge!
+                              .copyWith(color: AppTheme.brandInkOf(context)),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -464,26 +442,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             Text(
                               user?.fullName ?? 'Technician User',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
-                              ),
+                              style: context.text.titleSmall,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               '@${user?.username ?? "technician"}',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textMuted,
-                              ),
+                              style: context.text.bodySmall,
                             ),
                             const SizedBox(height: 6),
                             Wrap(
                               spacing: 6,
                               runSpacing: 4,
                               children: [
-                                _tag('Access level ${user?.accessLevelId ?? "-"}'),
+                                _tag(
+                                    'Access level ${user?.accessLevelId ?? "-"}'),
                                 if (user?.active == true)
                                   _tag('Active', success: true),
                                 if (user != null && user.menus.isNotEmpty)
@@ -510,8 +482,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (user.contactNumber.isNotEmpty)
                       _detailRow(CupertinoIcons.phone, user.contactNumber),
                     if (user.address.isNotEmpty)
-                      _detailRow(
-                          CupertinoIcons.location_solid, user.address),
+                      _detailRow(CupertinoIcons.location_solid, user.address),
                   ],
                 ],
               );
@@ -540,8 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: CupertinoSwitch(
                       value: dark,
                       activeTrackColor: AppTheme.primary,
-                      onChanged: (v) =>
-                          SettingsSignals.instance.setDarkMode(v),
+                      onChanged: (v) => SettingsSignals.instance.setDarkMode(v),
                     ),
                   ),
                 ],
@@ -564,7 +534,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: _showOpticalPowerStandards,
                 trailing: const Icon(
                   CupertinoIcons.chevron_forward,
-                  size: 16,
+                  size: 24,
                   color: AppTheme.textMuted,
                 ),
               ),
@@ -640,7 +610,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 )
                               : const Icon(CupertinoIcons.arrow_2_circlepath,
-                                  size: 16),
+                                  size: 24),
                           label: Text(
                             isSyncing
                                 ? 'Synchronizing...'
@@ -670,7 +640,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                           icon: const Icon(
                               CupertinoIcons.arrow_counterclockwise,
-                              size: 15),
+                              size: 24),
                           label: const Text('Re-seed Sample Field Data'),
                         ),
                       ),
@@ -692,13 +662,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Icon(CupertinoIcons.shield_lefthalf_fill,
                       size: 17, color: AppTheme.primary),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'SSL Pinned Channel',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
+                    style: context.text.titleSmall,
                   ),
                   const Spacer(),
                   _buildPinningBadge(isDark),
@@ -707,11 +673,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 8),
               Text(
                 'Direct communication channel with Switch Fiber dispatch server.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: context.text.bodyMedium!
+                    .copyWith(color: AppTheme.secondaryInkOf(context)),
               ),
               const SizedBox(height: 12),
               Container(
@@ -732,11 +695,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Expanded(
                       child: Text(
                         ServerDisplay.mask(_baseUrl),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontFamily: 'monospace',
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: context.text.bodyMedium!.copyWith(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                     if (_lastPingMs != null)
@@ -757,12 +718,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         child: Text(
                           '${_lastPingMs}ms',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                          style: context.text.labelMedium!.copyWith(
                             color: _pingSuccess == true
-                                ? AppTheme.success
-                                : AppTheme.danger,
+                                ? AppTheme.successInkOf(context)
+                                : AppTheme.dangerInkOf(context),
                           ),
                         ),
                       ),
@@ -780,7 +739,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           height: 14,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(CupertinoIcons.waveform_path_ecg, size: 16),
+                      : const Icon(CupertinoIcons.waveform_path_ecg, size: 24),
                   label: Text(_isTestingPing
                       ? 'Testing latency...'
                       : 'Test Connection Latency'),
@@ -803,7 +762,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: _handleLogout,
                 trailing: const Icon(
                   CupertinoIcons.chevron_forward,
-                  size: 16,
+                  size: 24,
                   color: AppTheme.danger,
                 ),
               ),
@@ -817,12 +776,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               '${AppConstants.appName} v${AppConstants.appVersion}\nSwitch Fiber Philippines • Dispatch Ops',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color:
-                    isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                height: 1.5,
-              ),
+              style: context.text.labelSmall,
             ),
           ),
         ],
@@ -850,17 +804,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Icon(
             CupertinoIcons.checkmark_shield_fill,
-            size: 12,
+            size: 20,
             color: isDark ? const Color(0xFF4ADE80) : AppTheme.success,
           ),
           const SizedBox(width: 4),
           Text(
             'SSL Pinned (SHA-256)',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534),
-            ),
+            style: context.text.labelMedium!
+                .copyWith(color: AppTheme.successInkOf(context)),
           ),
         ],
       ),
@@ -873,22 +824,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     IconData icon, {
     Color? badgeColor,
   }) {
+    // Call sites only ever pass one of these three brand/status fills (or
+    // leave it null for the default ink); route whichever was passed to the
+    // ink that matches so the value never renders in the bright colour.
+    final Color? valueInk = badgeColor == null
+        ? null
+        : badgeColor == AppTheme.success
+            ? AppTheme.successInkOf(context)
+            : badgeColor == AppTheme.warning
+                ? AppTheme.warningInkOf(context)
+                : AppTheme.brandInkOf(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.textMuted),
+        Icon(icon, size: 20, color: AppTheme.textMuted),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            style: context.text.bodySmall,
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: badgeColor ??
+          style: context.text.labelMedium!.copyWith(
+            color: valueInk ??
                 (Theme.of(context).brightness == Brightness.dark
                     ? Colors.white
                     : AppTheme.darkSlate),

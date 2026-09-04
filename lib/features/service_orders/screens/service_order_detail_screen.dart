@@ -4,6 +4,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/image_capture_service.dart';
 import '../../../core/services/map_navigation_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../catalogs/models/catalog_model.dart';
 import '../../catalogs/services/catalog_service.dart';
@@ -25,7 +26,8 @@ class ServiceOrderDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<ServiceOrderDetailScreen> createState() => _ServiceOrderDetailScreenState();
+  State<ServiceOrderDetailScreen> createState() =>
+      _ServiceOrderDetailScreenState();
 }
 
 class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
@@ -57,9 +59,12 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     super.initState();
     final order = _findOrder();
     _remarksController = TextEditingController(text: order?.visitRemarks ?? '');
-    _newSnController = TextEditingController(text: order?.newRouterModemSN ?? '');
-    _pulloutSnController = TextEditingController(text: order?.pulloutRouterModelSN ?? order?.routerModemSN ?? '');
-    _pulloutRemarksController = TextEditingController(text: order?.pulloutRemarks ?? '');
+    _newSnController =
+        TextEditingController(text: order?.newRouterModemSN ?? '');
+    _pulloutSnController = TextEditingController(
+        text: order?.pulloutRouterModelSN ?? order?.routerModemSN ?? '');
+    _pulloutRemarksController =
+        TextEditingController(text: order?.pulloutRemarks ?? '');
 
     // Materials prefill
     if (order != null) {
@@ -110,7 +115,9 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
 
     final materials = <String, int>{};
     if (_dropCableMeters > 0) materials['Drop Cable (m)'] = _dropCableMeters;
-    if (_fastConnectors > 0) materials['SC/APC Fast Connector'] = _fastConnectors;
+    if (_fastConnectors > 0) {
+      materials['SC/APC Fast Connector'] = _fastConnectors;
+    }
     if (_sClamps > 0) materials['S-Clamp'] = _sClamps;
 
     final updated = ServiceOrderDto(
@@ -138,9 +145,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
       visitBy: widget.signals.technicianEmail.value ?? 'Technician',
       visitRemarks: _remarksController.text.trim(),
       assignedEmail: order.assignedEmail,
-      newRouterModemSN: _newSnController.text.trim().isNotEmpty ? _newSnController.text.trim() : null,
+      newRouterModemSN: _newSnController.text.trim().isNotEmpty
+          ? _newSnController.text.trim()
+          : null,
       routerModel: _selectedRouterModel,
-      pulloutRouterModelSN: _pulloutSnController.text.trim().isNotEmpty ? _pulloutSnController.text.trim() : null,
+      pulloutRouterModelSN: _pulloutSnController.text.trim().isNotEmpty
+          ? _pulloutSnController.text.trim()
+          : null,
       pulloutRemarks: _pulloutRemarksController.text.trim(),
       materialsUsed: materials,
       clientSignature: signature ?? order.clientSignature,
@@ -165,7 +176,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.signals.syncError.value ?? 'Failed to submit service order'),
+          content: Text(widget.signals.syncError.value ??
+              'Failed to submit service order'),
           backgroundColor: AppTheme.primary,
         ),
       );
@@ -190,7 +202,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           appBar: AppBar(
             title: Text(
               'Ticket #${order.id}',
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+              style: context.text.titleLarge,
             ),
           ),
           body: Form(
@@ -238,12 +250,14 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                       : const Icon(CupertinoIcons.checkmark_seal_fill),
                   label: Text(
                     _isSubmitting ? 'Submitting...' : 'Complete Service Order',
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                    style:
+                        context.text.titleSmall!.copyWith(color: Colors.white),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -265,44 +279,50 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isDark ? AppTheme.primarySubtleBgDark : AppTheme.primarySubtleBg,
+                    color: isDark
+                        ? AppTheme.primarySubtleBgDark
+                        : AppTheme.primarySubtleBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     order.concern,
-                    style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 12),
+                    style: context.text.labelLarge!
+                        .copyWith(color: AppTheme.brandInkOf(context)),
                   ),
                 ),
                 const Spacer(),
                 if (order.isUrgent)
-                  const Chip(
-                    label: Text('URGENT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Chip(
+                    label: Text('URGENT',
+                        style: context.text.labelLarge!
+                            .copyWith(color: Colors.white)),
                     backgroundColor: AppTheme.primary,
-                    visualDensity: VisualDensity.compact,
                   ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               order.fullName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: context.text.titleMedium,
             ),
             Text(
               'Account: ${order.accountNumber} • ${order.provider ?? order.plan ?? "Fiber"}',
-              style: TextStyle(color: isDark ? Colors.white70 : AppTheme.textMuted, fontSize: 13),
+              style: context.text.bodySmall,
             ),
             const Divider(height: 24),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(CupertinoIcons.location_solid, size: 16, color: AppTheme.primary),
+                const Icon(CupertinoIcons.location_solid,
+                    size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     order.address,
-                    style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : AppTheme.textSecondary),
+                    style: context.text.bodySmall,
                   ),
                 ),
               ],
@@ -312,15 +332,19 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               children: [
                 if (order.contactNumber.isNotEmpty)
                   OutlinedButton.icon(
-                    onPressed: () => launchUrl(Uri.parse('tel:${order.contactNumber}')),
-                    icon: const Icon(CupertinoIcons.phone_fill, size: 14),
+                    onPressed: () =>
+                        launchUrl(Uri.parse('tel:${order.contactNumber}')),
+                    icon: const Icon(CupertinoIcons.phone_fill, size: 24),
                     label: Text(order.contactNumber),
                   ),
                 const Spacer(),
                 if (order.latLng != null)
                   ElevatedButton.icon(
-                    onPressed: () => MapNavigationService.navigateTo(order.latLng!, label: order.fullName),
-                    icon: const Icon(CupertinoIcons.arrow_up_right_diamond_fill, size: 14),
+                    onPressed: () => MapNavigationService.navigateTo(
+                        order.latLng!,
+                        label: order.fullName),
+                    icon: const Icon(CupertinoIcons.arrow_up_right_diamond_fill,
+                        size: 24),
                     label: const Text('Navigate'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
@@ -342,11 +366,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.swap_horiz_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text('Hardware Swap / Pullout', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Icon(Icons.swap_horiz_rounded,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text('Hardware Swap / Pullout',
+                    style: context.text.titleMedium),
               ],
             ),
             const SizedBox(height: 14),
@@ -372,10 +398,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               initialValue: _selectedRouterModel,
               decoration: const InputDecoration(
                 labelText: 'Approved Replacement Model',
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
               items: _availableRouters.map((r) {
-                return DropdownMenuItem(value: r.compactName, child: Text(r.displayName, style: const TextStyle(fontSize: 12)));
+                return DropdownMenuItem(
+                    value: r.compactName,
+                    child: Text(r.displayName, style: context.text.bodySmall));
               }).toList(),
               onChanged: (val) => setState(() => _selectedRouterModel = val),
             ),
@@ -385,7 +414,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               maxLines: 2,
               decoration: const InputDecoration(
                 labelText: 'Technician Remarks / Work Performed',
-                hintText: 'e.g. Replaced faulty ONU, re-spliced fast connector on Port 4',
+                hintText:
+                    'e.g. Replaced faulty ONU, re-spliced fast connector on Port 4',
               ),
             ),
           ],
@@ -401,51 +431,56 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.inventory_2_outlined, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text('Materials Consumed On-Site', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Icon(Icons.inventory_2_outlined,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text('Materials Consumed On-Site',
+                    style: context.text.titleMedium),
               ],
             ),
             const SizedBox(height: 14),
-            _buildCounterRow('Drop Cable', 'meters', _dropCableMeters, (v) => setState(() => _dropCableMeters = v)),
+            _buildCounterRow('Drop Cable', 'meters', _dropCableMeters,
+                (v) => setState(() => _dropCableMeters = v)),
             const Divider(height: 16),
-            _buildCounterRow('SC/APC Fast Connectors', 'pcs', _fastConnectors, (v) => setState(() => _fastConnectors = v)),
+            _buildCounterRow('SC/APC Fast Connectors', 'pcs', _fastConnectors,
+                (v) => setState(() => _fastConnectors = v)),
             const Divider(height: 16),
-            _buildCounterRow('S-Clamps', 'pcs', _sClamps, (v) => setState(() => _sClamps = v)),
+            _buildCounterRow('S-Clamps', 'pcs', _sClamps,
+                (v) => setState(() => _sClamps = v)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCounterRow(String name, String unit, int count, ValueChanged<int> onChanged) {
+  Widget _buildCounterRow(
+      String name, String unit, int count, ValueChanged<int> onChanged) {
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              Text(unit, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+              Text(name, style: context.text.titleSmall),
+              Text(unit, style: context.text.labelSmall),
             ],
           ),
         ),
         IconButton(
           onPressed: count > 0 ? () => onChanged(count - 1) : null,
           icon: const Icon(CupertinoIcons.minus_circle, size: 22),
-          visualDensity: VisualDensity.compact,
         ),
         Container(
           constraints: const BoxConstraints(minWidth: 32),
           alignment: Alignment.center,
-          child: Text('$count', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+          child: Text('$count', style: context.text.titleSmall),
         ),
         IconButton(
           onPressed: () => onChanged(count + 1),
-          icon: const Icon(CupertinoIcons.plus_circle_fill, size: 22, color: AppTheme.primary),
-          visualDensity: VisualDensity.compact,
+          icon: const Icon(CupertinoIcons.plus_circle_fill,
+              size: 22, color: AppTheme.primary),
         ),
       ],
     );
@@ -458,11 +493,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.camera_alt_outlined, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text('Proof of Service (GPS Geotagged)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Icon(Icons.camera_alt_outlined,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text('Proof of Service (GPS Geotagged)',
+                    style: context.text.titleMedium),
               ],
             ),
             const SizedBox(height: 12),
@@ -518,11 +555,12 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.draw_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text('Subscriber Sign-off', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const Icon(Icons.draw_rounded,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text('Subscriber Sign-off', style: context.text.titleMedium),
               ],
             ),
             const SizedBox(height: 12),

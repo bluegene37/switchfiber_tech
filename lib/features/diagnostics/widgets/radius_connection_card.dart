@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/radius_user_model.dart';
 import '../services/radius_user_service.dart';
@@ -46,7 +47,8 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
     });
 
     try {
-      final user = await RadiusUserService.instance.fetchRadiusUserByName(widget.accountName);
+      final user = await RadiusUserService.instance
+          .fetchRadiusUserByName(widget.accountName);
       if (!mounted) return;
       setState(() {
         _user = user;
@@ -82,7 +84,8 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
     });
 
     try {
-      final ok = await RadiusUserService.instance.toggleConnection(widget.accountName, desired);
+      final ok = await RadiusUserService.instance
+          .toggleConnection(widget.accountName, desired);
       if (!ok) throw Exception('API rejected connection change');
 
       // Re-fetch to synchronize with server group source of truth
@@ -129,11 +132,12 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
           children: [
             Row(
               children: [
-                const Icon(CupertinoIcons.wifi, size: 18, color: AppTheme.primary),
+                const Icon(CupertinoIcons.wifi,
+                    size: 18, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'RADIUS PPPoE Connection',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
                 const Spacer(),
                 if (_isLoading)
@@ -141,14 +145,13 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
                 else
                   IconButton(
                     onPressed: _fetchStatus,
-                    icon: const Icon(CupertinoIcons.arrow_2_circlepath, size: 15),
-                    visualDensity: VisualDensity.compact,
+                    icon:
+                        const Icon(CupertinoIcons.arrow_2_circlepath, size: 24),
                     tooltip: 'Refresh connection status',
                   ),
               ],
             ),
             const SizedBox(height: 12),
-
             if (_error != null)
               Container(
                 padding: const EdgeInsets.all(10),
@@ -158,12 +161,13 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(CupertinoIcons.exclamationmark_circle, size: 16, color: AppTheme.textMuted),
+                    const Icon(CupertinoIcons.exclamationmark_circle,
+                        size: 20, color: AppTheme.textMuted),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Account: ${widget.accountName.isEmpty ? "(None)" : widget.accountName} — $_error',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                        style: context.text.bodySmall,
                       ),
                     ),
                   ],
@@ -188,7 +192,8 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
                       height: 10,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isConnected ? AppTheme.success : AppTheme.primary,
+                        color:
+                            isConnected ? AppTheme.success : AppTheme.primary,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -196,16 +201,13 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _user!.name,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                          ),
+                          Text(_user!.name, style: context.text.titleSmall),
                           Text(
                             'Group: ${_user!.group.isEmpty ? "None" : _user!.group} • ${isConnected ? "Online" : "Cut Off"}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isConnected ? AppTheme.success : (isDark ? Colors.white60 : AppTheme.textMuted),
-                              fontWeight: FontWeight.w600,
+                            style: context.text.labelMedium!.copyWith(
+                              color: isConnected
+                                  ? AppTheme.successInkOf(context)
+                                  : AppTheme.secondaryInkOf(context),
                             ),
                           ),
                         ],
@@ -226,10 +228,7 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
               const SizedBox(height: 8),
               Text(
                 'Toggle to test subscriber line cut or reconnect after repair.',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? Colors.white54 : AppTheme.textMuted,
-                ),
+                style: context.text.labelSmall,
               ),
             ],
           ],

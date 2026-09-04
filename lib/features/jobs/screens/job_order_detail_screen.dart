@@ -7,6 +7,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../diagnostics/widgets/radius_connection_card.dart';
 import '../../lcp_nap/models/lcp_nap_model.dart';
@@ -53,10 +54,7 @@ class JobOrderDetailScreen extends StatelessWidget {
             body: Center(
               child: Text(
                 'Job Order not found or removed.',
-                style: TextStyle(
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: TextStyle(color: AppTheme.secondaryInkOf(context)),
               ),
             ),
           );
@@ -69,17 +67,11 @@ class JobOrderDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   job.ticketNumber,
-                  style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w800),
+                  style: context.text.titleMedium,
                 ),
                 Text(
                   job.planName ?? 'Switch Fiber Service',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
-                  ),
+                  style: context.text.bodySmall,
                 ),
               ],
             ),
@@ -114,7 +106,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                       job.isSynced
                           ? Icons.cloud_done_rounded
                           : Icons.cloud_off_rounded,
-                      size: 13,
+                      size: 20,
                       color: job.isSynced
                           ? (isDark
                               ? const Color(0xFF4ADE80)
@@ -126,16 +118,10 @@ class JobOrderDetailScreen extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       job.isSynced ? 'Synced' : 'Local DB',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                      style: context.text.labelMedium!.copyWith(
                         color: job.isSynced
-                            ? (isDark
-                                ? const Color(0xFF4ADE80)
-                                : AppTheme.success)
-                            : (isDark
-                                ? const Color(0xFFFDE68A)
-                                : const Color(0xFF92400E)),
+                            ? AppTheme.successInkOf(context)
+                            : AppTheme.warningInkOf(context),
                       ),
                     ),
                   ],
@@ -145,13 +131,13 @@ class JobOrderDetailScreen extends StatelessWidget {
               if (!readOnly)
                 IconButton(
                   icon:
-                      const Icon(Icons.assignment_turned_in_outlined, size: 20),
+                      const Icon(Icons.assignment_turned_in_outlined, size: 24),
                   tooltip: 'Field Completion Report',
                   onPressed: () => _handleOpenReport(context, job),
                 ),
               // Copy Ticket Summary Button
               IconButton(
-                icon: const Icon(Icons.share_outlined, size: 20),
+                icon: const Icon(Icons.share_outlined, size: 24),
                 tooltip: 'Copy Ticket Summary',
                 onPressed: () => _copyJobSummary(context, job, isDark),
               ),
@@ -169,7 +155,7 @@ class JobOrderDetailScreen extends StatelessWidget {
 
               // 2. Site Exception Alert (if applicable)
               if (job.siteException != null) ...[
-                _buildExceptionBanner(job, isDark),
+                _buildExceptionBanner(context, job, isDark),
                 const SizedBox(height: 14),
               ],
 
@@ -194,7 +180,7 @@ class JobOrderDetailScreen extends StatelessWidget {
 
               // 5. Optical Reading & Calibration
               if (job.opticalPower != null) ...[
-                _buildOpticalPowerCard(job, isDark),
+                _buildOpticalPowerCard(context, job, isDark),
                 const SizedBox(height: 14),
               ],
 
@@ -218,18 +204,19 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // A Wrap, not a Row: at 200% text the label and the badge no
+            // longer fit on one line, so the badge flows to its own line
+            // instead of overflowing.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 Text(
                   'Workflow Stage',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
-                  ),
+                  style: context.text.labelMedium!
+                      .copyWith(color: AppTheme.secondaryInkOf(context)),
                 ),
                 StatusBadge(
                   status: currentStatus,
@@ -241,16 +228,16 @@ class JobOrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Stepper Visualizer
-            _buildStepper(job, isDark),
+            _buildStepper(context, job, isDark),
             const SizedBox(height: 16),
 
             // Who Dispatch assigned this job to
-            _buildAssignmentRow(job, isDark),
+            _buildAssignmentRow(context, job, isDark),
             const SizedBox(height: 12),
 
             // The one field action: Scheduled -> Completed.
             if (readOnly)
-              _buildViewOnlyNote(isDark)
+              _buildViewOnlyNote(context, isDark)
             else if (job.canActivate) ...[
               SizedBox(
                 width: double.infinity,
@@ -260,7 +247,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                   onPressed: job.hasCompletedReport
                       ? () => _handleComplete(context, job, isDark)
                       : null,
-                  icon: const Icon(Icons.check_circle_rounded, size: 18),
+                  icon: const Icon(Icons.check_circle_rounded, size: 24),
                   label: const Text('Complete',
                       style: TextStyle(fontWeight: FontWeight.w800)),
                   style: ElevatedButton.styleFrom(
@@ -272,11 +259,10 @@ class JobOrderDetailScreen extends StatelessWidget {
               ),
               if (!job.hasCompletedReport) ...[
                 const SizedBox(height: 8),
-                _buildReportRequiredNote(isDark),
+                _buildReportRequiredNote(context, isDark),
               ],
-            ]
-            else
-              _buildActivatedNote(job, isDark),
+            ] else
+              _buildActivatedNote(context, job, isDark),
           ],
         ),
       ),
@@ -285,24 +271,23 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   /// The technician email Dispatch assigned this job to. Emails run long, so
   /// unlike [_buildSpecRow] the value wraps rather than overflowing.
-  Widget _buildAssignmentRow(JobOrderDto job, bool isDark) {
+  Widget _buildAssignmentRow(
+      BuildContext context, JobOrderDto job, bool isDark) {
     final email = job.assignedEmail?.trim() ?? '';
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.person_pin_rounded, size: 16, color: muted),
+        Icon(Icons.person_pin_rounded, size: 20, color: muted),
         const SizedBox(width: 8),
-        Text('Assigned To', style: TextStyle(fontSize: 13, color: muted)),
+        Text('Assigned To', style: context.text.bodySmall),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             email.isEmpty ? 'Unassigned' : email,
             textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: email.isEmpty ? muted : null,
+            style: context.text.titleSmall!.copyWith(
+              color: email.isEmpty ? AppTheme.secondaryInkOf(context) : null,
             ),
           ),
         ),
@@ -310,7 +295,7 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStepper(JobOrderDto job, bool isDark) {
+  Widget _buildStepper(BuildContext context, JobOrderDto job, bool isDark) {
     final status = job.jobStatus;
     final isFinished =
         status == JobStatus.activated || status == JobStatus.completed;
@@ -341,59 +326,53 @@ class JobOrderDetailScreen extends StatelessWidget {
         final step = steps[stepIndex];
         final isActive = step['active'] as bool;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: isActive
-                    ? AppTheme.primary
-                    : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-                shape: BoxShape.circle,
-                border: Border.all(
+        return Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
                   color: isActive
                       ? AppTheme.primary
-                      : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-                  width: 2,
+                      : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isActive
+                        ? AppTheme.primary
+                        : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: isActive
+                      ? const Icon(Icons.check, size: 20, color: Colors.white)
+                      : Text(
+                          '${stepIndex + 1}',
+                          style: context.text.labelMedium!.copyWith(
+                            color: AppTheme.secondaryInkOf(context),
+                          ),
+                        ),
                 ),
               ),
-              child: Center(
-                child: isActive
-                    ? const Icon(Icons.check, size: 14, color: Colors.white)
-                    : Text(
-                        '${stepIndex + 1}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
-                      ),
+              const SizedBox(height: 4),
+              Text(
+                step['label'] as String,
+                textAlign: TextAlign.center,
+                style: isActive
+                    ? context.text.labelMedium
+                    : context.text.bodySmall,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              step['label'] as String,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive
-                    ? (isDark ? Colors.white : AppTheme.darkSlate)
-                    : (isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted),
-              ),
-            ),
-          ],
+            ],
+          ),
         );
       }),
     );
   }
 
-  Widget _buildExceptionBanner(JobOrderDto job, bool isDark) {
+  Widget _buildExceptionBanner(
+      BuildContext context, JobOrderDto job, bool isDark) {
     final exception = job.siteException!;
     final isReschedule = exception == SiteException.reschedule;
 
@@ -433,9 +412,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   'Site Exception: ${exception.label}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                  style: context.text.titleSmall!.copyWith(
                     color: isDark
                         ? (isReschedule
                             ? const Color(0xFFFDE68A)
@@ -450,8 +427,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     job.onsiteRemarks!,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: context.text.bodySmall!.copyWith(
                       color: isDark
                           ? (isReschedule
                               ? const Color(0xFFFCD34D)
@@ -478,14 +454,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.person_pin_rounded,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.person_pin_rounded,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'Subscriber & Location',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
@@ -494,20 +470,13 @@ class JobOrderDetailScreen extends StatelessWidget {
             // Customer Name & Plan
             Text(
               job.customerName,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
-              ),
+              style: context.text.titleMedium,
             ),
             const SizedBox(height: 2),
             Text(
               job.planName ?? 'Fiber Plan',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.primary,
-              ),
+              style: context.text.labelMedium!
+                  .copyWith(color: AppTheme.brandInkOf(context)),
             ),
             const SizedBox(height: 12),
 
@@ -517,7 +486,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.location_on_outlined,
-                  size: 16,
+                  size: 20,
                   color:
                       isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                 ),
@@ -525,7 +494,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${job.address}${job.barangay != null ? ', ${job.barangay}' : ''}${job.city != null ? ', ${job.city}' : ''}',
-                    style: const TextStyle(fontSize: 13, height: 1.4),
+                    style: context.text.bodyMedium,
                   ),
                 ),
               ],
@@ -548,11 +517,10 @@ class JobOrderDetailScreen extends StatelessWidget {
                       onPressed: () => _promptContact(
                           context, job.contactNumber!,
                           isCall: true, isDark: isDark),
-                      icon: const Icon(Icons.call_rounded, size: 16),
+                      icon: const Icon(Icons.call_rounded, size: 24),
                       label: const Text('Call'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        visualDensity: VisualDensity.compact,
                       ),
                     ),
                   ),
@@ -562,11 +530,10 @@ class JobOrderDetailScreen extends StatelessWidget {
                       onPressed: () => _promptContact(
                           context, job.contactNumber!,
                           isCall: false, job: job, isDark: isDark),
-                      icon: const Icon(Icons.sms_outlined, size: 16),
+                      icon: const Icon(Icons.sms_outlined, size: 24),
                       label: const Text('SMS'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        visualDensity: VisualDensity.compact,
                       ),
                     ),
                   ),
@@ -574,7 +541,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                 ],
                 IconButton(
                   tooltip: 'Copy Address',
-                  icon: const Icon(CupertinoIcons.doc_on_clipboard, size: 18),
+                  icon: const Icon(CupertinoIcons.doc_on_clipboard, size: 24),
                   onPressed: () => _copyAddress(context, job, isDark),
                 ),
               ],
@@ -601,11 +568,11 @@ class JobOrderDetailScreen extends StatelessWidget {
             Row(
               children: [
                 const Icon(CupertinoIcons.location_circle_fill,
-                    size: 18, color: AppTheme.primary),
+                    size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Service Location & GPS Coordinates',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
                 const Spacer(),
                 if (latLng != null)
@@ -616,19 +583,17 @@ class JobOrderDetailScreen extends StatelessWidget {
                       color: AppTheme.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       'GPS Fixed',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.success,
-                      ),
+                      style: context.text.labelMedium!
+                          .copyWith(color: AppTheme.successInkOf(context)),
                     ),
                   ),
               ],
             ),
             const SizedBox(height: 14),
             _buildSpecRow(
+              context,
               'Coordinates',
               dms ?? 'Derived from service area',
               CupertinoIcons.location_solid,
@@ -636,6 +601,7 @@ class JobOrderDetailScreen extends StatelessWidget {
             ),
             if (latLng != null)
               _buildSpecRow(
+                context,
                 'Decimal Lat/Lng',
                 '${latLng.latitude.toStringAsFixed(6)}, ${latLng.longitude.toStringAsFixed(6)}',
                 CupertinoIcons.map_pin_ellipse,
@@ -655,19 +621,16 @@ class JobOrderDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 onPressed: () => _openNavigation(job),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(CupertinoIcons.location_north_fill,
-                        size: 15, color: Colors.white),
-                    SizedBox(width: 8),
+                    const Icon(CupertinoIcons.location_north_fill,
+                        size: 24, color: Colors.white),
+                    const SizedBox(width: 8),
                     Text(
                       'Start Turn-by-Turn Navigation',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+                      style: context.text.labelLarge!
+                          .copyWith(color: Colors.white),
                     ),
                   ],
                 ),
@@ -701,13 +664,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                         Row(
                           children: [
                             const Icon(Icons.hub_rounded,
-                                size: 16, color: Color(0xFF10B981)),
+                                size: 20, color: Color(0xFF10B981)),
                             const SizedBox(width: 6),
                             Text(
                               'Nearest LCP NAP Pole',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                              style: context.text.labelMedium!.copyWith(
                                 color: isDark
                                     ? const Color(0xFF6EE7B7)
                                     : const Color(0xFF047857),
@@ -724,11 +685,8 @@ class JobOrderDetailScreen extends StatelessWidget {
                                 ),
                                 child: Text(
                                   '${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)} away',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                  ),
+                                  style: context.text.labelMedium!
+                                      .copyWith(color: Colors.white),
                                 ),
                               ),
                           ],
@@ -736,13 +694,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           nearestNapInfo.nap.lcpNap,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: context.text.titleSmall,
                         ),
                         if (nearestNapInfo.nap.street?.isNotEmpty == true ||
-                            nearestNapInfo.nap.barangay?.isNotEmpty == true) ...[
+                            nearestNapInfo.nap.barangay?.isNotEmpty ==
+                                true) ...[
                           const SizedBox(height: 2),
                           Text(
                             [
@@ -752,12 +708,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                                   true)
                                 nearestNapInfo.nap.barangay,
                             ].join(', '),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted,
-                            ),
+                            style: context.text.bodySmall,
                           ),
                         ],
                         if (nearestNapInfo.nap.latLng != null) ...[
@@ -776,15 +727,12 @@ class JobOrderDetailScreen extends StatelessWidget {
                               ),
                               icon: const Icon(
                                   CupertinoIcons.arrow_turn_up_right,
-                                  size: 14,
+                                  size: 24,
                                   color: Color(0xFF10B981)),
-                              label: const Text(
+                              label: Text(
                                 'Directions to NAP Pole',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF10B981),
-                                ),
+                                style: context.text.labelLarge!
+                                    .copyWith(color: const Color(0xFF10B981)),
                               ),
                               onPressed: () {
                                 final p = nearestNapInfo.nap.latLng!;
@@ -869,23 +817,26 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.hub_outlined, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.hub_outlined,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'Plant & Hardware Allocation',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 14),
             _buildSpecRow(
+                context,
                 'LCP Cabinet',
                 job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned',
                 Icons.storage_rounded,
                 isDark),
             _buildSpecRow(
+                context,
                 'NAP Box',
                 job.nap?.isNotEmpty == true
                     ? job.nap!
@@ -894,26 +845,28 @@ class JobOrderDetailScreen extends StatelessWidget {
                         : 'Unassigned'),
                 Icons.hub_rounded,
                 isDark),
-            _buildSpecRow('Port Assignment', job.portId ?? 'Port 1',
+            _buildSpecRow(context, 'Port Assignment', job.portId ?? 'Port 1',
                 Icons.electrical_services_rounded, isDark),
             if (job.vlanId != null)
-              _buildSpecRow(
-                  'VLAN Tag', 'VLAN ${job.vlanId}', Icons.tag_rounded, isDark),
+              _buildSpecRow(context, 'VLAN Tag', 'VLAN ${job.vlanId}',
+                  Icons.tag_rounded, isDark),
             _buildSpecRow(
+                context,
                 'Modem / ONT SN',
                 job.modemRouterSN ?? 'Pending Installation',
                 Icons.qr_code_rounded,
                 isDark),
             if (job.routerModel != null && job.routerModel!.isNotEmpty)
-              _buildSpecRow(
-                  'ONT Model', job.routerModel!, Icons.devices_rounded, isDark),
+              _buildSpecRow(context, 'ONT Model', job.routerModel!,
+                  Icons.devices_rounded, isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOpticalPowerCard(JobOrderDto job, bool isDark) {
+  Widget _buildOpticalPowerCard(
+      BuildContext context, JobOrderDto job, bool isDark) {
     final dbm = job.opticalPower!;
     final isOptimal = dbm >= AppConstants.opticalMinOptimal &&
         dbm <= AppConstants.opticalMaxOptimal;
@@ -925,6 +878,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         : isMarginal
             ? AppTheme.warning
             : AppTheme.danger;
+
+    // The reading's own colour, but pulled from the ink palette since it
+    // sits on Text rather than a fill.
+    final badgeColorInk = isOptimal
+        ? AppTheme.successInkOf(context)
+        : isMarginal
+            ? AppTheme.warningInkOf(context)
+            : AppTheme.dangerInkOf(context);
 
     final badgeSubtle = isDark
         ? badgeColor.withValues(alpha: 0.2)
@@ -946,13 +907,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.speed_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.speed_rounded,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'Optical Power Measurement',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
@@ -972,21 +934,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         '${dbm.toStringAsFixed(1)} dBm',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: badgeColor,
-                        ),
+                        style: context.text.headlineSmall!
+                            .copyWith(color: badgeColorInk),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Standard: -12.0 dBm to -24.0 dBm',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
+                        style: context.text.bodySmall,
                       ),
                     ],
                   ),
@@ -999,11 +953,8 @@ class JobOrderDetailScreen extends StatelessWidget {
                     ),
                     child: Text(
                       badgeLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: context.text.labelMedium!
+                          .copyWith(color: Colors.white),
                     ),
                   ),
                 ],
@@ -1023,14 +974,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.assignment_turned_in_outlined,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.assignment_turned_in_outlined,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'On-Site Records & Verification',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
@@ -1039,12 +990,8 @@ class JobOrderDetailScreen extends StatelessWidget {
             if (job.onsiteRemarks != null && job.onsiteRemarks!.isNotEmpty) ...[
               Text(
                 'Technician Notes:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: context.text.labelMedium!
+                    .copyWith(color: AppTheme.secondaryInkOf(context)),
               ),
               const SizedBox(height: 4),
               Container(
@@ -1056,7 +1003,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                 ),
                 child: Text(
                   job.onsiteRemarks!,
-                  style: const TextStyle(fontSize: 13),
+                  style: context.text.bodyMedium,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1065,11 +1012,8 @@ class JobOrderDetailScreen extends StatelessWidget {
             // Photo proofs and signature, tap to zoom
             Text(
               'Photo Proofs:',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
+              style: context.text.labelMedium!
+                  .copyWith(color: AppTheme.secondaryInkOf(context)),
             ),
             const SizedBox(height: 6),
             JobPhotoGallery(job: job),
@@ -1082,10 +1026,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => _handleOpenReport(context, job),
                   icon:
-                      const Icon(Icons.assignment_turned_in_rounded, size: 16),
-                  label: const Text(
+                      const Icon(Icons.assignment_turned_in_rounded, size: 24),
+                  label: Text(
                     'Fill / Update Completion Report',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    style:
+                        context.text.labelLarge!.copyWith(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1098,27 +1043,24 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  static Widget _buildSpecRow(
-      String label, String value, IconData icon, bool isDark) {
+  static Widget _buildSpecRow(BuildContext context, String label, String value,
+      IconData icon, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
           Icon(icon,
-              size: 16,
+              size: 20,
               color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.bodySmall,
           ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            style: context.text.titleSmall,
           ),
         ],
       ),
@@ -1136,7 +1078,7 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   /// Says why activation is unavailable, so the button does not just look
   /// broken.
-  Widget _buildReportRequiredNote(bool isDark) {
+  Widget _buildReportRequiredNote(BuildContext context, bool isDark) {
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
       width: double.infinity,
@@ -1150,13 +1092,13 @@ class JobOrderDetailScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 16, color: muted),
+          Icon(Icons.info_outline_rounded, size: 20, color: muted),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Complete the on-site report first. It needs the modem serial '
               'and the subscriber signature.',
-              style: TextStyle(fontSize: 12, color: muted),
+              style: context.text.bodySmall,
             ),
           ),
         ],
@@ -1166,7 +1108,7 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   /// A read-only banner for the history: the record can be inspected but not
   /// changed from here.
-  Widget _buildViewOnlyNote(bool isDark) {
+  Widget _buildViewOnlyNote(BuildContext context, bool isDark) {
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
       width: double.infinity,
@@ -1179,12 +1121,12 @@ class JobOrderDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.lock_outline_rounded, size: 16, color: muted),
+          Icon(Icons.lock_outline_rounded, size: 20, color: muted),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'View only. This job is in your history and cannot be changed.',
-              style: TextStyle(fontSize: 12, color: muted),
+              style: context.text.bodySmall,
             ),
           ),
         ],
@@ -1192,7 +1134,8 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActivatedNote(JobOrderDto job, bool isDark) {
+  Widget _buildActivatedNote(
+      BuildContext context, JobOrderDto job, bool isDark) {
     final when = job.dateInstalled;
     final prefix = job.isCompleted ? 'Completed' : 'Activated';
     final label = when == null
@@ -1215,18 +1158,14 @@ class JobOrderDetailScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.verified_rounded,
-              size: 16,
+              size: 20,
               color: isDark ? const Color(0xFF4ADE80) : AppTheme.success),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color:
-                    isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534),
-              ),
+              style: context.text.labelMedium!
+                  .copyWith(color: AppTheme.successInkOf(context)),
             ),
           ),
         ],
@@ -1317,20 +1256,20 @@ class JobOrderDetailScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.location_on_rounded,
+                    const Icon(Icons.location_on_rounded,
                         color: AppTheme.primary, size: 22),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Customer Location & Navigation',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      style: ctx.text.titleMedium,
                     ),
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20),
+                  icon: const Icon(Icons.close_rounded, size: 24),
+                  tooltip: 'Close',
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ],
@@ -1338,7 +1277,7 @@ class JobOrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               addr,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              style: ctx.text.titleSmall,
             ),
             const SizedBox(height: 16),
 
@@ -1351,17 +1290,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.navigation_rounded,
-                    color: Color(0xFF1A73E8), size: 20),
+                    color: Color(0xFF1A73E8), size: 24),
               ),
-              title: const Text('Start Navigation in Google Maps',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              title: Text('Start Navigation in Google Maps',
+                  style: ctx.text.titleSmall),
               subtitle: Text(
                 'Turn-by-turn driving directions from your location',
-                style: TextStyle(
-                  fontSize: 11,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: ctx.text.bodySmall,
               ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1387,17 +1322,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.copy_rounded,
-                    color: AppTheme.primary, size: 20),
+                    color: AppTheme.primary, size: 24),
               ),
-              title: const Text('Copy Address to Clipboard',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              title:
+                  Text('Copy Address to Clipboard', style: ctx.text.titleSmall),
               subtitle: Text(
                 'Copy complete subscriber address text',
-                style: TextStyle(
-                  fontSize: 11,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: ctx.text.bodySmall,
               ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1538,6 +1469,7 @@ class _DistanceFromTechnicianRowState
         final distance = snapshot.data;
         if (distance == null) return const SizedBox.shrink();
         return JobOrderDetailScreen._buildSpecRow(
+          context,
           'Distance from You',
           distance,
           CupertinoIcons.arrow_up_right_diamond_fill,

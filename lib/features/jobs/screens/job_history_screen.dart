@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/signals/auth_signals.dart';
 import '../signals/jobs_signals.dart';
@@ -23,17 +24,15 @@ class JobHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final signals = jobsSignals;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'My Job History',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              style: context.text.titleMedium,
             ),
             SignalBuilder(
               builder: (context) {
@@ -41,11 +40,7 @@ class JobHistoryScreen extends StatelessWidget {
                 if (email.isEmpty) return const SizedBox.shrink();
                 return Text(
                   'Activated jobs for $email',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: muted,
-                  ),
+                  style: context.text.bodySmall,
                 );
               },
             ),

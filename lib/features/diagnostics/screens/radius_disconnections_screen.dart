@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_search_field.dart';
 import '../models/radius_user_model.dart';
 import '../services/radius_user_service.dart';
 
@@ -10,10 +12,12 @@ class RadiusDisconnectionsScreen extends StatefulWidget {
   const RadiusDisconnectionsScreen({super.key});
 
   @override
-  State<RadiusDisconnectionsScreen> createState() => _RadiusDisconnectionsScreenState();
+  State<RadiusDisconnectionsScreen> createState() =>
+      _RadiusDisconnectionsScreenState();
 }
 
-class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen> {
+class _RadiusDisconnectionsScreenState
+    extends State<RadiusDisconnectionsScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<RadiusUserDto> _allUsers = [];
   bool _isLoading = true;
@@ -77,7 +81,8 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
     });
 
     try {
-      final ok = await RadiusUserService.instance.toggleConnection(name, desired);
+      final ok =
+          await RadiusUserService.instance.toggleConnection(name, desired);
       if (!ok) throw Exception('API rejected connection change');
 
       if (!mounted) return;
@@ -128,14 +133,15 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
       if (_filter == 'connected' && !u.isConnected) return false;
       if (_filter == 'disconnected' && u.isConnected) return false;
       if (query.isNotEmpty) {
-        return u.name.toLowerCase().contains(query) || u.group.toLowerCase().contains(query);
+        return u.name.toLowerCase().contains(query) ||
+            u.group.toLowerCase().contains(query);
       }
       return true;
     }).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Disconnections & RADIUS', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+        title: Text('Disconnections & RADIUS', style: context.text.titleMedium),
         actions: [
           IconButton(
             onPressed: _isLoading ? null : _loadUsers,
@@ -152,53 +158,25 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
               children: [
-                // iOS Capsule Search Bar
-                Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    children: [
-                      const Icon(CupertinoIcons.search, size: 16, color: AppTheme.textMuted),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (_) => setState(() {}),
-                          style: TextStyle(fontSize: 14, color: isDark ? Colors.white : AppTheme.darkSlate),
-                          decoration: const InputDecoration(
-                            hintText: 'Search account name, plan group...',
-                            hintStyle: TextStyle(fontSize: 14, color: AppTheme.textMuted),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                            isDense: true,
-                          ),
-                        ),
-                      ),
-                      if (_searchController.text.isNotEmpty)
-                        GestureDetector(
-                          onTap: () {
-                            _searchController.clear();
-                            setState(() {});
-                          },
-                          child: const Icon(CupertinoIcons.clear_thick_circled, size: 16, color: AppTheme.textMuted),
-                        ),
-                    ],
-                  ),
+                AppSearchField(
+                  controller: _searchController,
+                  hintText: 'Search account name, plan group',
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 10),
 
                 // Filter Tabs: All, Connected, Disconnected
                 Row(
                   children: [
-                    _buildFilterChip('All', '', total, isDark),
+                    _buildFilterChip(context, 'All', '', total, isDark),
                     const SizedBox(width: 8),
-                    _buildFilterChip('Connected', 'connected', connectedCount, isDark, color: AppTheme.success),
+                    _buildFilterChip(context, 'Connected', 'connected',
+                        connectedCount, isDark,
+                        color: AppTheme.success),
                     const SizedBox(width: 8),
-                    _buildFilterChip('Disconnected', 'disconnected', disconnectedCount, isDark, color: AppTheme.primary),
+                    _buildFilterChip(context, 'Disconnected', 'disconnected',
+                        disconnectedCount, isDark,
+                        color: AppTheme.primary),
                   ],
                 ),
               ],
@@ -217,24 +195,32 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
                             onRefresh: _loadUsers,
                             color: AppTheme.primary,
                             child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               itemCount: filtered.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 8),
                               itemBuilder: (context, index) {
                                 final user = filtered[index];
-                                final isPending = _pendingAccounts.contains(user.name);
+                                final isPending =
+                                    _pendingAccounts.contains(user.name);
                                 final isConnected = user.isConnected;
 
                                 return Container(
                                   decoration: BoxDecoration(
-                                    color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
+                                    color: isDark
+                                        ? AppTheme.darkCard
+                                        : AppTheme.lightCard,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                                      color: isDark
+                                          ? AppTheme.borderDark
+                                          : AppTheme.borderLight,
                                       width: 0.5,
                                     ),
                                   ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 12),
                                   child: Row(
                                     children: [
                                       // Status Dot
@@ -243,7 +229,9 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
                                         height: 10,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: isConnected ? AppTheme.success : AppTheme.primary,
+                                          color: isConnected
+                                              ? AppTheme.success
+                                              : AppTheme.primary,
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -251,19 +239,15 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
                                       // Account Info
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              user.name,
-                                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                                            ),
+                                            Text(user.name,
+                                                style: context.text.titleSmall),
                                             const SizedBox(height: 2),
                                             Text(
                                               'Group: ${user.group.isEmpty ? "None" : user.group}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDark ? Colors.white60 : AppTheme.textMuted,
-                                              ),
+                                              style: context.text.bodySmall,
                                             ),
                                           ],
                                         ),
@@ -271,19 +255,29 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
 
                                       // Status Pill
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
                                           color: isConnected
-                                              ? (isDark ? const Color(0xFF143823) : const Color(0xFFE8F5E9))
-                                              : (isDark ? AppTheme.primarySubtleBgDark : AppTheme.primarySubtleBg),
-                                          borderRadius: BorderRadius.circular(6),
+                                              ? (isDark
+                                                  ? const Color(0xFF143823)
+                                                  : const Color(0xFFE8F5E9))
+                                              : (isDark
+                                                  ? AppTheme.primarySubtleBgDark
+                                                  : AppTheme.primarySubtleBg),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          isConnected ? 'Connected' : 'Disconnected',
-                                          style: TextStyle(
-                                            fontSize: 11,
+                                          isConnected
+                                              ? 'Connected'
+                                              : 'Disconnected',
+                                          style:
+                                              context.text.labelSmall!.copyWith(
                                             fontWeight: FontWeight.w700,
-                                            color: isConnected ? AppTheme.success : AppTheme.primary,
+                                            color: isConnected
+                                                ? AppTheme.successInkOf(context)
+                                                : AppTheme.brandInkOf(context),
                                           ),
                                         ),
                                       ),
@@ -293,13 +287,16 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
                                       if (isPending)
                                         const SizedBox(
                                           width: 40,
-                                          child: Center(child: CupertinoActivityIndicator(radius: 8)),
+                                          child: Center(
+                                              child: CupertinoActivityIndicator(
+                                                  radius: 8)),
                                         )
                                       else
                                         CupertinoSwitch(
                                           value: isConnected,
                                           activeTrackColor: AppTheme.success,
-                                          onChanged: (val) => _toggleUser(user, val),
+                                          onChanged: (val) =>
+                                              _toggleUser(user, val),
                                         ),
                                     ],
                                   ),
@@ -313,7 +310,9 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
     );
   }
 
-  Widget _buildFilterChip(String label, String value, int count, bool isDark, {Color? color}) {
+  Widget _buildFilterChip(
+      BuildContext context, String label, String value, int count, bool isDark,
+      {Color? color}) {
     final isSelected = _filter == value;
     final primaryColor = color ?? AppTheme.primary;
 
@@ -323,7 +322,11 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected
-              ? (color != null ? primaryColor.withValues(alpha: 0.15) : (isDark ? AppTheme.primarySubtleBgDark : AppTheme.primarySubtleBg))
+              ? (color != null
+                  ? primaryColor.withValues(alpha: 0.15)
+                  : (isDark
+                      ? AppTheme.primarySubtleBgDark
+                      : AppTheme.primarySubtleBg))
               : (isDark ? AppTheme.darkInput : AppTheme.fillLight),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
@@ -333,10 +336,13 @@ class _RadiusDisconnectionsScreenState extends State<RadiusDisconnectionsScreen>
         ),
         child: Text(
           '$label ($count)',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? primaryColor : (isDark ? Colors.white70 : AppTheme.textSecondary),
+          style: context.text.labelLarge!.copyWith(
+            fontWeight: isSelected ? FontWeight.w700 : null,
+            color: isSelected
+                ? (primaryColor == AppTheme.success
+                    ? AppTheme.successInkOf(context)
+                    : AppTheme.brandInkOf(context))
+                : AppTheme.secondaryInkOf(context),
           ),
         ),
       ),

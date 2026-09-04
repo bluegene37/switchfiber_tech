@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/loading_states.dart';
 import '../signals/service_orders_signals.dart';
 import '../widgets/service_order_card.dart';
@@ -43,9 +45,9 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Service & Repair Tickets',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: context.text.titleMedium,
         ),
         actions: [
           SignalBuilder(
@@ -95,62 +97,13 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
               children: [
-                // iOS Capsule Search Bar
-                Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        CupertinoIcons.search,
-                        size: 16,
-                        color: AppTheme.textMuted,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (text) {
-                            setState(() {});
-                            signals.searchQuery.value = text;
-                          },
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.white : AppTheme.darkSlate,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: 'Search repair ticket, account, concern...',
-                            hintStyle: TextStyle(
-                              fontSize: 14,
-                              color: AppTheme.textMuted,
-                            ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                            isDense: true,
-                          ),
-                        ),
-                      ),
-                      if (_searchController.text.isNotEmpty)
-                        GestureDetector(
-                          onTap: () {
-                            _searchController.clear();
-                            setState(() {});
-                            signals.searchQuery.value = '';
-                          },
-                          child: const Icon(
-                            CupertinoIcons.clear_thick_circled,
-                            size: 16,
-                            color: AppTheme.textMuted,
-                          ),
-                        ),
-                    ],
-                  ),
+                AppSearchField(
+                  controller: _searchController,
+                  hintText: 'Search repair ticket, account, concern',
+                  onChanged: (text) {
+                    setState(() {});
+                    signals.searchQuery.value = text;
+                  },
                 ),
                 const SizedBox(height: 10),
 
@@ -159,39 +112,49 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                   builder: (context) {
                     final currentPriority = signals.priorityFilter.value;
 
-                    return SizedBox(
-                      height: 32,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _priorities.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final p = _priorities[index];
-                          final isSelected =
-                              currentPriority.toLowerCase() == p.toLowerCase();
+                    // Intrinsic height, not a fixed box: at 200% text a
+                    // ChoiceChip needs more than the 32px an 8pt scale was
+                    // designed around, and a SizedBox forces it into that
+                    // height instead of erroring, silently squeezing the
+                    // label. SingleChildScrollView lets the row size to
+                    // whatever the chips need while still scrolling
+                    // horizontally, same as the ListView it replaces.
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (var index = 0;
+                              index < _priorities.length;
+                              index++) ...[
+                            if (index > 0) const SizedBox(width: 8),
+                            Builder(builder: (chipContext) {
+                              final p = _priorities[index];
+                              final isSelected =
+                                  currentPriority.toLowerCase() ==
+                                      p.toLowerCase();
 
-                          return ChoiceChip(
-                            label: Text(p),
-                            selected: isSelected,
-                            onSelected: (_) {
-                              signals.priorityFilter.value = p;
-                              setState(() {});
-                            },
-                            visualDensity: VisualDensity.compact,
-                            labelStyle: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected
-                                  ? Colors.white
-                                  : (isDark
-                                      ? AppTheme.textSecondaryDark
-                                      : AppTheme.darkSlate),
-                            ),
-                            selectedColor: p == 'Urgent'
-                                ? AppTheme.primary
-                                : (isDark ? AppTheme.primary : AppTheme.primary),
-                          );
-                        },
+                              return ChoiceChip(
+                                label: Text(p),
+                                selected: isSelected,
+                                onSelected: (_) {
+                                  signals.priorityFilter.value = p;
+                                  setState(() {});
+                                },
+                                labelStyle:
+                                    chipContext.text.labelLarge!.copyWith(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppTheme.secondaryInkOf(chipContext),
+                                ),
+                                selectedColor: p == 'Urgent'
+                                    ? AppTheme.primary
+                                    : (isDark
+                                        ? AppTheme.primary
+                                        : AppTheme.primary),
+                              );
+                            }),
+                          ],
+                        ],
                       ),
                     );
                   },
@@ -223,21 +186,25 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                         children: [
                           Icon(
                             CupertinoIcons.wrench_fill,
-                            size: 16,
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                            size: 20,
+                            color: isDark
+                                ? const Color(0xFF94A3B8)
+                                : const Color(0xFF475569),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            '$total active repair ticket${total == 1 ? '' : 's'}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark
-                                  ? const Color(0xFFE2E8F0)
-                                  : const Color(0xFF1E293B),
+                          Expanded(
+                            child: Text(
+                              '$total active repair ticket${total == 1 ? '' : 's'}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.text.labelMedium!.copyWith(
+                                color: isDark
+                                    ? const Color(0xFFE2E8F0)
+                                    : const Color(0xFF1E293B),
+                              ),
                             ),
                           ),
-                          const Spacer(),
+                          if (urgent > 0) const SizedBox(width: 8),
                           if (urgent > 0)
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -248,9 +215,7 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                               ),
                               child: Text(
                                 '$urgent urgent',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                style: context.text.labelLarge!.copyWith(
                                   color: Colors.white,
                                 ),
                               ),
@@ -301,20 +266,15 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'No Active Service Orders',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                            style: context.text.titleSmall,
                           ),
                           const SizedBox(height: 6),
                           Text(
                             'No repair or swap tickets match the current filters.',
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.white60
-                                  : AppTheme.textMuted,
-                              fontSize: 13,
-                            ),
+                            style: context.text.bodyMedium!.copyWith(
+                                color: AppTheme.secondaryInkOf(context)),
                             textAlign: TextAlign.center,
                           ),
                         ],

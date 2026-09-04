@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 import 'status_badge.dart';
@@ -73,7 +74,7 @@ class JobCard extends StatelessWidget {
                     job.isActivated
                         ? CupertinoIcons.checkmark_seal_fill
                         : CupertinoIcons.calendar,
-                    size: 19,
+                    size: 20,
                     color:
                         job.isActivated ? AppTheme.success : AppTheme.primary,
                   ),
@@ -83,28 +84,28 @@ class JobCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      // A Wrap, not a Row: the ticket number and the status
+                      // badge each need their own room, and neither is
+                      // squeezable, so when they don't both fit on one line
+                      // at 200% text the badge flows to its own line below
+                      // instead of the badge's own pill overflowing.
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
-                          Expanded(
-                            child: Text(
-                              job.ticketNumber,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.2,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          Text(
+                            job.ticketNumber,
+                            style: context.text.titleSmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(width: 8),
-                          if (!job.isSynced) ...[
+                          if (!job.isSynced)
                             const Icon(
                               CupertinoIcons.cloud_upload,
-                              size: 14,
+                              size: 20,
                               color: AppTheme.warning,
                             ),
-                            const SizedBox(width: 6),
-                          ],
                           StatusBadge(
                             status: job.jobStatus,
                             rawStatus: job.status,
@@ -115,11 +116,7 @@ class JobCard extends StatelessWidget {
                       const SizedBox(height: 5),
                       Text(
                         job.customerName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                        ),
+                        style: context.text.titleMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -127,10 +124,8 @@ class JobCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           job.planName!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primary,
+                          style: context.text.labelMedium!.copyWith(
+                            color: AppTheme.brandInkOf(context),
                           ),
                         ),
                       ],
@@ -138,16 +133,12 @@ class JobCard extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(CupertinoIcons.location, size: 14, color: muted),
+                          Icon(CupertinoIcons.location, size: 20, color: muted),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               location,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: muted,
-                                height: 1.25,
-                              ),
+                              style: context.text.bodySmall,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -158,14 +149,14 @@ class JobCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(CupertinoIcons.phone, size: 14, color: muted),
+                            Icon(CupertinoIcons.phone, size: 20, color: muted),
                             const SizedBox(width: 4),
-                            Text(
-                              job.contactNumber!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: muted,
-                                fontWeight: FontWeight.w500,
+                            Expanded(
+                              child: Text(
+                                job.contactNumber!,
+                                style: context.text.bodySmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -173,7 +164,10 @@ class JobCard extends StatelessWidget {
                       ],
                       const SizedBox(height: 10),
                       // Quick Action Pills
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (job.contactNumber?.isNotEmpty == true) ...[
                             GestureDetector(
@@ -203,23 +197,20 @@ class JobCard extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const Icon(CupertinoIcons.phone_fill,
-                                        size: 11, color: Color(0xFF10B981)),
+                                        size: 24, color: Color(0xFF10B981)),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'Call',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark
-                                            ? Colors.white
-                                            : AppTheme.darkSlate,
+                                    Flexible(
+                                      child: Text(
+                                        'Call',
+                                        style: context.text.labelLarge,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
                           ],
                           GestureDetector(
                             onTap: () async {
@@ -256,16 +247,14 @@ class JobCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(CupertinoIcons.location_north_fill,
-                                      size: 11, color: AppTheme.primary),
+                                      size: 24, color: AppTheme.primary),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    'Directions',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark
-                                          ? Colors.white
-                                          : AppTheme.darkSlate,
+                                  Flexible(
+                                    child: Text(
+                                      'Directions',
+                                      style: context.text.labelLarge,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -273,8 +262,7 @@ class JobCard extends StatelessWidget {
                             ),
                           ),
                           if (job.nap?.isNotEmpty == true ||
-                              (job.napId != null && job.napId! > 0)) ...[
-                            const SizedBox(width: 6),
+                              (job.napId != null && job.napId! > 0))
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 4),
@@ -287,22 +275,27 @@ class JobCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(Icons.hub_rounded,
-                                      size: 11, color: Color(0xFF0284C7)),
+                                      size: 20, color: Color(0xFF0284C7)),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    job.nap?.isNotEmpty == true
-                                        ? job.nap!
-                                        : 'NAP-${job.napId}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0284C7),
+                                  Flexible(
+                                    child: Text(
+                                      job.nap?.isNotEmpty == true
+                                          ? job.nap!
+                                          : 'NAP-${job.napId}',
+                                      // Raw hex, not a semantic ink token:
+                                      // no AppTheme equivalent for this sky
+                                      // blue. Reported in task-6-report.md
+                                      // per brief §5.
+                                      style: context.text.labelLarge!.copyWith(
+                                        color: const Color(0xFF0284C7),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ],
@@ -313,7 +306,7 @@ class JobCard extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: Icon(
                     CupertinoIcons.chevron_forward,
-                    size: 16,
+                    size: 20,
                     color: muted.withValues(alpha: 0.6),
                   ),
                 ),

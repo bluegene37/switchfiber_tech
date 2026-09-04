@@ -3,10 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../core/theme/app_text.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/signals/auth_signals.dart';
 import '../jobs/models/job_order_model.dart';
-import '../jobs/screens/job_history_screen.dart';
 import '../jobs/screens/job_orders_screen.dart';
 import '../jobs/signals/jobs_signals.dart';
 import '../lcp_nap/screens/lcp_nap_list_screen.dart';
@@ -269,7 +269,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
                           if (count <= 0) return const SizedBox.shrink();
                           return Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 4.5, vertical: 1.5),
+                                horizontal: 6, vertical: 1),
                             constraints: const BoxConstraints(
                               minWidth: 16,
                               minHeight: 16,
@@ -287,12 +287,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                             alignment: Alignment.center,
                             child: Text(
                               count > 99 ? '99+' : '$count',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                height: 1,
-                              ),
+                              style: context.text.labelSmall!
+                                  .copyWith(color: Colors.white),
                             ),
                           );
                         },
@@ -303,11 +299,11 @@ class _TechnicianShellState extends State<TechnicianShell> {
               const SizedBox(height: 3),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 10,
+                style: context.text.labelSmall!.copyWith(
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? activeColor : inactiveColor,
-                  letterSpacing: -0.2,
+                  color: isSelected
+                      ? AppTheme.brandInkOf(context)
+                      : AppTheme.secondaryInkOf(context),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -339,23 +335,21 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   child: Text(
                     (user?.fname.isNotEmpty == true ? user!.fname[0] : 'T')
                         .toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.primary,
-                    ),
+                    style: context.text.titleLarge!
+                        .copyWith(color: AppTheme.brandInkOf(context)),
                   ),
                 ),
                 accountName: Text(
                   user?.fullName ?? 'Field Technician',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 16),
+                  style:
+                      context.text.titleMedium!.copyWith(color: Colors.white),
                 ),
                 accountEmail: Text(
                   user?.email.isNotEmpty == true
                       ? user!.email
                       : 'Switch Fiber Dispatch Tech',
-                  style: const TextStyle(fontSize: 13),
+                  style:
+                      context.text.bodySmall!.copyWith(color: Colors.white70),
                 ),
               );
             },
@@ -377,11 +371,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   ),
                   child: Text(
                     '$scheduled scheduled',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryActive,
-                    ),
+                    style: context.text.labelMedium!
+                        .copyWith(color: AppTheme.brandInkOf(context)),
                   ),
                 );
               },
@@ -409,11 +400,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   ),
                   child: Text(
                     '$repairs active',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF92400E),
-                    ),
+                    style: context.text.labelMedium!
+                        .copyWith(color: AppTheme.warningInkOf(context)),
                   ),
                 );
               },
@@ -441,11 +429,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   ),
                   child: Text(
                     '$total sites',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryActive,
-                    ),
+                    style: context.text.labelMedium!
+                        .copyWith(color: AppTheme.brandInkOf(context)),
                   ),
                 );
               },
@@ -487,11 +472,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   ),
                   child: Text(
                     '$pending pending',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF92400E),
-                    ),
+                    style: context.text.labelMedium!
+                        .copyWith(color: AppTheme.warningInkOf(context)),
                   ),
                 );
               },
@@ -516,8 +498,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
 
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: AppTheme.danger),
-            title: const Text('Sign Out',
-                style: TextStyle(color: AppTheme.danger)),
+            title: Text('Sign Out',
+                style: TextStyle(color: AppTheme.dangerInkOf(context))),
             onTap: () async {
               Navigator.pop(context);
               await auth.logout();

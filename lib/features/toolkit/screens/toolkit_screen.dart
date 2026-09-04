@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import 'fiber_color_code_tool.dart';
 import 'optical_budget_tool.dart';
@@ -18,9 +19,9 @@ class ToolkitScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Technician Toolkit',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: context.text.titleMedium,
         ),
       ),
       body: ListView(
@@ -62,20 +63,14 @@ class ToolkitScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'ISP Field Engineer Suite',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w800),
+                        style: context.text.titleMedium,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'On-site fiber optics calibration, core splicing references, and network diagnostic tools.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
+                        style: context.text.bodySmall,
                       ),
                     ],
                   ),
@@ -94,6 +89,7 @@ class ToolkitScreen extends StatelessWidget {
             icon: Icons.palette_rounded,
             badge: 'Splicing Standard',
             color: const Color(0xFF0070BA),
+            badgeTextColor: AppTheme.infoInkOf(context),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
@@ -111,6 +107,7 @@ class ToolkitScreen extends StatelessWidget {
             icon: Icons.speed_rounded,
             badge: 'OPM dBm Standard',
             color: AppTheme.primary,
+            badgeTextColor: AppTheme.brandInkOf(context),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
@@ -128,6 +125,7 @@ class ToolkitScreen extends StatelessWidget {
             icon: Icons.cable_rounded,
             badge: 'Installation BOM',
             color: const Color(0xFF10B981),
+            badgeTextColor: AppTheme.successInkOf(context),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
@@ -145,6 +143,7 @@ class ToolkitScreen extends StatelessWidget {
             icon: Icons.network_ping_rounded,
             badge: 'Connectivity Ping',
             color: const Color(0xFF8B5CF6),
+            badgeTextColor: AppTheme.violetInkOf(context),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
@@ -162,6 +161,7 @@ class ToolkitScreen extends StatelessWidget {
             icon: Icons.auto_stories_rounded,
             badge: 'Resolution Guide',
             color: const Color(0xFFF59E0B),
+            badgeTextColor: AppTheme.warningInkOf(context),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
@@ -180,6 +180,7 @@ class ToolkitScreen extends StatelessWidget {
             icon: CupertinoIcons.wifi_slash,
             badge: 'Live RADIUS',
             color: const Color(0xFFEF4444),
+            badgeTextColor: AppTheme.dangerInkOf(context),
             isDark: isDark,
             onTap: () => Navigator.push(
               context,
@@ -199,6 +200,7 @@ class ToolkitScreen extends StatelessWidget {
     required IconData icon,
     required String badge,
     required Color color,
+    required Color badgeTextColor,
     required bool isDark,
     required VoidCallback onTap,
   }) {
@@ -247,35 +249,32 @@ class ToolkitScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               title,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.2,
-                              ),
+                              style: context.text.titleMedium,
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppTheme.darkInput
-                                  : AppTheme.fillLight,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
                                 color: isDark
-                                    ? AppTheme.borderDark
-                                    : AppTheme.borderLight,
-                                width: 0.5,
+                                    ? AppTheme.darkInput
+                                    : AppTheme.fillLight,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isDark
+                                      ? AppTheme.borderDark
+                                      : AppTheme.borderLight,
+                                  width: 0.5,
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              badge,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: color,
+                              child: Text(
+                                badge,
+                                style: context.text.labelSmall!.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: badgeTextColor,
+                                ),
                               ),
                             ),
                           ),
@@ -284,13 +283,7 @@ class ToolkitScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.3,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
+                        style: context.text.bodySmall,
                       ),
                     ],
                   ),
@@ -303,7 +296,7 @@ class ToolkitScreen extends StatelessWidget {
                     color: isDark
                         ? AppTheme.textSecondaryDark
                         : AppTheme.textMuted,
-                    size: 16,
+                    size: 24,
                   ),
                 ),
               ],

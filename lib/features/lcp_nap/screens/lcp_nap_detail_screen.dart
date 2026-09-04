@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/services/map_navigation_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/lcp_nap_model.dart';
 import '../services/map_clustering.dart';
@@ -58,10 +59,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
             body: Center(
               child: Text(
                 'Location not found',
-                style: TextStyle(
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: context.text.bodyMedium!
+                    .copyWith(color: AppTheme.secondaryInkOf(context)),
               ),
             ),
           );
@@ -74,7 +73,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
           appBar: AppBar(
             title: Text(
               location.lcpNap,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+              style: context.text.titleLarge,
             ),
             actions: [
               // Offline sync badge
@@ -107,7 +106,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                       location.isSynced
                           ? Icons.cloud_done_rounded
                           : Icons.cloud_off_rounded,
-                      size: 14,
+                      size: 20,
                       color: location.isSynced
                           ? (isDark
                               ? const Color(0xFF4ADE80)
@@ -119,16 +118,11 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                     const SizedBox(width: 4),
                     Text(
                       location.isSynced ? 'Synced' : 'Drift SQLite',
-                      style: TextStyle(
-                        fontSize: 11,
+                      style: context.text.labelSmall!.copyWith(
                         fontWeight: FontWeight.w700,
                         color: location.isSynced
-                            ? (isDark
-                                ? const Color(0xFF4ADE80)
-                                : AppTheme.success)
-                            : (isDark
-                                ? const Color(0xFFFDE68A)
-                                : const Color(0xFF92400E)),
+                            ? AppTheme.successInkOf(context)
+                            : AppTheme.warningInkOf(context),
                       ),
                     ),
                   ],
@@ -174,19 +168,12 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                 children: [
                                   Text(
                                     location.lcpNap,
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.3,
-                                    ),
+                                    style: context.text.titleMedium,
                                   ),
                                   Text(
                                     '${location.lcp} Distribution Point',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: cabinetColor,
-                                    ),
+                                    style: context.text.labelMedium!
+                                        .copyWith(color: cabinetColor),
                                   ),
                                 ],
                               ),
@@ -208,12 +195,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                             ),
                             child: Text(
                               '${location.portTotal} ports',
-                              style: TextStyle(
-                                fontSize: 12,
+                              style: context.text.labelLarge!.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: isDark
-                                    ? const Color(0xFFFF8591)
-                                    : AppTheme.primaryActive,
+                                color: AppTheme.brandInkOf(context),
                               ),
                             ),
                           ),
@@ -232,7 +216,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                         children: [
                           Icon(
                             Icons.location_city_rounded,
-                            size: 16,
+                            size: 20,
                             color: isDark
                                 ? AppTheme.textSecondaryDark
                                 : AppTheme.textMuted,
@@ -241,12 +225,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                           Expanded(
                             child: Text(
                               '${location.street != null ? "${location.street}, " : ""}${location.barangay ?? "N/A"}, ${location.city ?? "Metro Manila"}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    isDark ? Colors.white : AppTheme.darkSlate,
-                              ),
+                              style: context.text.titleSmall,
                             ),
                           ),
                         ],
@@ -273,28 +252,21 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.hub_outlined,
+                              const Icon(Icons.hub_outlined,
                                   size: 18, color: AppTheme.primary),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
                                 'Port Matrix & Capacity',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: context.text.titleMedium,
                               ),
                             ],
                           ),
                           Text(
                             '${location.portTotal} ports total',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isDark
-                                  ? const Color(0xFFFF8591)
-                                  : AppTheme.primaryActive,
+                            style: context.text.labelLarge!.copyWith(
+                              color: AppTheme.brandInkOf(context),
                             ),
                           ),
                         ],
@@ -333,7 +305,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                 children: [
                                   Icon(
                                     Icons.circle_outlined,
-                                    size: 13,
+                                    size: 20,
                                     color: isDark
                                         ? AppTheme.textSecondaryDark
                                         : AppTheme.textMuted,
@@ -341,13 +313,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     'P$portNumber',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark
-                                          ? Colors.white70
-                                          : AppTheme.textMuted,
-                                    ),
+                                    style: context.text.labelSmall!
+                                        .copyWith(fontWeight: FontWeight.w800),
                                   ),
                                 ],
                               ),
@@ -358,12 +325,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                       const SizedBox(height: 10),
                       Text(
                         'Standard NAP distribution box. Ready for drop cable splicing.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
+                        style: context.text.labelSmall,
                       ),
                     ],
                   ),
@@ -378,17 +340,14 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.pin_drop_outlined,
+                          const Icon(Icons.pin_drop_outlined,
                               size: 18, color: AppTheme.primary),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             'GPS Geolocation Coordinates',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: context.text.titleMedium,
                           ),
                         ],
                       ),
@@ -412,22 +371,14 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                               children: [
                                 Text(
                                   'WGS84 Coordinates',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: isDark
-                                        ? AppTheme.textSecondaryDark
-                                        : AppTheme.textMuted,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: context.text.labelSmall!
+                                      .copyWith(fontWeight: FontWeight.w600),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   location.coordinates ?? 'No GPS fix recorded',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: 'monospace',
-                                  ),
+                                  style: context.text.titleSmall!
+                                      .copyWith(fontFamily: 'monospace'),
                                 ),
                               ],
                             ),
@@ -508,14 +459,14 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.map_outlined, size: 18, color: AppTheme.primary),
-                    SizedBox(width: 8),
+                    const Icon(Icons.map_outlined,
+                        size: 18, color: AppTheme.primary),
+                    const SizedBox(width: 8),
                     Text(
                       'Site Map Location',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style: context.text.titleMedium,
                     ),
                   ],
                 ),
@@ -530,8 +481,8 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                           '${location.street ?? ""}, ${location.barangay ?? ""}, ${location.city ?? ""}',
                     );
                   },
-                  icon: const Icon(Icons.navigation_rounded, size: 14),
-                  label: const Text('Navigate', style: TextStyle(fontSize: 12)),
+                  icon: const Icon(Icons.navigation_rounded, size: 24),
+                  label: const Text('Navigate'),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -585,10 +536,9 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                               child: Center(
                                 child: Text(
                                   location.nap.replaceAll(RegExp(r'\D'), ''),
-                                  style: const TextStyle(
+                                  style: context.text.labelSmall!.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,
-                                    fontSize: 12,
                                   ),
                                 ),
                               ),

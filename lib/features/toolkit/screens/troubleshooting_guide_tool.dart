@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/field_troubleshooting_guide.dart';
 
@@ -35,13 +36,12 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Field Troubleshooting',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Field Troubleshooting', style: context.text.titleLarge),
             Text('Tap an issue to open its resolution steps',
-                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                style: context.text.bodySmall),
           ],
         ),
       ),
@@ -52,13 +52,14 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
             16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
         children: [
           for (final guide in TroubleshootingGuideItem.fieldGuides)
-            _buildGuideCard(guide, isDark),
+            _buildGuideCard(context, guide, isDark),
         ],
       ),
     );
   }
 
-  Widget _buildGuideCard(TroubleshootingGuideItem guide, bool isDark) {
+  Widget _buildGuideCard(
+      BuildContext context, TroubleshootingGuideItem guide, bool isDark) {
     final isExpanded = _expanded.contains(guide.id);
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
@@ -98,16 +99,9 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            guide.title,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w800),
-                          ),
+                          Text(guide.title, style: context.text.titleMedium),
                           const SizedBox(height: 2),
-                          Text(
-                            guide.symptom,
-                            style: TextStyle(fontSize: 12, color: muted),
-                          ),
+                          Text(guide.symptom, style: context.text.bodySmall),
                         ],
                       ),
                     ),
@@ -136,11 +130,8 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                 children: [
                   Text(
                     'Probable Root Causes:',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: muted,
-                    ),
+                    style: context.text.labelMedium!
+                        .copyWith(color: AppTheme.secondaryInkOf(context)),
                   ),
                   const SizedBox(height: 6),
                   ...guide.probableCauses.map(
@@ -149,14 +140,13 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('• ',
+                          Text('• ',
                               style: TextStyle(
-                                  color: AppTheme.primary,
+                                  color: AppTheme.brandInkOf(context),
                                   fontWeight: FontWeight.w900)),
                           Expanded(
-                              child: Text(cause,
-                                  style: const TextStyle(
-                                      fontSize: 12, height: 1.3))),
+                              child:
+                                  Text(cause, style: context.text.bodyMedium)),
                         ],
                       ),
                     ),
@@ -164,14 +154,11 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                   const SizedBox(height: 14),
                   Text(
                     'Recommended Step-by-Step Resolution:',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : AppTheme.darkSlate,
-                    ),
+                    style: context.text.titleSmall,
                   ),
                   const SizedBox(height: 10),
-                  ...guide.actionSteps.map((step) => _buildStep(step, isDark)),
+                  ...guide.actionSteps
+                      .map((step) => _buildStep(context, step, isDark)),
                 ],
               ),
             ),
@@ -181,7 +168,8 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
     );
   }
 
-  Widget _buildStep(TroubleshootingStep step, bool isDark) {
+  Widget _buildStep(
+      BuildContext context, TroubleshootingStep step, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -205,11 +193,7 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
             child: Center(
               child: Text(
                 '${step.stepNumber}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: context.text.labelLarge!.copyWith(color: Colors.white),
               ),
             ),
           ),
@@ -218,21 +202,12 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  step.title,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w700),
-                ),
+                Text(step.title, style: context.text.titleSmall),
                 const SizedBox(height: 4),
                 Text(
                   step.action,
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.4,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
-                  ),
+                  style: context.text.bodyMedium!
+                      .copyWith(color: AppTheme.secondaryInkOf(context)),
                 ),
               ],
             ),

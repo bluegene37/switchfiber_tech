@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 import 'status_badge.dart';
@@ -60,11 +61,7 @@ class JobHistoryTile extends StatelessWidget {
                           Expanded(
                             child: Text(
                               job.ticketNumber,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.2,
-                              ),
+                              style: context.text.titleSmall,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -79,11 +76,7 @@ class JobHistoryTile extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         job.customerName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
-                        ),
+                        style: context.text.titleMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -94,7 +87,7 @@ class JobHistoryTile extends StatelessWidget {
                           if (job.barangay?.isNotEmpty == true) job.barangay!,
                           if (job.city?.isNotEmpty == true) job.city!,
                         ].join(', '),
-                        style: TextStyle(fontSize: 12, color: muted),
+                        style: context.text.bodySmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -139,7 +132,7 @@ class JobHistoryTile extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: Icon(
                     CupertinoIcons.chevron_forward,
-                    size: 16,
+                    size: 20,
                     color: muted.withValues(alpha: 0.6),
                   ),
                 ),
@@ -209,7 +202,7 @@ class _StatusDot extends StatelessWidget {
           width: 0.5,
         ),
       ),
-      child: Icon(icon, size: 16, color: color),
+      child: Icon(icon, size: 20, color: color),
     );
   }
 }
@@ -232,17 +225,24 @@ class _Meta extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: color),
+        Icon(icon, size: 20, color: color),
         const SizedBox(width: 4),
         Text(
           text,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-            color: color,
-          ),
+          style: (bold ? context.text.labelMedium : context.text.labelSmall)!
+              .copyWith(color: _inkFor(context, color)),
         ),
       ],
     );
   }
+}
+
+/// Maps a `_Meta` fill colour (a bright status token or the neutral "muted"
+/// grey) to the ink safe for text.
+Color _inkFor(BuildContext context, Color fill) {
+  if (fill == AppTheme.success) return AppTheme.successInkOf(context);
+  if (fill == AppTheme.warning) return AppTheme.warningInkOf(context);
+  if (fill == AppTheme.danger) return AppTheme.dangerInkOf(context);
+  if (fill == AppTheme.info) return AppTheme.infoInkOf(context);
+  return AppTheme.secondaryInkOf(context);
 }

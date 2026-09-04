@@ -1,8 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/loading_states.dart';
 import '../../auth/signals/auth_signals.dart';
 import '../models/job_order_model.dart';
@@ -110,62 +111,13 @@ class _JobHistoryViewState extends State<JobHistoryView> {
                 children: [
                   _SummaryStrip(signals: signals, isDark: isDark),
                   const SizedBox(height: 10),
-                  // iOS Capsule Search Bar
-                  Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.search,
-                          size: 16,
-                          color: AppTheme.textMuted,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (v) {
-                              signals.setHistorySearch(v);
-                              setState(() {});
-                            },
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isDark ? Colors.white : AppTheme.darkSlate,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: 'Search ticket #, subscriber, address...',
-                              hintStyle: TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textMuted,
-                              ),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                              isDense: true,
-                            ),
-                          ),
-                        ),
-                        if (_searchController.text.isNotEmpty)
-                          GestureDetector(
-                            onTap: () {
-                              _searchController.clear();
-                              signals.setHistorySearch('');
-                              setState(() {});
-                            },
-                            child: const Icon(
-                              CupertinoIcons.clear_thick_circled,
-                              size: 16,
-                              color: AppTheme.textMuted,
-                            ),
-                          ),
-                      ],
-                    ),
+                  AppSearchField(
+                    controller: _searchController,
+                    hintText: 'Search ticket #, subscriber, address',
+                    onChanged: (v) {
+                      signals.setHistorySearch(v);
+                      setState(() {});
+                    },
                   ),
                   const SizedBox(height: 10),
                   _StatusChips(signals: signals),
@@ -304,27 +256,19 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Column(
         children: [
           Text(
             '$value',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: color,
-              letterSpacing: -0.5,
+            style: context.text.headlineSmall!.copyWith(
+              color: _inkFor(context, color),
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.labelSmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -332,6 +276,16 @@ class _Stat extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Maps a `_Stat` fill colour to the ink safe for text. The "Activated"
+/// stat's indigo has no AppTheme ink counterpart, so it is reported and left
+/// as-is (see task-6-report.md, brief §5).
+Color _inkFor(BuildContext context, Color fill) {
+  if (fill == AppTheme.primary) return AppTheme.brandInkOf(context);
+  if (fill == AppTheme.success) return AppTheme.successInkOf(context);
+  if (fill == AppTheme.info) return AppTheme.infoInkOf(context);
+  return fill;
 }
 
 /// Status filter chips for technician history (All, Activated, Completed).
@@ -357,11 +311,7 @@ class _StatusChips extends StatelessWidget {
                 label: Text(filter.label),
                 selected: filter == active,
                 onSelected: (_) => signals.setHistoryStatus(filter),
-                visualDensity: VisualDensity.compact,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                labelStyle: context.text.labelLarge,
               );
             },
           ),
@@ -404,7 +354,7 @@ class _RangeChips extends StatelessWidget {
                 avatar: isCustom
                     ? Icon(
                         Icons.date_range_rounded,
-                        size: 16,
+                        size: 24,
                         color: range == active ? Colors.white : null,
                       )
                     : null,
@@ -417,11 +367,7 @@ class _RangeChips extends StatelessWidget {
                     signals.setHistoryRange(range);
                   }
                 },
-                visualDensity: VisualDensity.compact,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                labelStyle: context.text.labelLarge,
               );
             },
           ),
@@ -455,16 +401,12 @@ class _CityChips extends StatelessWidget {
               return FilterChip(
                 avatar: city == null
                     ? null
-                    : const Icon(Icons.location_city_rounded, size: 14),
+                    : const Icon(Icons.location_city_rounded, size: 24),
                 label: Text(city ?? 'All areas'),
                 selected: city == active,
                 onSelected: (_) => signals.setHistoryCity(city),
-                visualDensity: VisualDensity.compact,
                 showCheckmark: false,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+                labelStyle: context.text.labelLarge,
               );
             },
           ),
@@ -503,9 +445,9 @@ class _NoEmailState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No Email On Your Profile',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              style: context.text.titleMedium,
             ),
             const SizedBox(height: 6),
             Text(
@@ -513,15 +455,12 @@ class _NoEmailState extends StatelessWidget {
               'technician account. Refresh your profile, or ask Dispatch to '
               'add one.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
+              style: context.text.bodySmall,
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: onRefreshProfile,
-              icon: const Icon(Icons.person_search_rounded, size: 16),
+              icon: const Icon(Icons.person_search_rounded, size: 24),
               label: const Text('Refresh My Profile'),
             ),
           ],
@@ -560,12 +499,15 @@ class _EmptyState extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color:
-                      isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                  color: isDark
+                      ? const Color(0xFF3F2327)
+                      : AppTheme.primarySubtleBg,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  filtered ? Icons.filter_alt_off_rounded : Icons.history_rounded,
+                  filtered
+                      ? Icons.filter_alt_off_rounded
+                      : Icons.history_rounded,
                   size: 40,
                   color: AppTheme.primary,
                 ),
@@ -573,7 +515,7 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 filtered ? 'Nothing Matches' : 'No History Jobs Yet',
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                style: context.text.titleMedium,
               ),
               const SizedBox(height: 6),
               Text(
@@ -583,22 +525,19 @@ class _EmptyState extends StatelessWidget {
                     : 'Jobs marked as Activated or Completed appear here as a '
                         'permanent record. Pull down to refresh from the server.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: context.text.bodySmall,
               ),
               const SizedBox(height: 20),
               if (filtered)
                 OutlinedButton.icon(
                   onPressed: onClearFilters,
-                  icon: const Icon(Icons.clear_all_rounded, size: 16),
+                  icon: const Icon(Icons.clear_all_rounded, size: 24),
                   label: const Text('Clear Filters'),
                 )
               else
                 ElevatedButton.icon(
                   onPressed: onRefresh,
-                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  icon: const Icon(Icons.refresh_rounded, size: 24),
                   label: const Text('Refresh From Server'),
                 ),
             ],

@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/location_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../lcp_nap/models/lcp_nap_model.dart';
 import '../../lcp_nap/services/map_tiles.dart';
@@ -176,12 +177,10 @@ class _JobsMapViewState extends State<JobsMapView> {
     final jobs = widget.jobsSignals.filteredJobs.value;
     final naps = widget.lcpNapSignals?.allLocations.value ?? [];
 
-    final selectedJobPos = _selectedJob != null
-        ? _resolveJobLocation(_selectedJob!, naps)
-        : null;
-    final nearestNapInfo = selectedJobPos != null
-        ? _findNearestNap(selectedJobPos, naps)
-        : null;
+    final selectedJobPos =
+        _selectedJob != null ? _resolveJobLocation(_selectedJob!, naps) : null;
+    final nearestNapInfo =
+        selectedJobPos != null ? _findNearestNap(selectedJobPos, naps) : null;
 
     if (!_didInitialFit && jobs.isNotEmpty) {
       _didInitialFit = true;
@@ -284,9 +283,13 @@ class _JobsMapViewState extends State<JobsMapView> {
                                       ),
                                       child: Text(
                                         'Nearest NAP • ${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)}',
+                                        // Map furniture: fixed-size marker
+                                        // box, cannot grow with the type
+                                        // scale.
+                                        textScaler: TextScaler.noScaling,
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 9,
+                                          fontSize: 9, // map furniture
                                           fontWeight: FontWeight.w800,
                                         ),
                                       ),
@@ -311,7 +314,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                                       child: const Icon(
                                         Icons.hub_rounded,
                                         color: Colors.white,
-                                        size: 16,
+                                        size: 16, // map furniture
                                       ),
                                     ),
                                   ],
@@ -333,7 +336,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                                   child: const Icon(
                                     Icons.hub_rounded,
                                     color: Colors.white,
-                                    size: 16,
+                                    size: 16, // map furniture
                                   ),
                                 ),
                         ),
@@ -394,10 +397,10 @@ class _JobsMapViewState extends State<JobsMapView> {
                               softWrap: false,
                               overflow: TextOverflow.ellipsis,
                               textScaler: TextScaler.noScaling,
-                              style: const TextStyle(
-                                fontSize: 9,
+                              style: TextStyle(
+                                fontSize: 9, // map furniture
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.primary,
+                                color: AppTheme.brandInkOf(context),
                               ),
                             ),
                           ),
@@ -420,7 +423,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                             child: const Icon(
                               CupertinoIcons.person_fill,
                               color: Colors.white,
-                              size: 15,
+                              size: 15, // map furniture
                             ),
                           ),
                         ],
@@ -551,23 +554,30 @@ class _JobsMapViewState extends State<JobsMapView> {
     required VoidCallback onTap,
   }) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 48,
+      height: 48,
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+        ],
+      ),
+      // The border lives in foregroundDecoration rather than decoration:
+      // BoxDecoration.padding derives from the border width, and Container
+      // adds that as implicit child padding, which shrank the 48dp button
+      // to a 47dp tap target. foregroundDecoration paints without doing so.
+      foregroundDecoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
           width: 0.5,
         ),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
       ),
       child: IconButton(
         padding: EdgeInsets.zero,
         icon: Icon(icon,
-            size: 20, color: isDark ? Colors.white : AppTheme.darkSlate),
+            size: 24, color: isDark ? Colors.white : AppTheme.darkSlate),
         tooltip: tooltip,
         onPressed: onTap,
       ),
@@ -624,10 +634,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                 ),
                 child: Text(
                   job.ticketNumber,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primary,
+                  style: context.text.labelLarge!.copyWith(
+                    color: AppTheme.brandInkOf(context),
                   ),
                 ),
               ),
@@ -643,12 +651,11 @@ class _JobsMapViewState extends State<JobsMapView> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(CupertinoIcons.location_solid,
-                          size: 10, color: AppTheme.primary),
+                          size: 20, color: AppTheme.primary),
                       const SizedBox(width: 3),
                       Text(
                         distanceStr,
-                        style: const TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.w600),
+                        style: context.text.labelMedium,
                       ),
                     ],
                   ),
@@ -662,8 +669,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(CupertinoIcons.xmark,
-                       size: 12,
-                       color: isDark ? Colors.white : AppTheme.darkSlate),
+                      size: 24,
+                      color: isDark ? Colors.white : AppTheme.darkSlate),
                 ),
               ),
             ],
@@ -671,16 +678,12 @@ class _JobsMapViewState extends State<JobsMapView> {
           const SizedBox(height: 8),
           Text(
             job.customerName,
-            style: const TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2),
+            style: context.text.titleMedium,
           ),
           const SizedBox(height: 2),
           Text(
             '${job.planName ?? "Fiber Plan"} • ${job.address}',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.bodySmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -712,7 +715,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                     child: const Icon(
                       Icons.hub_rounded,
                       color: Colors.white,
-                      size: 16,
+                      size: 20,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -724,10 +727,10 @@ class _JobsMapViewState extends State<JobsMapView> {
                           children: [
                             Text(
                               'NEAREST LCP NAP',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
+                              // Raw hex, not a semantic ink token: no
+                              // AppTheme equivalent for this emerald.
+                              // Reported in task-6-report.md per brief §5.
+                              style: context.text.labelSmall!.copyWith(
                                 color: isDark
                                     ? const Color(0xFF6EE7B7)
                                     : const Color(0xFF047857),
@@ -743,9 +746,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                               ),
                               child: Text(
                                 '${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)} away',
-                                style: const TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w800,
+                                style: context.text.labelSmall!.copyWith(
                                   color: Colors.white,
                                 ),
                               ),
@@ -755,10 +756,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                         const SizedBox(height: 2),
                         Text(
                           nearestNapInfo.nap.lcpNap,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: context.text.titleSmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -768,15 +766,11 @@ class _JobsMapViewState extends State<JobsMapView> {
                             [
                               if (nearestNapInfo.nap.street?.isNotEmpty == true)
                                 nearestNapInfo.nap.street,
-                              if (nearestNapInfo.nap.barangay?.isNotEmpty == true)
+                              if (nearestNapInfo.nap.barangay?.isNotEmpty ==
+                                  true)
                                 nearestNapInfo.nap.barangay,
                             ].join(', '),
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted,
-                            ),
+                            style: context.text.labelSmall,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -806,7 +800,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                       ),
                       child: Icon(
                         CupertinoIcons.scope,
-                        size: 14,
+                        size: 24,
                         color: isDark
                             ? const Color(0xFF6EE7B7)
                             : const Color(0xFF047857),
@@ -828,17 +822,15 @@ class _JobsMapViewState extends State<JobsMapView> {
                   onPressed: () {
                     widget.onOpenJob?.call(job);
                   },
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(CupertinoIcons.doc_text_fill,
-                          size: 15, color: Colors.white),
-                      SizedBox(width: 6),
+                      const Icon(CupertinoIcons.doc_text_fill,
+                          size: 24, color: Colors.white),
+                      const SizedBox(width: 6),
                       Text('Open Ticket',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                          style: context.text.labelLarge!
+                              .copyWith(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -856,7 +848,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                 child: IconButton(
                   tooltip: 'Navigate to Job',
                   icon: const Icon(CupertinoIcons.location_north_fill,
-                      color: AppTheme.primary, size: 18),
+                      color: AppTheme.primary, size: 24),
                   onPressed: () {
                     final url = Uri.parse(
                         'https://maps.apple.com/?q=${jobPos.latitude},${jobPos.longitude}');
@@ -864,7 +856,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                   },
                 ),
               ),
-              if (nearestNapInfo != null && nearestNapInfo.nap.latLng != null) ...[
+              if (nearestNapInfo != null &&
+                  nearestNapInfo.nap.latLng != null) ...[
                 const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
@@ -881,7 +874,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                   child: IconButton(
                     tooltip: 'Directions to Pole',
                     icon: const Icon(CupertinoIcons.arrow_turn_up_right,
-                        color: Color(0xFF10B981), size: 18),
+                        color: Color(0xFF10B981), size: 24),
                     onPressed: () {
                       final polePos = nearestNapInfo.nap.latLng!;
                       final url = Uri.parse(
@@ -928,10 +921,11 @@ class _JobsMapViewState extends State<JobsMapView> {
                 ),
                 child: Text(
                   nap.lcpNap,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0284C7),
+                  // Raw hex, not a semantic ink token: no AppTheme
+                  // equivalent for this sky blue. Reported in
+                  // task-6-report.md per brief §5.
+                  style: context.text.labelLarge!.copyWith(
+                    color: const Color(0xFF0284C7),
                   ),
                 ),
               ),
@@ -944,7 +938,7 @@ class _JobsMapViewState extends State<JobsMapView> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(CupertinoIcons.xmark,
-                      size: 12,
+                      size: 24,
                       color: isDark ? Colors.white : AppTheme.darkSlate),
                 ),
               ),
@@ -953,15 +947,12 @@ class _JobsMapViewState extends State<JobsMapView> {
           const SizedBox(height: 8),
           Text(
             '${nap.lcp} - ${nap.nap}',
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            style: context.text.titleMedium,
           ),
           const SizedBox(height: 2),
           Text(
             nap.street ?? nap.barangay ?? 'No address recorded',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.bodySmall,
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/exif_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
 
@@ -113,10 +114,10 @@ class PhotoCaptureTile extends StatelessWidget {
                 ),
               if (_hasValue)
                 ListTile(
-                  leading: const Icon(CupertinoIcons.trash,
-                      color: AppTheme.danger),
-                  title: const Text('Remove photo',
-                      style: TextStyle(color: AppTheme.danger)),
+                  leading:
+                      const Icon(CupertinoIcons.trash, color: AppTheme.danger),
+                  title: Text('Remove photo',
+                      style: TextStyle(color: AppTheme.dangerInkOf(context))),
                   onTap: () => Navigator.of(ctx).pop(_PhotoAction.remove),
                 ),
               const SizedBox(height: 8),
@@ -189,18 +190,16 @@ class PhotoCaptureTile extends StatelessWidget {
                               color: AppTheme.success.withValues(alpha: 0.85),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(CupertinoIcons.location_fill,
-                                    color: Colors.white, size: 9),
-                                SizedBox(width: 3),
+                                const Icon(CupertinoIcons.location_fill,
+                                    color: Colors.white, size: 20),
+                                const SizedBox(width: 3),
                                 Text(
                                   'GPS',
-                                  style: TextStyle(
+                                  style: context.text.labelSmall!.copyWith(
                                     color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
@@ -220,10 +219,9 @@ class PhotoCaptureTile extends StatelessWidget {
                             ),
                             child: Text(
                               DataUrl.formatBytes(DataUrl.approxBytes(value!)),
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700),
+                              style: context.text.labelSmall!.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -243,7 +241,7 @@ class PhotoCaptureTile extends StatelessWidget {
                               child: const Icon(
                                 Icons.more_horiz_rounded,
                                 color: Colors.white,
-                                size: 16,
+                                size: 24,
                               ),
                             ),
                           ),
@@ -262,10 +260,10 @@ class PhotoCaptureTile extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             onServer ? 'Stored on server' : 'Tap to add photo',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: onServer ? AppTheme.success : muted,
+                            style: context.text.labelMedium!.copyWith(
+                              color: onServer
+                                  ? AppTheme.successInkOf(context)
+                                  : AppTheme.secondaryInkOf(context),
                             ),
                           ),
                         ],
@@ -279,8 +277,7 @@ class PhotoCaptureTile extends StatelessWidget {
                   Expanded(
                     child: Text(
                       label,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w700),
+                      style: context.text.labelLarge,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -289,7 +286,7 @@ class PhotoCaptureTile extends StatelessWidget {
                     _hasValue
                         ? CupertinoIcons.checkmark_seal_fill
                         : CupertinoIcons.camera,
-                    size: 16,
+                    size: 20,
                     color: _hasValue ? AppTheme.success : muted,
                   ),
                 ],
@@ -397,11 +394,9 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Text(
+                      Text(
                         'Photo EXIF Metadata',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                        style: context.text.titleMedium!.copyWith(
                           letterSpacing: -0.3,
                         ),
                       ),
@@ -417,7 +412,7 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                       ),
                       child: Icon(
                         CupertinoIcons.xmark,
-                        size: 13,
+                        size: 24,
                         color: isDark ? Colors.white : AppTheme.darkSlate,
                       ),
                     ),
@@ -435,9 +430,13 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                     icon: CupertinoIcons.location_solid,
                     label: 'Coordinates',
                     value: meta?.dmsCoordinates ?? 'No GPS Recorded',
+                    // Shared by the row's icon and its value text, so this is
+                    // resolved to the ink (not the bright fill, and not the
+                    // legacy sub-contrast textMuted) up front — the value
+                    // text may not use a bright AppTheme token.
                     color: meta?.hasGps == true
-                        ? AppTheme.success
-                        : AppTheme.textMuted,
+                        ? AppTheme.successInkOf(context)
+                        : AppTheme.secondaryInkOf(context),
                   ),
                   if (meta?.hasGps == true) ...[
                     _MetaRow(
@@ -449,7 +448,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                       _MetaRow(
                         icon: CupertinoIcons.arrow_up_circle,
                         label: 'Altitude',
-                        value: '${meta.altitude!.toStringAsFixed(1)} m above sea level',
+                        value:
+                            '${meta.altitude!.toStringAsFixed(1)} m above sea level',
                       ),
                   ],
                 ],
@@ -465,7 +465,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                     icon: CupertinoIcons.time,
                     label: 'Captured At',
                     value: meta?.captureTime != null
-                        ? DateFormat('MMM d, yyyy  h:mm:ss a').format(meta!.captureTime!)
+                        ? DateFormat('MMM d, yyyy  h:mm:ss a')
+                            .format(meta!.captureTime!)
                         : 'Current field capture',
                   ),
                   _MetaRow(
@@ -497,16 +498,15 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                           'https://maps.apple.com/?q=${meta!.latitude},${meta.longitude}');
                       launchUrl(url, mode: LaunchMode.externalApplication);
                     },
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(CupertinoIcons.map, size: 16, color: Colors.white),
-                        SizedBox(width: 8),
+                        const Icon(CupertinoIcons.map,
+                            size: 24, color: Colors.white),
+                        const SizedBox(width: 8),
                         Text(
                           'Open Location in Maps',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                          style: context.text.labelLarge!.copyWith(
                             color: Colors.white,
                           ),
                         ),
@@ -533,12 +533,7 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
           padding: const EdgeInsets.only(left: 4, bottom: 6),
           child: Text(
             title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.6,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.labelSmall!.copyWith(letterSpacing: 0.6),
           ),
         ),
         Container(
@@ -575,7 +570,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: Text(widget.title, style: const TextStyle(fontSize: 16)),
+        title: Text(widget.title,
+            style: context.text.titleMedium!.copyWith(color: Colors.white)),
         actions: [
           IconButton(
             tooltip: 'View Photo EXIF Metadata',
@@ -623,22 +619,18 @@ class _MetaRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: color ?? AppTheme.textMuted),
+          Icon(icon, size: 20, color: color ?? AppTheme.textMuted),
           const SizedBox(width: 10),
           Text(
             label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            style: context.text.bodySmall,
           ),
           const Spacer(),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+              style: context.text.labelMedium!.copyWith(color: color),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -647,4 +639,3 @@ class _MetaRow extends StatelessWidget {
     );
   }
 }
-

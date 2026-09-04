@@ -42,6 +42,11 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
 
+    // The larger field type scale pushes this link below the fixed test
+    // surface on the default (unset) viewport size; scroll it into view
+    // before tapping, exactly as a technician would on a real, taller phone.
+    await tester.ensureVisible(find.text('Need help or forgot password?'));
+    await tester.pump();
     await tester.tap(find.text('Need help or forgot password?'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
@@ -70,8 +75,7 @@ void main() {
     // 500 x 900 logical: wide enough that the login screen itself lays out
     // without overflowing, so the sheet is what is under test.
     tester.view.physicalSize = const Size(1500, 2700);
-    tester.view.padding =
-        const FakeViewPadding(bottom: _navBarHeight * 3.0);
+    tester.view.padding = const FakeViewPadding(bottom: _navBarHeight * 3.0);
     tester.view.viewPadding =
         const FakeViewPadding(bottom: _navBarHeight * 3.0);
     addTearDown(tester.view.reset);
