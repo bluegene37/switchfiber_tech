@@ -420,60 +420,37 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 14),
 
-                              // Remember Me & Demo credentials
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SignalBuilder(
-                                    builder: (context) {
-                                      return Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: Checkbox(
-                                              value:
-                                                  authSignals.rememberMe.value,
-                                              activeColor: AppTheme.primary,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              onChanged: (val) {
-                                                authSignals.rememberMe.value =
-                                                    val ?? true;
-                                              },
-                                            ),
+                              // Remember Me
+                              SignalBuilder(
+                                builder: (context) {
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: Checkbox(
+                                          value:
+                                              authSignals.rememberMe.value,
+                                          activeColor: AppTheme.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Remember me',
-                                            style: context.text.bodySmall,
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                  TextButton.icon(
-                                    onPressed: () {
-                                      _usernameController.text = 'tech_marcos';
-                                      _passwordController.text = 'Switch@2026';
-                                    },
-                                    icon: const Icon(Icons.flash_on_rounded,
-                                        size: 24, color: AppTheme.primary),
-                                    label: Text(
-                                      'Demo Tech',
-                                      style: context.text.labelLarge!.copyWith(
-                                        color: AppTheme.brandInkOf(context),
+                                          onChanged: (val) {
+                                            authSignals.rememberMe.value =
+                                                val ?? true;
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                ],
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Remember me',
+                                        style: context.text.bodySmall,
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                               const SizedBox(height: 22),
 

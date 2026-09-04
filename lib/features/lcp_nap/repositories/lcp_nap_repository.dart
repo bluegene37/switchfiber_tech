@@ -27,6 +27,9 @@ class LcpNapRepository {
 
   /// Fetch remote records from API and cache in Drift
   Future<void> fetchRemoteLocations() async {
+    // Purge test/sample demo locations permanently
+    await _dao.deleteSampleLocations();
+
     try {
       final response = await _api.get('/LCPNapLocations');
       final data = response.data;
@@ -44,11 +47,7 @@ class LcpNapRepository {
         }
       }
     } catch (_) {
-      // Offline fallback: seed sample network plant records if database is empty
-      final count = (await _dao.getAllLocations()).length;
-      if (count == 0) {
-        await seedSampleLocations();
-      }
+      // Offline fallback: do not re-seed test data
     }
   }
 

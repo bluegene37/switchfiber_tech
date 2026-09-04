@@ -320,7 +320,9 @@ class JobOrderDto {
       city: json['city']?.toString(),
       planName: json['plan']?.toString() ??
           json['desiredPlan']?.toString() ??
-          'Fiber 50Mbps',
+          (json['planId'] is String ? json['planId'] as String : null) ??
+          json['choose_Plan']?.toString() ??
+          '',
       planId: json['planId'] is int
           ? json['planId']
           : int.tryParse(json['planId']?.toString() ?? '0'),

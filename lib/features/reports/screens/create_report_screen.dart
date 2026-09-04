@@ -67,6 +67,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         widget.jobsSignals.allJobs.value.isNotEmpty) {
       rep.setJobOrder(widget.jobsSignals.allJobs.value.first);
       _serialController.text = rep.routerSerial.value;
+      _remarksController.text = rep.remarks.value;
       _dbmController.text = rep.opticalPower.value.toStringAsFixed(1);
     }
   }

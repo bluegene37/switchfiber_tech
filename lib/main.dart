@@ -22,6 +22,7 @@ void main() async {
   // 1. Initialize Drift SQLite Database & DAOs
   final database = AppDatabase();
   await database.jobOrdersDao.deleteSampleJobs();
+  await database.lcpNapLocationsDao.deleteSampleLocations();
   final jobRepository = JobRepository(database.jobOrdersDao);
   final lcpNapRepository = LcpNapRepository(LcpNapLocationsDao(database));
   final serviceOrdersSignals =

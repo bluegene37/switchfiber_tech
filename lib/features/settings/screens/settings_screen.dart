@@ -618,32 +618,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-
-                      // Re-seed sample data
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await jobs.repository.seedSampleJobs();
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text(
-                                    'Reset & populated sample field tech jobs in Drift DB.'),
-                                backgroundColor: isDark
-                                    ? AppTheme.darkCard
-                                    : AppTheme.darkSlate,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                              CupertinoIcons.arrow_counterclockwise,
-                              size: 24),
-                          label: const Text('Re-seed Sample Field Data'),
-                        ),
-                      ),
                     ],
                   );
                 },

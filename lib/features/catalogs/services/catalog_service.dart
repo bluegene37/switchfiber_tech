@@ -33,8 +33,22 @@ class CatalogService {
     PlanDto(
       id: 3,
       name: 'SwitchNet - P999',
-      description: 'SwitchNet - P999 Up to 150 Mbps',
+      description: 'SwitchNet - P999 Up to 120 Mbps',
       amount: 999.0,
+      discountId: 1,
+    ),
+    PlanDto(
+      id: 4,
+      name: 'SwitchSpeed - P1299',
+      description: 'SwitchSpeed - P1299 Up to 150 Mbps',
+      amount: 1299.0,
+      discountId: 1,
+    ),
+    PlanDto(
+      id: 5,
+      name: 'SwitchUltra - P1499',
+      description: 'SwitchUltra - P1499 Up to 220 Mbps',
+      amount: 1499.0,
       discountId: 1,
     ),
   ];
@@ -60,6 +74,27 @@ class CatalogService {
       name: 'ZTE',
       description: 'F670L',
       brand: 'DUAL BAND MODEM',
+      model: '1',
+    ),
+    RouterDto(
+      id: 4,
+      name: 'ZTE',
+      description: 'SF70L',
+      brand: 'DUAL BAND ONU MODEM',
+      model: '1',
+    ),
+    RouterDto(
+      id: 1,
+      name: 'ZTE',
+      description: 'HG260',
+      brand: 'DUAL BAND ONU MODEM',
+      model: '1',
+    ),
+    RouterDto(
+      id: 2,
+      name: 'ZTE',
+      description: 'HG260P',
+      brand: 'DUAL BAND ONU MODEM',
       model: '1',
     ),
   ];
