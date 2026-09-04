@@ -90,7 +90,9 @@ class OpticalPowerGauge extends StatelessWidget {
                 child: Text(
                   '${dbm.toStringAsFixed(1)} dBm',
                   style: context.text.headlineSmall!.copyWith(
-                    color: AppTheme.darkSlate,
+                    fontFamily: 'JetBrains Mono',
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
               ),

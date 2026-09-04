@@ -411,13 +411,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                   children: [
                                     Text(
                                       '$scheduledCount Scheduled Dispatch${scheduledCount == 1 ? "" : "es"} Available',
-                                      // Raw hex, not a semantic ink token: no
-                                      // AppTheme equivalent for this blue.
-                                      // Reported in task-6-report.md per brief §5.
                                       style: context.text.titleSmall!.copyWith(
-                                        color: isDark
-                                            ? const Color(0xFF93C5FD)
-                                            : const Color(0xFF1E40AF),
+                                        color: AppTheme.infoInkOf(context),
                                       ),
                                     ),
                                     const SizedBox(height: 1),
@@ -462,21 +457,14 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       Icon(
                         Icons.cloud_off_rounded,
                         size: 20,
-                        color: isDark
-                            ? const Color(0xFFFDE68A)
-                            : const Color(0xFF92400E),
+                        color: AppTheme.warningInkOf(context),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '$pending local update(s) awaiting server sync.',
-                          // Raw hex, not a semantic ink token: no AppTheme
-                          // equivalent for this amber. Reported in
-                          // task-6-report.md per brief §5.
                           style: context.text.bodySmall!.copyWith(
-                            color: isDark
-                                ? const Color(0xFFFDE68A)
-                                : const Color(0xFF92400E),
+                            color: AppTheme.warningInkOf(context),
                           ),
                         ),
                       ),

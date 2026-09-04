@@ -331,7 +331,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                     onPressed: submitting ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      minimumSize: const Size.fromHeight(52),
+                      minimumSize: const Size.fromHeight(56),
                     ),
                     child: submitting
                         ? const SizedBox(
@@ -403,6 +403,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   Text(
                     job.ticketNumber,
                     style: context.text.titleSmall!.copyWith(
+                      fontFamily: 'JetBrains Mono',
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
                       color: AppTheme.brandInkOf(context),
                     ),
                   ),
@@ -535,6 +538,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             // Router SN
             TextFormField(
               controller: _serialController,
+              style: const TextStyle(fontFamily: 'JetBrains Mono'),
               decoration: const InputDecoration(
                 labelText: 'Modem / ONT Serial Number (SN)',
                 prefixIcon: Icon(Icons.qr_code_scanner_rounded, size: 20),

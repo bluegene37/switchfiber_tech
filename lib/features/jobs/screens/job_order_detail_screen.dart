@@ -850,6 +850,21 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   Widget _buildPlantAndHardwareCard(
       BuildContext context, JobOrderDto job, bool isDark) {
+    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    final lcpText = job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned';
+    final napText = job.nap?.isNotEmpty == true
+        ? job.nap!
+        : (job.napId != null && job.napId! > 0
+            ? 'NAP-${job.napId}'
+            : 'Unassigned');
+    final portText = job.portId ?? 'Port 1';
+    final ontText = job.routerModel?.isNotEmpty == true
+        ? job.routerModel!
+        : (job.modemRouterSN?.isNotEmpty == true
+            ? job.modemRouterSN!
+            : 'Pending Installation');
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -867,39 +882,227 @@ class JobOrderDetailScreen extends StatelessWidget {
                     style: context.text.titleMedium,
                   ),
                 ),
+                if (job.vlanId != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: borderColor, width: 0.5),
+                    ),
+                    child: Text(
+                      'VLAN ${job.vlanId}',
+                      style: context.text.labelMedium!.copyWith(
+                        fontFamily: 'JetBrains Mono',
+                        color: AppTheme.infoInkOf(context),
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 14),
-            _buildSpecRow(
-                context,
-                'LCP Cabinet',
-                job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned',
-                Icons.storage_rounded,
-                isDark),
-            _buildSpecRow(
-                context,
-                'NAP Box',
-                job.nap?.isNotEmpty == true
-                    ? job.nap!
-                    : (job.napId != null && job.napId! > 0
-                        ? 'NAP-${job.napId}'
-                        : 'Unassigned'),
-                Icons.hub_rounded,
-                isDark),
-            _buildSpecRow(context, 'Port Assignment', job.portId ?? 'Port 1',
-                Icons.electrical_services_rounded, isDark),
-            if (job.vlanId != null)
-              _buildSpecRow(context, 'VLAN Tag', 'VLAN ${job.vlanId}',
-                  Icons.tag_rounded, isDark),
-            _buildSpecRow(
-                context,
-                'Modem / ONT SN',
-                job.modemRouterSN ?? 'Pending Installation',
-                Icons.qr_code_rounded,
-                isDark),
-            if (job.routerModel != null && job.routerModel!.isNotEmpty)
-              _buildSpecRow(context, 'ONT Model', job.routerModel!,
-                  Icons.devices_rounded, isDark),
+
+            // Modern 2x2 Instrument Grid Partitioned by Hairlines
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: borderColor, width: 0.5),
+                color: isDark
+                    ? const Color(0xFF14171F)
+                    : const Color(0xFFF8FAFC),
+              ),
+              child: Column(
+                children: [
+                  // Row 1: LCP & NAP
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.storage_rounded,
+                                        size: 16, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'LCP CABINET',
+                                      style: context.text.bodySmall!.copyWith(
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  lcpText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                          width: 0.5,
+                          thickness: 0.5,
+                          color: borderColor,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.hub_rounded,
+                                        size: 16, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'NAP BOX',
+                                      style: context.text.bodySmall!.copyWith(
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  napText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(height: 0.5, thickness: 0.5, color: borderColor),
+
+                  // Row 2: Port Assignment & ONT Model/SN
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.electrical_services_rounded,
+                                        size: 16, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'PORT',
+                                      style: context.text.bodySmall!.copyWith(
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  portText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                          width: 0.5,
+                          thickness: 0.5,
+                          color: borderColor,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.devices_rounded,
+                                        size: 16, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'ONT / MODEM',
+                                      style: context.text.bodySmall!.copyWith(
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  ontText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (job.modemRouterSN?.isNotEmpty == true &&
+                                    job.modemRouterSN != ontText) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'SN: ${job.modemRouterSN!}',
+                                    style: context.text.bodySmall!.copyWith(
+                                      fontFamily: 'JetBrains Mono',
+                                      fontSize: 12,
+                                      color: muted,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -977,8 +1180,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         '${dbm.toStringAsFixed(1)} dBm',
-                        style: context.text.headlineSmall!
-                            .copyWith(color: badgeColorInk),
+                        style: context.text.headlineSmall!.copyWith(
+                          fontFamily: 'JetBrains Mono',
+                          fontWeight: FontWeight.bold,
+                          color: badgeColorInk,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
