@@ -92,4 +92,69 @@ void main() {
       await db.close();
     });
   });
+
+  testWidgets('JobOrdersScreen shows search empty state and clears search',
+      (WidgetTester tester) async {
+    late final AppDatabase db;
+    late final JobsSignals jobsSignals;
+
+    await tester.runAsync(() async {
+      db = AppDatabase(NativeDatabase.memory());
+      jobsSignals = JobsSignals(JobRepository(db.jobOrdersDao));
+      await db.jobOrdersDao.insertOrUpdateJob(
+        JobOrderDto(
+          id: 101,
+          ticketNumber: 'SF-2026-101',
+          customerName: 'Juan Dela Cruz',
+          address: '123 Rizal St',
+          barangay: 'San Isidro',
+          city: 'Antipolo',
+          status: 'Scheduled',
+          onsiteStatus: 'Scheduled',
+          contactNumber: '09171234567',
+          nap: 'NAP-01',
+          napId: 1,
+          isSynced: true,
+          updatedAt: DateTime.now(),
+        ).toCompanion(),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: JobOrdersScreen(
+          jobsSignals: jobsSignals,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.byType(JobCard), findsOneWidget);
+
+    // Enter a search that matches nothing
+    await tester.enterText(find.byType(TextField), 'NonexistentSubscriber');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.byType(JobCard), findsNothing);
+    expect(find.text('No jobs matching "NonexistentSubscriber"'), findsOneWidget);
+    expect(find.text('Clear Search'), findsOneWidget);
+
+    // Tap Clear Search button
+    await tester.tap(find.text('Clear Search'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.byType(JobCard), findsOneWidget);
+    expect(find.text('No jobs matching "NonexistentSubscriber"'), findsNothing);
+
+    await tester.runAsync(() async {
+      await jobsSignals.dispose();
+      await db.close();
+    });
+  });
 }
+

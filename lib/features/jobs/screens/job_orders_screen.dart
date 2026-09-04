@@ -489,6 +489,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       }
 
                       if (jobs.isEmpty) {
+                        final query = _searchController.text.trim();
+                        if (query.isNotEmpty) {
+                          return _buildSearchEmptyState(signals, query, isDark);
+                        }
                         return _buildEmptyState(signals, isDark);
                       }
 
@@ -511,6 +515,63 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchEmptyState(
+      JobsSignals signals, String query, bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                  width: 0.5,
+                ),
+              ),
+              child: Icon(
+                CupertinoIcons.search,
+                size: 38,
+                color: AppTheme.secondaryInkOf(context),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No jobs matching "$query"',
+              style: context.text.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Check for typos or clear your search to see all scheduled jobs.',
+              textAlign: TextAlign.center,
+              style: context.text.bodySmall!.copyWith(
+                color: AppTheme.secondaryInkOf(context),
+              ),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () {
+                _searchController.clear();
+                signals.setSearch('');
+                setState(() {});
+              },
+              icon: const Icon(CupertinoIcons.clear_circled, size: 20),
+              label: const Text('Clear Search'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(140, 48),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
