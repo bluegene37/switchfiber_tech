@@ -45,7 +45,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Fiber Color Code', style: context.text.titleLarge),
+            Text('Fiber Color Code', style: context.text.titleMedium),
             Text('TIA-598-C Standard loose tube & core lookup',
                 style: context.text.bodySmall),
           ],

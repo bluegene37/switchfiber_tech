@@ -92,7 +92,7 @@ class LcpNapCard extends StatelessWidget {
                         ),
                         child: Text(
                           '${location.portTotal} ports',
-                          style: context.text.headlineSmall!.copyWith(
+                          style: context.text.labelMedium!.copyWith(
                             color: AppTheme.brandInkOf(context),
                           ),
                         ),

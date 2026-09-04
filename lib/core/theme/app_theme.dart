@@ -167,7 +167,7 @@ class AppTheme {
           letterSpacing: 0.4,
           color: secondary),
       headlineSmall: TextStyle(
-        fontSize: 20,
+        fontSize: 26,
         fontWeight: FontWeight.w700,
         height: 1.15,
         fontFamily: 'monospace',
@@ -308,33 +308,6 @@ class AppTheme {
         ),
         elevation: 0,
       ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xF8FFFFFF),
-        indicatorColor: primarySubtleBg,
-        elevation: 0,
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              color: primary,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-            );
-          }
-          return const TextStyle(
-            color: textMuted,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.2,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: primary);
-          }
-          return const IconThemeData(color: textMuted);
-        }),
-      ),
     );
   }
 
@@ -467,33 +440,6 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
         ),
         elevation: 0,
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xF81C1C1E),
-        indicatorColor: const Color(0xFF3F2327),
-        elevation: 0,
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              color: Color(0xFFFF8591),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-            );
-          }
-          return const TextStyle(
-            color: textSecondaryDark,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.2,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: Color(0xFFFF8591));
-          }
-          return const IconThemeData(color: textSecondaryDark);
-        }),
       ),
     );
   }

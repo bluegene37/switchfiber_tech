@@ -5,6 +5,7 @@ import '../../../core/services/image_capture_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
+import '../../../core/widgets/app_search_field.dart';
 import '../../catalogs/models/catalog_model.dart';
 import '../../catalogs/services/catalog_service.dart';
 import '../../jobs/models/job_order_model.dart';
@@ -152,7 +153,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
           children: [
             Text(
               'Field Completion Report',
-              style: context.text.titleLarge,
+              style: context.text.titleMedium,
             ),
             Text(
               'Optical calibration & subscriber hand-off',
@@ -904,32 +905,9 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
             // Filter in list input
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
+              child: AppSearchField(
                 controller: _searchController,
-                autofocus: false,
-                decoration: InputDecoration(
-                  hintText: 'Filter NAP list (e.g. 001, test)...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                  suffixIcon: _query.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _query = '');
-                          },
-                        )
-                      : null,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  filled: true,
-                  fillColor: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.black.withValues(alpha: 0.04),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                hintText: 'Filter NAP list (e.g. 001, test)...',
                 onChanged: (val) {
                   setState(() => _query = val.trim());
                 },
@@ -954,10 +932,8 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                           const SizedBox(height: 8),
                           Text(
                             'No NAP matching "$_query"',
-                            style: TextStyle(
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted,
+                            style: context.text.bodyMedium!.copyWith(
+                              color: AppTheme.secondaryInkOf(context),
                             ),
                           ),
                         ],
@@ -993,7 +969,7 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                           ),
                           title: Text(
                             item.name,
-                            style: TextStyle(
+                            style: context.text.titleSmall!.copyWith(
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w500,

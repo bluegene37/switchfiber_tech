@@ -378,12 +378,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                                     const SizedBox(height: 1),
                                     Text(
                                       'Tap ticket to verify optical specs & activate subscriber.',
-                                      // Light-mode value is raw hex with no
-                                      // matching ink; reported per brief §5.
                                       style: context.text.bodySmall!.copyWith(
                                         color: isDark
                                             ? AppTheme.textSecondaryDark
-                                            : const Color(0xFF3B82F6),
+                                            : AppTheme.infoInkOf(context),
                                       ),
                                     ),
                                   ],

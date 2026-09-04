@@ -41,7 +41,7 @@ class _DropCableToolState extends State<DropCableTool> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Drop Cable Estimator', style: context.text.titleLarge),
+            Text('Drop Cable Estimator', style: context.text.titleMedium),
             Text('Span calculations & Bill of Materials (BOM)',
                 style: context.text.bodySmall),
           ],

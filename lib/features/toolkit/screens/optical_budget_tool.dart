@@ -49,7 +49,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Optical Link Budget', style: context.text.titleLarge),
+            Text('Optical Link Budget', style: context.text.titleMedium),
             Text('GPON / FTTH loss calculation & power meter validation',
                 style: context.text.bodySmall),
           ],
@@ -116,7 +116,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                       child: Text(
                         status.label,
                         style: context.text.labelLarge!.copyWith(
-                          color: Colors.white,
+                          color: AppTheme.darkSlate,
                         ),
                       ),
                     ),
@@ -201,7 +201,7 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                               Text('Variance', style: context.text.labelSmall),
                               Text(
                                 '${budget.variance! >= 0 ? "+" : ""}${budget.variance!.toStringAsFixed(1)} dB',
-                                style: context.text.headlineSmall!.copyWith(
+                                style: context.text.titleSmall!.copyWith(
                                   color: budget.variance!.abs() > 3.0
                                       ? AppTheme.warningInkOf(context)
                                       : AppTheme.successInkOf(context),

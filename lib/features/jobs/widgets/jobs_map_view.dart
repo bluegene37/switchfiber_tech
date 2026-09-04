@@ -727,13 +727,8 @@ class _JobsMapViewState extends State<JobsMapView> {
                           children: [
                             Text(
                               'NEAREST LCP NAP',
-                              // Raw hex, not a semantic ink token: no
-                              // AppTheme equivalent for this emerald.
-                              // Reported in task-6-report.md per brief §5.
                               style: context.text.labelSmall!.copyWith(
-                                color: isDark
-                                    ? const Color(0xFF6EE7B7)
-                                    : const Color(0xFF047857),
+                                color: AppTheme.successInkOf(context),
                               ),
                             ),
                             const Spacer(),

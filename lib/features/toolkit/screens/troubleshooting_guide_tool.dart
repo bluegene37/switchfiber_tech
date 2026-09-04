@@ -39,7 +39,7 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Field Troubleshooting', style: context.text.titleLarge),
+            Text('Field Troubleshooting', style: context.text.titleMedium),
             Text('Tap an issue to open its resolution steps',
                 style: context.text.bodySmall),
           ],

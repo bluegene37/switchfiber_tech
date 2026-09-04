@@ -171,6 +171,7 @@ class JobCard extends StatelessWidget {
                         children: [
                           if (job.contactNumber?.isNotEmpty == true) ...[
                             GestureDetector(
+                              behavior: HitTestBehavior.opaque,
                               onTap: () async {
                                 final uri =
                                     Uri.parse('tel:${job.contactNumber!}');
@@ -178,41 +179,49 @@ class JobCard extends StatelessWidget {
                                   await launchUrl(uri);
                                 }
                               },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1E293B)
-                                      : const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? AppTheme.borderDark
-                                        : AppTheme.borderLight,
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(CupertinoIcons.phone_fill,
-                                        size: 24, color: Color(0xFF10B981)),
-                                    const SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        'Call',
-                                        style: context.text.labelLarge,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(minHeight: 48),
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? AppTheme.borderDark
+                                            : AppTheme.borderLight,
+                                        width: 0.5,
                                       ),
                                     ),
-                                  ],
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(CupertinoIcons.phone_fill,
+                                            size: 24,
+                                            color: Color(0xFF10B981)),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            'Call',
+                                            style: context.text.labelLarge,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ],
                           GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () async {
                               final latLng = job.latLng;
                               final Uri uri;
@@ -228,36 +237,43 @@ class JobCard extends StatelessWidget {
                               await launchUrl(uri,
                                   mode: LaunchMode.externalApplication);
                             },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF1E293B)
-                                    : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: isDark
-                                      ? AppTheme.borderDark
-                                      : AppTheme.borderLight,
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(CupertinoIcons.location_north_fill,
-                                      size: 24, color: AppTheme.primary),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      'Directions',
-                                      style: context.text.labelLarge,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? const Color(0xFF1E293B)
+                                        : const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? AppTheme.borderDark
+                                          : AppTheme.borderLight,
+                                      width: 0.5,
                                     ),
                                   ),
-                                ],
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                          CupertinoIcons.location_north_fill,
+                                          size: 24,
+                                          color: AppTheme.primary),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          'Directions',
+                                          style: context.text.labelLarge,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -282,12 +298,8 @@ class JobCard extends StatelessWidget {
                                       job.nap?.isNotEmpty == true
                                           ? job.nap!
                                           : 'NAP-${job.napId}',
-                                      // Raw hex, not a semantic ink token:
-                                      // no AppTheme equivalent for this sky
-                                      // blue. Reported in task-6-report.md
-                                      // per brief §5.
                                       style: context.text.labelLarge!.copyWith(
-                                        color: const Color(0xFF0284C7),
+                                        color: AppTheme.infoInkOf(context),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

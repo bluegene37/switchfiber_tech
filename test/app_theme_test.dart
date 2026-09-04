@@ -43,8 +43,8 @@ void main() {
           expect(s!.fontSize, greaterThanOrEqualTo(13));
         }
       });
-      test('$name headlineSmall is the 20/700 monospace tabular data role', () {
-        expect(t.headlineSmall!.fontSize, 20);
+      test('$name headlineSmall is the 26/700 monospace tabular data role', () {
+        expect(t.headlineSmall!.fontSize, 26);
         expect(t.headlineSmall!.fontWeight, FontWeight.w700);
         expect(t.headlineSmall!.fontFamily, 'monospace');
         expect(t.headlineSmall!.fontFeatures,
@@ -81,13 +81,14 @@ void main() {
       expect(theme.appBarTheme.titleTextStyle!.fontSize, 22);
       expect(theme.appBarTheme.titleTextStyle!.fontWeight, FontWeight.w700);
     });
-    test('bottom navigation labels are not below 13', () {
-      final selected = theme.navigationBarTheme.labelTextStyle!
-          .resolve({WidgetState.selected});
-      final normal = theme.navigationBarTheme.labelTextStyle!.resolve({});
-      expect(selected!.fontSize, 13);
-      expect(normal!.fontSize, 13);
-    });
+    // The old "bottom navigation labels are not below 13" test asserted on
+    // ThemeData.navigationBarTheme, but nothing in lib instantiates a
+    // Material NavigationBar — the only bottom bar is the hand-built one in
+    // technician_shell.dart. That dead config (and its now-false promise of
+    // textMuted as a label colour) was deleted per the field-UI-standard
+    // final fix round item 7; tap_targets_test.dart's pumped TechnicianShell
+    // test now covers the real bottom bar's tap target size, and its labels
+    // are asserted not to shrink below 13 by the type-scale tests above.
   });
 
   group('rendered sizes under the theme', () {

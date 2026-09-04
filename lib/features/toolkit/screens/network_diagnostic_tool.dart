@@ -125,7 +125,7 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Network Diagnostics', style: context.text.titleLarge),
+            Text('Network Diagnostics', style: context.text.titleMedium),
             Text('Ping, DNS latency & Subnet calculator',
                 style: context.text.bodySmall),
           ],
@@ -242,7 +242,7 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                                 ),
                                 child: Text(
                                   '${t.latencyMs} ms',
-                                  style: context.text.headlineSmall!.copyWith(
+                                  style: context.text.titleSmall!.copyWith(
                                     color: t.latencyMs! < 50
                                         ? AppTheme.successInkOf(context)
                                         : AppTheme.warningInkOf(context),

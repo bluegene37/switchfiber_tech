@@ -230,7 +230,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
     Color? badgeColor,
   }) {
     final isSelected = _currentIndex == index;
-    final activeColor = AppTheme.primary;
+    final activeColor = AppTheme.brandInkOf(context);
     final inactiveColor =
         isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
 
@@ -247,10 +247,12 @@ class _TechnicianShellState extends State<TechnicianShell> {
               setState(() => _currentIndex = index);
             }
           },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -304,11 +306,13 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   color: isSelected
                       ? AppTheme.brandInkOf(context)
                       : AppTheme.secondaryInkOf(context),
+                  letterSpacing: 0,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+            ),
           ),
         ),
       ),
@@ -348,8 +352,14 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   user?.email.isNotEmpty == true
                       ? user!.email
                       : 'Switch Fiber Dispatch Tech',
-                  style:
-                      context.text.bodySmall!.copyWith(color: Colors.white70),
+                  // Colors.white70 measured 2.57:1 on the AppTheme.primary
+                  // header; full Colors.white only reaches 3.76:1 there (the
+                  // header red's luminance sits high enough that white text
+                  // tops out below 4.5:1). darkSlate measures 4.52:1 on the
+                  // same header, the same "text on a bright fill" fix used
+                  // for the optical status badge.
+                  style: context.text.bodySmall!
+                      .copyWith(color: AppTheme.darkSlate),
                 ),
               );
             },
