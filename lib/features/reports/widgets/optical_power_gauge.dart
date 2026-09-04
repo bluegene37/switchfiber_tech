@@ -14,6 +14,7 @@ class OpticalPowerGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dbm = opticalPowerDbm ?? -19.0;
     final quality = _evaluateQuality(dbm);
 
@@ -106,7 +107,8 @@ class OpticalPowerGauge extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: Colors.grey.withValues(alpha: 0.2),
+              backgroundColor:
+                  isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
               valueColor: AlwaysStoppedAnimation<Color>(statusColor),
             ),
           ),

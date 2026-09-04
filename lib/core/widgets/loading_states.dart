@@ -20,8 +20,6 @@ class DownloadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -46,9 +44,7 @@ class DownloadingIndicator extends StatelessWidget {
                   Icon(
                     Icons.cloud_download_rounded,
                     size: 26,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
+                    color: AppTheme.primary,
                   ),
                 ],
               ),

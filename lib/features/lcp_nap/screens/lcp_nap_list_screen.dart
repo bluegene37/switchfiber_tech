@@ -175,7 +175,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                       ? (isDark
                                           ? Colors.white
                                           : AppTheme.darkSlate)
-                                      : AppTheme.textMuted,
+                                      : AppTheme.secondaryInkOf(context),
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -204,7 +204,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                       ? (isDark
                                           ? Colors.white
                                           : AppTheme.darkSlate)
-                                      : AppTheme.textMuted,
+                                      : AppTheme.secondaryInkOf(context),
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -475,9 +475,7 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                                               ? Icons.keyboard_arrow_up_rounded
                                               : Icons
                                                   .keyboard_arrow_down_rounded,
-                                          color: isDark
-                                              ? AppTheme.textSecondaryDark
-                                              : AppTheme.textMuted,
+                                          color: AppTheme.secondaryInkOf(context),
                                         ),
                                       ],
                                     ),
@@ -728,8 +726,22 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(CupertinoIcons.map_pin_ellipse,
-                size: 44, color: AppTheme.textMuted),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppTheme.primarySubtleBgOf(context),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.primarySubtleBorderOf(context),
+                  width: 0.5,
+                ),
+              ),
+              child: const Icon(
+                CupertinoIcons.map_pin_ellipse,
+                size: 32,
+                color: AppTheme.primary,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
               'No LCP NAP sites match',

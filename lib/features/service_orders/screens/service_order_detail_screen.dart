@@ -445,7 +445,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
 
   Widget _buildPlantAndHardwareCard(ServiceOrderDto order, bool isDark) {
     final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    final muted = AppTheme.secondaryInkOf(context);
     final lcpText = order.lcp?.isNotEmpty == true ? order.lcp! : 'Unassigned';
     final napText = order.nap?.isNotEmpty == true ? order.nap! : 'Unassigned';
     final portText =

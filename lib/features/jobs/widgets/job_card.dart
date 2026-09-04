@@ -111,14 +111,15 @@ class JobCard extends StatelessWidget {
                                       Icon(
                                         CupertinoIcons.location_circle,
                                         size: 13,
-                                        color: muted,
+                                        color: AppTheme.secondaryInkOf(context),
                                       ),
                                       const SizedBox(width: 3),
                                       Text(
                                         '$distanceStr away',
                                         style: context.text.bodySmall?.copyWith(
                                           fontSize: 12,
-                                          color: muted,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.secondaryInkOf(context),
                                         ),
                                       ),
                                     ],
@@ -149,7 +150,7 @@ class JobCard extends StatelessWidget {
 
                     // Plan & NAP Badges Row
                     if (job.planName?.isNotEmpty == true || napText != null) ...[
-                      const SizedBox(height: 6),
+                       const SizedBox(height: 6),
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
@@ -223,13 +224,18 @@ class JobCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(CupertinoIcons.location, size: 18, color: muted),
+                        const Icon(
+                          CupertinoIcons.location_solid,
+                          size: 16,
+                          color: AppTheme.primary,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             location,
                             style: context.text.bodySmall?.copyWith(
-                              color: muted,
+                              color: AppTheme.secondaryInkOf(context),
+                              fontWeight: FontWeight.w500,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,

@@ -254,9 +254,7 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                             Icon(
                               Icons.search_off_rounded,
                               size: 48,
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted,
+                              color: AppTheme.secondaryInkOf(context),
                             ),
                             const SizedBox(height: 16),
                             Text(

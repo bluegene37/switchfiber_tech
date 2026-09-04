@@ -1040,9 +1040,7 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                         children: [
                           Icon(Icons.search_off_rounded,
                               size: 40,
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted),
+                              color: AppTheme.secondaryInkOf(context)),
                           const SizedBox(height: 8),
                           Text(
                             'No NAP matching "$_query"',
@@ -1065,10 +1063,8 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primary.withValues(alpha: 0.15)
-                                  : (isDark
-                                      ? Colors.white.withValues(alpha: 0.06)
-                                      : Colors.black.withValues(alpha: 0.04)),
+                                  ? AppTheme.primarySubtleBgOf(context)
+                                  : AppTheme.fillOf(context),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -1076,9 +1072,7 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                               size: 20,
                               color: isSelected
                                   ? AppTheme.primary
-                                  : (isDark
-                                      ? AppTheme.textSecondaryDark
-                                      : AppTheme.textMuted),
+                                  : AppTheme.secondaryInkOf(context),
                             ),
                           ),
                           title: Text(

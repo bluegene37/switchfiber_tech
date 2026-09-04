@@ -115,6 +115,14 @@ class AppTheme {
   static Color violetInkOf(BuildContext c) =>
       _isDark(c) ? violetInkDark : violetInk;
 
+  /// Surface helpers for subtle brand and neutral fills
+  static Color primarySubtleBgOf(BuildContext c) =>
+      _isDark(c) ? primarySubtleBgDark : primarySubtleBg;
+  static Color primarySubtleBorderOf(BuildContext c) =>
+      _isDark(c) ? primarySubtleBorderDark : primarySubtleBorder;
+  static Color fillOf(BuildContext c) =>
+      _isDark(c) ? fillDark : fillLight;
+
   /// Standard iOS Page Transitions Theme
   static const PageTransitionsTheme _pageTransitionsTheme =
       PageTransitionsTheme(

@@ -217,9 +217,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                           Icon(
                             Icons.location_city_rounded,
                             size: 20,
-                            color: isDark
-                                ? AppTheme.textSecondaryDark
-                                : AppTheme.textMuted,
+                            color: AppTheme.secondaryInkOf(context),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -306,9 +304,7 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                                   Icon(
                                     Icons.circle_outlined,
                                     size: 20,
-                                    color: isDark
-                                        ? AppTheme.textSecondaryDark
-                                        : AppTheme.textMuted,
+                                    color: AppTheme.secondaryInkOf(context),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(

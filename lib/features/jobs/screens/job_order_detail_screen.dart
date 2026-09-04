@@ -91,19 +91,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: job.isSynced
                       ? (isDark
-                          ? const Color(0xFF059669).withValues(alpha: 0.25)
+                          ? const Color(0xFF064E3B)
                           : AppTheme.successSubtle)
                       : (isDark
-                          ? const Color(0xFF78350F).withValues(alpha: 0.25)
+                          ? const Color(0xFF3B2506)
                           : AppTheme.warningSubtle),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: job.isSynced
                         ? (isDark
-                            ? const Color(0xFF059669).withValues(alpha: 0.4)
+                            ? const Color(0xFF059669)
                             : const Color(0xFFBBF7D0))
                         : (isDark
-                            ? const Color(0xFFD97706).withValues(alpha: 0.4)
+                            ? const Color(0xFFB45309)
                             : const Color(0xFFFDE68A)),
                   ),
                 ),
@@ -116,12 +116,8 @@ class JobOrderDetailScreen extends StatelessWidget {
                           : Icons.cloud_off_rounded,
                       size: 20,
                       color: job.isSynced
-                          ? (isDark
-                              ? const Color(0xFF4ADE80)
-                              : AppTheme.success)
-                          : (isDark
-                              ? const Color(0xFFFDE68A)
-                              : const Color(0xFF92400E)),
+                          ? AppTheme.successInkOf(context)
+                          : AppTheme.warningInkOf(context),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -306,11 +302,11 @@ class JobOrderDetailScreen extends StatelessWidget {
   Widget _buildAssignmentRow(
       BuildContext context, JobOrderDto job, bool isDark) {
     final email = job.assignedEmail?.trim() ?? '';
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.person_pin_rounded, size: 20, color: muted),
+        Icon(Icons.person_pin_rounded,
+            size: 20, color: AppTheme.secondaryInkOf(context)),
         const SizedBox(width: 8),
         Text('Assigned To', style: context.text.bodySmall),
         const SizedBox(width: 12),
@@ -413,15 +409,15 @@ class JobOrderDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark
             ? (isReschedule
-                ? const Color(0xFF78350F).withValues(alpha: 0.3)
-                : const Color(0xFF7F1D1D).withValues(alpha: 0.3))
+                ? const Color(0xFF3B2506)
+                : const Color(0xFF3B1215))
             : (isReschedule ? AppTheme.warningSubtle : AppTheme.dangerSubtle),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
               ? (isReschedule
-                  ? const Color(0xFFD97706).withValues(alpha: 0.5)
-                  : const Color(0xFFDC2626).withValues(alpha: 0.5))
+                  ? const Color(0xFF78350F)
+                  : const Color(0xFF7F1D1D))
               : (isReschedule
                   ? const Color(0xFFFDE68A)
                   : const Color(0xFFFECACA)),
@@ -445,13 +441,9 @@ class JobOrderDetailScreen extends StatelessWidget {
                 Text(
                   'Site Exception: ${exception.label}',
                   style: context.text.titleSmall!.copyWith(
-                    color: isDark
-                        ? (isReschedule
-                            ? const Color(0xFFFDE68A)
-                            : const Color(0xFFFCA5A5))
-                        : (isReschedule
-                            ? const Color(0xFF92400E)
-                            : const Color(0xFF991B1B)),
+                    color: isReschedule
+                        ? AppTheme.warningInkOf(context)
+                        : AppTheme.dangerInkOf(context),
                   ),
                 ),
                 if (job.onsiteRemarks != null &&
@@ -460,13 +452,9 @@ class JobOrderDetailScreen extends StatelessWidget {
                   Text(
                     job.onsiteRemarks!,
                     style: context.text.bodySmall!.copyWith(
-                      color: isDark
-                          ? (isReschedule
-                              ? const Color(0xFFFCD34D)
-                              : const Color(0xFFFECACA))
-                          : (isReschedule
-                              ? const Color(0xFF78350F)
-                              : const Color(0xFF7F1D1D)),
+                      color: isReschedule
+                          ? AppTheme.warningInkOf(context)
+                          : AppTheme.dangerInkOf(context),
                     ),
                   ),
                 ],
@@ -518,11 +506,10 @@ class JobOrderDetailScreen extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.location_on_outlined,
+                const Icon(
+                  Icons.location_on_rounded,
                   size: 20,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                  color: AppTheme.primary,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -851,7 +838,7 @@ class JobOrderDetailScreen extends StatelessWidget {
   Widget _buildPlantAndHardwareCard(
       BuildContext context, JobOrderDto job, bool isDark) {
     final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    final muted = AppTheme.secondaryInkOf(context);
     final lcpText = job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned';
     final napText = job.nap?.isNotEmpty == true
         ? job.nap!
@@ -1302,7 +1289,7 @@ class JobOrderDetailScreen extends StatelessWidget {
         children: [
           Icon(icon,
               size: 20,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+              color: AppTheme.secondaryInkOf(context)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1346,7 +1333,6 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   /// Informs the technician that a completion report is needed before finalizing.
   Widget _buildReportRequiredNote(BuildContext context, bool isDark) {
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1359,7 +1345,7 @@ class JobOrderDetailScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 20, color: muted),
+          Icon(Icons.info_outline_rounded, size: 20, color: AppTheme.info),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1412,7 +1398,6 @@ class JobOrderDetailScreen extends StatelessWidget {
   /// A read-only banner for the history: the record can be inspected but not
   /// changed from here.
   Widget _buildViewOnlyNote(BuildContext context, bool isDark) {
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1424,7 +1409,8 @@ class JobOrderDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.lock_outline_rounded, size: 20, color: muted),
+          Icon(Icons.lock_outline_rounded,
+              size: 20, color: AppTheme.secondaryInkOf(context)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1619,9 +1605,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF3F2327)
-                      : AppTheme.primarySubtleBg,
+                  color: AppTheme.primarySubtleBgOf(ctx),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.copy_rounded,

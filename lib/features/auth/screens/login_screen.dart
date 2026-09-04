@@ -235,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkSlate : AppTheme.lightBg,
+                  color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                       color:
@@ -402,7 +402,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                               ? CupertinoIcons.eye_slash
                                               : CupertinoIcons.eye,
                                           size: 20,
-                                          color: AppTheme.textMuted,
+                                          color:
+                                              AppTheme.secondaryInkOf(context),
                                         ),
                                         onPressed: () {
                                           _obscurePassword.value = !obscure;

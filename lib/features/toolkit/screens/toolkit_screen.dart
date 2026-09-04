@@ -288,9 +288,7 @@ class ToolkitScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 12),
                   child: Icon(
                     CupertinoIcons.chevron_forward,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
+                    color: AppTheme.secondaryInkOf(context),
                     size: 24,
                   ),
                 ),

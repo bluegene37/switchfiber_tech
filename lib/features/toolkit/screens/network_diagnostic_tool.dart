@@ -205,7 +205,7 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                                     ? AppTheme.success
                                     : t.isSuccess == false
                                         ? AppTheme.danger
-                                        : AppTheme.textMuted,
+                                        : AppTheme.secondaryInkOf(context),
                               ),
                             ),
                             const SizedBox(width: 10),

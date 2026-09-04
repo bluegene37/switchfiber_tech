@@ -101,7 +101,6 @@ class _MapSearchBarState extends State<MapSearchBar> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
     return Material(
       color: isDark ? AppTheme.darkCard : Colors.white,
@@ -124,7 +123,8 @@ class _MapSearchBarState extends State<MapSearchBar> {
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            prefixIcon: Icon(Icons.search_rounded, size: 22, color: muted),
+            prefixIcon: Icon(Icons.search_rounded,
+                size: 22, color: AppTheme.secondaryInkOf(context)),
             suffixIcon: _busy
                 ? const Padding(
                     padding: EdgeInsets.all(12),
@@ -141,7 +141,9 @@ class _MapSearchBarState extends State<MapSearchBar> {
                     ? null
                     : IconButton(
                         tooltip: 'Clear search',
-                        icon: Icon(Icons.close_rounded, size: 18, color: muted),
+                        icon: Icon(Icons.close_rounded,
+                            size: 18,
+                            color: AppTheme.secondaryInkOf(context)),
                         onPressed: () => setState(_controller.clear),
                       ),
           ),

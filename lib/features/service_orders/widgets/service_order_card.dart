@@ -140,9 +140,7 @@ class ServiceOrderCard extends StatelessWidget {
                                     Icon(
                                       CupertinoIcons.location_solid,
                                       size: 14,
-                                      color: isDark
-                                          ? AppTheme.textSecondaryDark
-                                          : AppTheme.textMuted,
+                                      color: AppTheme.secondaryInkOf(context),
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
@@ -217,12 +215,10 @@ class ServiceOrderCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          CupertinoIcons.map_pin_ellipse,
+                        const Icon(
+                          CupertinoIcons.location_solid,
                           size: 16,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
+                          color: AppTheme.primary,
                         ),
                         const SizedBox(width: 6),
                         Expanded(
@@ -246,9 +242,15 @@ class ServiceOrderCard extends StatelessWidget {
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : Colors.black.withValues(alpha: 0.03),
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
+                            width: 0.5,
+                          ),
                         ),
                         child: Wrap(
                           spacing: 10,

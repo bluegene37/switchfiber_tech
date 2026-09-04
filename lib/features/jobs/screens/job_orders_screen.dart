@@ -450,7 +450,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   color: isDark
-                      ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                      ? const Color(0xFF3B2506)
                       : AppTheme.warningSubtle,
                   child: Row(
                     children: [
@@ -663,13 +663,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
+                color: AppTheme.primarySubtleBgOf(context),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isDark
-                      ? AppTheme.primary.withValues(alpha: 0.3)
-                      : AppTheme.primarySubtleBorder,
+                  color: AppTheme.primarySubtleBorderOf(context),
                   width: 0.5,
                 ),
               ),

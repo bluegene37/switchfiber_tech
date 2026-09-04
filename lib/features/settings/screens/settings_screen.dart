@@ -256,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 20, color: AppTheme.textMuted),
+            Icon(icon, size: 20, color: AppTheme.secondaryInkOf(context)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -532,10 +532,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 isDark: isDark,
                 showDivider: false,
                 onTap: _showOpticalPowerStandards,
-                trailing: const Icon(
+                trailing: Icon(
                   CupertinoIcons.chevron_forward,
                   size: 24,
-                  color: AppTheme.textMuted,
+                  color: AppTheme.secondaryInkOf(context),
                 ),
               ),
             ],
@@ -810,7 +810,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : AppTheme.brandInkOf(context);
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppTheme.textMuted),
+        Icon(icon, size: 20, color: AppTheme.secondaryInkOf(context)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
