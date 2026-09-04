@@ -104,3 +104,59 @@ class SyncQueues extends Table {
   IntColumn get retryCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
+
+/// Drift SQLite table definition for ServiceOrders (Repairs, Swaps, Maintenance).
+class ServiceOrders extends Table {
+  IntColumn get id => integer()();
+  TextColumn get accountNumber => text()();
+  TextColumn get fullName => text()();
+  TextColumn get contactNumber => text().nullable()();
+  TextColumn get emailAddress => text().nullable()();
+  TextColumn get address => text()();
+  TextColumn get barangay => text().nullable()();
+  TextColumn get city => text().nullable()();
+  TextColumn get provider => text().nullable()();
+  TextColumn get plan => text().nullable()();
+  TextColumn get username => text().nullable()();
+  TextColumn get connectionType => text().nullable()();
+  TextColumn get routerModemSN => text().nullable()();
+  TextColumn get lcp => text().nullable()();
+  TextColumn get nap => text().nullable()();
+  TextColumn get port => text().nullable()();
+  TextColumn get vlan => text().nullable()();
+  TextColumn get supportStatus =>
+      text().withDefault(const Constant('Open'))();
+  TextColumn get concern =>
+      text().withDefault(const Constant('Service Call'))();
+  TextColumn get priorityLevel => text().nullable()();
+  TextColumn get visitStatus => text().nullable()();
+  TextColumn get visitBy => text().nullable()();
+  TextColumn get visitRemarks => text().nullable()();
+  TextColumn get assignedEmail => text().nullable()();
+  DateTimeColumn get createdDate => dateTime().nullable()();
+  DateTimeColumn get dateInstalled => dateTime().nullable()();
+  TextColumn get newRouterModemSN => text().nullable()();
+  TextColumn get newLCP => text().nullable()();
+  TextColumn get newNAP => text().nullable()();
+  TextColumn get newPORT => text().nullable()();
+  TextColumn get newVLAN => text().nullable()();
+  TextColumn get routerModel => text().nullable()();
+  TextColumn get pulloutRouterModel => text().nullable()();
+  TextColumn get pulloutRouterModelSN => text().nullable()();
+  TextColumn get pulloutRemarks => text().nullable()();
+  TextColumn get materialsUsedJson => text().nullable()();
+  TextColumn get clientSignature => text().nullable()();
+  TextColumn get image1 => text().nullable()();
+  TextColumn get image2 => text().nullable()();
+  TextColumn get image3 => text().nullable()();
+  TextColumn get houseFrontPicture => text().nullable()();
+  TextColumn get addressCoordinates => text().nullable()();
+  RealColumn get serviceCharge =>
+      real().withDefault(const Constant(0.0))();
+  TextColumn get rawJson => text().nullable()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

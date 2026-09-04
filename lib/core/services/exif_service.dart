@@ -14,6 +14,7 @@ class ExifMetadata {
   final int? fileSizeBytes;
   final int? width;
   final int? height;
+  final int? orientation;
 
   const ExifMetadata({
     this.latitude,
@@ -26,6 +27,7 @@ class ExifMetadata {
     this.fileSizeBytes,
     this.width,
     this.height,
+    this.orientation,
   });
 
   bool get hasGps => latitude != null && longitude != null;
@@ -137,11 +139,22 @@ class ExifService {
         }
       }
 
-      // Dimensions
+      // Dimensions & Orientation
       final wTag = tags['EXIF ExifImageWidth'] ?? tags['Image ImageWidth'];
       final hTag = tags['EXIF ExifImageLength'] ?? tags['Image ImageLength'];
       if (wTag != null) width = int.tryParse(wTag.printable);
       if (hTag != null) height = int.tryParse(hTag.printable);
+
+      int? orientation;
+      if (tags.containsKey('Image Orientation')) {
+        final oriTag = tags['Image Orientation'];
+        try {
+          final list = oriTag?.values.toList();
+          if (list != null && list.isNotEmpty) {
+            orientation = int.tryParse(list.first.toString());
+          }
+        } catch (_) {}
+      }
 
       return ExifMetadata(
         latitude: lat,
@@ -154,6 +167,7 @@ class ExifService {
         fileSizeBytes: bytes.length,
         width: width,
         height: height,
+        orientation: orientation,
       );
     } catch (_) {
       return ExifMetadata(fileSizeBytes: bytes.length);
@@ -195,6 +209,7 @@ class ExifService {
 
     final now = (timestamp ?? DateTime.now()).toUtc();
     final localNow = timestamp ?? DateTime.now();
+    final orientation = _extractOrientation(jpegBytes);
 
     // Build the TIFF/EXIF payload
     final exifPayload = _buildExifPayload(
@@ -204,6 +219,7 @@ class ExifService {
       utcTime: now,
       localTime: localNow,
       techEmail: technicianEmail,
+      orientation: orientation,
     );
 
     // APP1 Header: 0xFF, 0xE1, Length (2 bytes big endian)
@@ -253,6 +269,53 @@ class ExifService {
     return builder.toBytes();
   }
 
+  /// Inspects existing JPEG segments for EXIF tag 0x0112 (Orientation) to preserve
+  /// camera orientation during GPS injection. Defaults to 1 (normal) if absent.
+  int _extractOrientation(Uint8List jpegBytes) {
+    int idx = 2;
+    while (idx + 4 < jpegBytes.length && jpegBytes[idx] == 0xFF) {
+      final marker = jpegBytes[idx + 1];
+      if (marker == 0xDA || marker == 0xD9) break;
+      final segLen = (jpegBytes[idx + 2] << 8) | jpegBytes[idx + 3];
+      if (marker == 0xE1 && segLen > 14) {
+        final exifStart = idx + 4;
+        if (exifStart + 6 <= jpegBytes.length &&
+            jpegBytes[exifStart] == 0x45 &&
+            jpegBytes[exifStart + 1] == 0x78 &&
+            jpegBytes[exifStart + 2] == 0x69 &&
+            jpegBytes[exifStart + 3] == 0x66 &&
+            jpegBytes[exifStart + 4] == 0x00 &&
+            jpegBytes[exifStart + 5] == 0x00) {
+          final tiffStart = exifStart + 6;
+          if (tiffStart + 8 <= jpegBytes.length) {
+            final isLe = jpegBytes[tiffStart] == 0x49 && jpegBytes[tiffStart + 1] == 0x49;
+            final isBe = jpegBytes[tiffStart] == 0x4D && jpegBytes[tiffStart + 1] == 0x4D;
+            if (isLe || isBe) {
+              final endian = isLe ? Endian.little : Endian.big;
+              final bd = ByteData.sublistView(jpegBytes);
+              final ifd0Offset = bd.getUint32(tiffStart + 4, endian);
+              final ifd0Pos = tiffStart + ifd0Offset;
+              if (ifd0Pos + 2 <= jpegBytes.length) {
+                final entryCount = bd.getUint16(ifd0Pos, endian);
+                for (int i = 0; i < entryCount; i++) {
+                  final entryPos = ifd0Pos + 2 + (i * 12);
+                  if (entryPos + 12 <= jpegBytes.length) {
+                    final tag = bd.getUint16(entryPos, endian);
+                    if (tag == 0x0112) {
+                      return bd.getUint16(entryPos + 8, endian);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      idx += 2 + segLen;
+    }
+    return 1;
+  }
+
   Uint8List _buildExifPayload({
     required double latitude,
     required double longitude,
@@ -260,6 +323,7 @@ class ExifService {
     required DateTime utcTime,
     required DateTime localTime,
     String? techEmail,
+    int orientation = 1,
   }) {
     // Little-endian TIFF format ('II')
     final bb = BytesBuilder();
@@ -308,12 +372,12 @@ class ExifService {
     // GPS IFD: 2 bytes count + 9 entries * 12 bytes + 4 bytes next offset = 114 bytes (offset 74..187)
     // Data Area starts at offset 188
     const int tiffHeaderLen = 8;
-    const int ifd0EntryCount = 5;
-    const int ifd0Len = 2 + (ifd0EntryCount * 12) + 4; // 66 bytes
-    final int gpsIfdOffset = tiffHeaderLen + ifd0Len; // 74
+    const int ifd0EntryCount = 6;
+    const int ifd0Len = 2 + (ifd0EntryCount * 12) + 4; // 78 bytes
+    final int gpsIfdOffset = tiffHeaderLen + ifd0Len; // 86
     const int gpsIfdEntryCount = 9;
     const int gpsIfdLen = 2 + (gpsIfdEntryCount * 12) + 4; // 114 bytes
-    final int dataAreaBaseOffset = gpsIfdOffset + gpsIfdLen; // 188
+    final int dataAreaBaseOffset = gpsIfdOffset + gpsIfdLen; // 200
 
     int addData(Uint8List bytes) {
       final offset = dataAreaBaseOffset + dataArea.length;
@@ -387,12 +451,13 @@ class ExifService {
       bd.setUint32(pos + 8, valOrOffset, Endian.little);
     }
 
-    // IFD0 entries: Make, Model, Software, DateTime, GPSIFDPointer
+    // IFD0 entries (sorted by tag in ascending order): Make, Model, Orientation, Software, DateTime, GPSIFDPointer
     writeEntry(ifd0Bd, 0, 0x010F, 2, makeBytes.length, makeOffset);
     writeEntry(ifd0Bd, 1, 0x0110, 2, modelBytes.length, modelOffset);
-    writeEntry(ifd0Bd, 2, 0x0131, 2, softwareBytes.length, softwareOffset);
-    writeEntry(ifd0Bd, 3, 0x0132, 2, dtBytes.length, dtOffset);
-    writeEntry(ifd0Bd, 4, 0x8825, 4, 1, gpsIfdOffset); // GPS Pointer
+    writeEntry(ifd0Bd, 2, 0x0112, 3, 1, orientation);
+    writeEntry(ifd0Bd, 3, 0x0131, 2, softwareBytes.length, softwareOffset);
+    writeEntry(ifd0Bd, 4, 0x0132, 2, dtBytes.length, dtOffset);
+    writeEntry(ifd0Bd, 5, 0x8825, 4, 1, gpsIfdOffset); // GPS Pointer
     ifd0Bd.setUint32(2 + (ifd0EntryCount * 12), 0, Endian.little); // Next IFD = 0
 
     // Build GPS IFD

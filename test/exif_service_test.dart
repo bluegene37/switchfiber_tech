@@ -62,6 +62,7 @@ void main() {
       expect(meta.make, contains('Switch Fiber'));
       expect(meta.dmsCoordinates, contains('14°28\''));
       expect(meta.dmsCoordinates, contains('121°11\''));
+      expect(meta.orientation, 1);
     });
   });
 }

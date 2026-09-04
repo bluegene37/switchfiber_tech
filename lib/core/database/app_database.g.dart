@@ -2767,6 +2767,2034 @@ class LcpNapLocationsCompanion extends UpdateCompanion<LcpNapLocation> {
   }
 }
 
+class $ServiceOrdersTable extends ServiceOrders
+    with TableInfo<$ServiceOrdersTable, ServiceOrder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ServiceOrdersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _accountNumberMeta =
+      const VerificationMeta('accountNumber');
+  @override
+  late final GeneratedColumn<String> accountNumber = GeneratedColumn<String>(
+      'account_number', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _fullNameMeta =
+      const VerificationMeta('fullName');
+  @override
+  late final GeneratedColumn<String> fullName = GeneratedColumn<String>(
+      'full_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _contactNumberMeta =
+      const VerificationMeta('contactNumber');
+  @override
+  late final GeneratedColumn<String> contactNumber = GeneratedColumn<String>(
+      'contact_number', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _emailAddressMeta =
+      const VerificationMeta('emailAddress');
+  @override
+  late final GeneratedColumn<String> emailAddress = GeneratedColumn<String>(
+      'email_address', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _addressMeta =
+      const VerificationMeta('address');
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+      'address', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _barangayMeta =
+      const VerificationMeta('barangay');
+  @override
+  late final GeneratedColumn<String> barangay = GeneratedColumn<String>(
+      'barangay', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cityMeta = const VerificationMeta('city');
+  @override
+  late final GeneratedColumn<String> city = GeneratedColumn<String>(
+      'city', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _providerMeta =
+      const VerificationMeta('provider');
+  @override
+  late final GeneratedColumn<String> provider = GeneratedColumn<String>(
+      'provider', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _planMeta = const VerificationMeta('plan');
+  @override
+  late final GeneratedColumn<String> plan = GeneratedColumn<String>(
+      'plan', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _usernameMeta =
+      const VerificationMeta('username');
+  @override
+  late final GeneratedColumn<String> username = GeneratedColumn<String>(
+      'username', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _connectionTypeMeta =
+      const VerificationMeta('connectionType');
+  @override
+  late final GeneratedColumn<String> connectionType = GeneratedColumn<String>(
+      'connection_type', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _routerModemSNMeta =
+      const VerificationMeta('routerModemSN');
+  @override
+  late final GeneratedColumn<String> routerModemSN = GeneratedColumn<String>(
+      'router_modem_s_n', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lcpMeta = const VerificationMeta('lcp');
+  @override
+  late final GeneratedColumn<String> lcp = GeneratedColumn<String>(
+      'lcp', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _napMeta = const VerificationMeta('nap');
+  @override
+  late final GeneratedColumn<String> nap = GeneratedColumn<String>(
+      'nap', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _portMeta = const VerificationMeta('port');
+  @override
+  late final GeneratedColumn<String> port = GeneratedColumn<String>(
+      'port', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _vlanMeta = const VerificationMeta('vlan');
+  @override
+  late final GeneratedColumn<String> vlan = GeneratedColumn<String>(
+      'vlan', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _supportStatusMeta =
+      const VerificationMeta('supportStatus');
+  @override
+  late final GeneratedColumn<String> supportStatus = GeneratedColumn<String>(
+      'support_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('Open'));
+  static const VerificationMeta _concernMeta =
+      const VerificationMeta('concern');
+  @override
+  late final GeneratedColumn<String> concern = GeneratedColumn<String>(
+      'concern', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('Service Call'));
+  static const VerificationMeta _priorityLevelMeta =
+      const VerificationMeta('priorityLevel');
+  @override
+  late final GeneratedColumn<String> priorityLevel = GeneratedColumn<String>(
+      'priority_level', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _visitStatusMeta =
+      const VerificationMeta('visitStatus');
+  @override
+  late final GeneratedColumn<String> visitStatus = GeneratedColumn<String>(
+      'visit_status', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _visitByMeta =
+      const VerificationMeta('visitBy');
+  @override
+  late final GeneratedColumn<String> visitBy = GeneratedColumn<String>(
+      'visit_by', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _visitRemarksMeta =
+      const VerificationMeta('visitRemarks');
+  @override
+  late final GeneratedColumn<String> visitRemarks = GeneratedColumn<String>(
+      'visit_remarks', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _assignedEmailMeta =
+      const VerificationMeta('assignedEmail');
+  @override
+  late final GeneratedColumn<String> assignedEmail = GeneratedColumn<String>(
+      'assigned_email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdDateMeta =
+      const VerificationMeta('createdDate');
+  @override
+  late final GeneratedColumn<DateTime> createdDate = GeneratedColumn<DateTime>(
+      'created_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _dateInstalledMeta =
+      const VerificationMeta('dateInstalled');
+  @override
+  late final GeneratedColumn<DateTime> dateInstalled =
+      GeneratedColumn<DateTime>('date_installed', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _newRouterModemSNMeta =
+      const VerificationMeta('newRouterModemSN');
+  @override
+  late final GeneratedColumn<String> newRouterModemSN = GeneratedColumn<String>(
+      'new_router_modem_s_n', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _newLCPMeta = const VerificationMeta('newLCP');
+  @override
+  late final GeneratedColumn<String> newLCP = GeneratedColumn<String>(
+      'new_l_c_p', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _newNAPMeta = const VerificationMeta('newNAP');
+  @override
+  late final GeneratedColumn<String> newNAP = GeneratedColumn<String>(
+      'new_n_a_p', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _newPORTMeta =
+      const VerificationMeta('newPORT');
+  @override
+  late final GeneratedColumn<String> newPORT = GeneratedColumn<String>(
+      'new_p_o_r_t', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _newVLANMeta =
+      const VerificationMeta('newVLAN');
+  @override
+  late final GeneratedColumn<String> newVLAN = GeneratedColumn<String>(
+      'new_v_l_a_n', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _routerModelMeta =
+      const VerificationMeta('routerModel');
+  @override
+  late final GeneratedColumn<String> routerModel = GeneratedColumn<String>(
+      'router_model', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _pulloutRouterModelMeta =
+      const VerificationMeta('pulloutRouterModel');
+  @override
+  late final GeneratedColumn<String> pulloutRouterModel =
+      GeneratedColumn<String>('pullout_router_model', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _pulloutRouterModelSNMeta =
+      const VerificationMeta('pulloutRouterModelSN');
+  @override
+  late final GeneratedColumn<String> pulloutRouterModelSN =
+      GeneratedColumn<String>('pullout_router_model_s_n', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _pulloutRemarksMeta =
+      const VerificationMeta('pulloutRemarks');
+  @override
+  late final GeneratedColumn<String> pulloutRemarks = GeneratedColumn<String>(
+      'pullout_remarks', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _materialsUsedJsonMeta =
+      const VerificationMeta('materialsUsedJson');
+  @override
+  late final GeneratedColumn<String> materialsUsedJson =
+      GeneratedColumn<String>('materials_used_json', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _clientSignatureMeta =
+      const VerificationMeta('clientSignature');
+  @override
+  late final GeneratedColumn<String> clientSignature = GeneratedColumn<String>(
+      'client_signature', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _image1Meta = const VerificationMeta('image1');
+  @override
+  late final GeneratedColumn<String> image1 = GeneratedColumn<String>(
+      'image1', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _image2Meta = const VerificationMeta('image2');
+  @override
+  late final GeneratedColumn<String> image2 = GeneratedColumn<String>(
+      'image2', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _image3Meta = const VerificationMeta('image3');
+  @override
+  late final GeneratedColumn<String> image3 = GeneratedColumn<String>(
+      'image3', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _houseFrontPictureMeta =
+      const VerificationMeta('houseFrontPicture');
+  @override
+  late final GeneratedColumn<String> houseFrontPicture =
+      GeneratedColumn<String>('house_front_picture', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _addressCoordinatesMeta =
+      const VerificationMeta('addressCoordinates');
+  @override
+  late final GeneratedColumn<String> addressCoordinates =
+      GeneratedColumn<String>('address_coordinates', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _serviceChargeMeta =
+      const VerificationMeta('serviceCharge');
+  @override
+  late final GeneratedColumn<double> serviceCharge = GeneratedColumn<double>(
+      'service_charge', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _rawJsonMeta =
+      const VerificationMeta('rawJson');
+  @override
+  late final GeneratedColumn<String> rawJson = GeneratedColumn<String>(
+      'raw_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isSyncedMeta =
+      const VerificationMeta('isSynced');
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+      'is_synced', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        accountNumber,
+        fullName,
+        contactNumber,
+        emailAddress,
+        address,
+        barangay,
+        city,
+        provider,
+        plan,
+        username,
+        connectionType,
+        routerModemSN,
+        lcp,
+        nap,
+        port,
+        vlan,
+        supportStatus,
+        concern,
+        priorityLevel,
+        visitStatus,
+        visitBy,
+        visitRemarks,
+        assignedEmail,
+        createdDate,
+        dateInstalled,
+        newRouterModemSN,
+        newLCP,
+        newNAP,
+        newPORT,
+        newVLAN,
+        routerModel,
+        pulloutRouterModel,
+        pulloutRouterModelSN,
+        pulloutRemarks,
+        materialsUsedJson,
+        clientSignature,
+        image1,
+        image2,
+        image3,
+        houseFrontPicture,
+        addressCoordinates,
+        serviceCharge,
+        rawJson,
+        isSynced,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'service_orders';
+  @override
+  VerificationContext validateIntegrity(Insertable<ServiceOrder> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('account_number')) {
+      context.handle(
+          _accountNumberMeta,
+          accountNumber.isAcceptableOrUnknown(
+              data['account_number']!, _accountNumberMeta));
+    } else if (isInserting) {
+      context.missing(_accountNumberMeta);
+    }
+    if (data.containsKey('full_name')) {
+      context.handle(_fullNameMeta,
+          fullName.isAcceptableOrUnknown(data['full_name']!, _fullNameMeta));
+    } else if (isInserting) {
+      context.missing(_fullNameMeta);
+    }
+    if (data.containsKey('contact_number')) {
+      context.handle(
+          _contactNumberMeta,
+          contactNumber.isAcceptableOrUnknown(
+              data['contact_number']!, _contactNumberMeta));
+    }
+    if (data.containsKey('email_address')) {
+      context.handle(
+          _emailAddressMeta,
+          emailAddress.isAcceptableOrUnknown(
+              data['email_address']!, _emailAddressMeta));
+    }
+    if (data.containsKey('address')) {
+      context.handle(_addressMeta,
+          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    } else if (isInserting) {
+      context.missing(_addressMeta);
+    }
+    if (data.containsKey('barangay')) {
+      context.handle(_barangayMeta,
+          barangay.isAcceptableOrUnknown(data['barangay']!, _barangayMeta));
+    }
+    if (data.containsKey('city')) {
+      context.handle(
+          _cityMeta, city.isAcceptableOrUnknown(data['city']!, _cityMeta));
+    }
+    if (data.containsKey('provider')) {
+      context.handle(_providerMeta,
+          provider.isAcceptableOrUnknown(data['provider']!, _providerMeta));
+    }
+    if (data.containsKey('plan')) {
+      context.handle(
+          _planMeta, plan.isAcceptableOrUnknown(data['plan']!, _planMeta));
+    }
+    if (data.containsKey('username')) {
+      context.handle(_usernameMeta,
+          username.isAcceptableOrUnknown(data['username']!, _usernameMeta));
+    }
+    if (data.containsKey('connection_type')) {
+      context.handle(
+          _connectionTypeMeta,
+          connectionType.isAcceptableOrUnknown(
+              data['connection_type']!, _connectionTypeMeta));
+    }
+    if (data.containsKey('router_modem_s_n')) {
+      context.handle(
+          _routerModemSNMeta,
+          routerModemSN.isAcceptableOrUnknown(
+              data['router_modem_s_n']!, _routerModemSNMeta));
+    }
+    if (data.containsKey('lcp')) {
+      context.handle(
+          _lcpMeta, lcp.isAcceptableOrUnknown(data['lcp']!, _lcpMeta));
+    }
+    if (data.containsKey('nap')) {
+      context.handle(
+          _napMeta, nap.isAcceptableOrUnknown(data['nap']!, _napMeta));
+    }
+    if (data.containsKey('port')) {
+      context.handle(
+          _portMeta, port.isAcceptableOrUnknown(data['port']!, _portMeta));
+    }
+    if (data.containsKey('vlan')) {
+      context.handle(
+          _vlanMeta, vlan.isAcceptableOrUnknown(data['vlan']!, _vlanMeta));
+    }
+    if (data.containsKey('support_status')) {
+      context.handle(
+          _supportStatusMeta,
+          supportStatus.isAcceptableOrUnknown(
+              data['support_status']!, _supportStatusMeta));
+    }
+    if (data.containsKey('concern')) {
+      context.handle(_concernMeta,
+          concern.isAcceptableOrUnknown(data['concern']!, _concernMeta));
+    }
+    if (data.containsKey('priority_level')) {
+      context.handle(
+          _priorityLevelMeta,
+          priorityLevel.isAcceptableOrUnknown(
+              data['priority_level']!, _priorityLevelMeta));
+    }
+    if (data.containsKey('visit_status')) {
+      context.handle(
+          _visitStatusMeta,
+          visitStatus.isAcceptableOrUnknown(
+              data['visit_status']!, _visitStatusMeta));
+    }
+    if (data.containsKey('visit_by')) {
+      context.handle(_visitByMeta,
+          visitBy.isAcceptableOrUnknown(data['visit_by']!, _visitByMeta));
+    }
+    if (data.containsKey('visit_remarks')) {
+      context.handle(
+          _visitRemarksMeta,
+          visitRemarks.isAcceptableOrUnknown(
+              data['visit_remarks']!, _visitRemarksMeta));
+    }
+    if (data.containsKey('assigned_email')) {
+      context.handle(
+          _assignedEmailMeta,
+          assignedEmail.isAcceptableOrUnknown(
+              data['assigned_email']!, _assignedEmailMeta));
+    }
+    if (data.containsKey('created_date')) {
+      context.handle(
+          _createdDateMeta,
+          createdDate.isAcceptableOrUnknown(
+              data['created_date']!, _createdDateMeta));
+    }
+    if (data.containsKey('date_installed')) {
+      context.handle(
+          _dateInstalledMeta,
+          dateInstalled.isAcceptableOrUnknown(
+              data['date_installed']!, _dateInstalledMeta));
+    }
+    if (data.containsKey('new_router_modem_s_n')) {
+      context.handle(
+          _newRouterModemSNMeta,
+          newRouterModemSN.isAcceptableOrUnknown(
+              data['new_router_modem_s_n']!, _newRouterModemSNMeta));
+    }
+    if (data.containsKey('new_l_c_p')) {
+      context.handle(_newLCPMeta,
+          newLCP.isAcceptableOrUnknown(data['new_l_c_p']!, _newLCPMeta));
+    }
+    if (data.containsKey('new_n_a_p')) {
+      context.handle(_newNAPMeta,
+          newNAP.isAcceptableOrUnknown(data['new_n_a_p']!, _newNAPMeta));
+    }
+    if (data.containsKey('new_p_o_r_t')) {
+      context.handle(_newPORTMeta,
+          newPORT.isAcceptableOrUnknown(data['new_p_o_r_t']!, _newPORTMeta));
+    }
+    if (data.containsKey('new_v_l_a_n')) {
+      context.handle(_newVLANMeta,
+          newVLAN.isAcceptableOrUnknown(data['new_v_l_a_n']!, _newVLANMeta));
+    }
+    if (data.containsKey('router_model')) {
+      context.handle(
+          _routerModelMeta,
+          routerModel.isAcceptableOrUnknown(
+              data['router_model']!, _routerModelMeta));
+    }
+    if (data.containsKey('pullout_router_model')) {
+      context.handle(
+          _pulloutRouterModelMeta,
+          pulloutRouterModel.isAcceptableOrUnknown(
+              data['pullout_router_model']!, _pulloutRouterModelMeta));
+    }
+    if (data.containsKey('pullout_router_model_s_n')) {
+      context.handle(
+          _pulloutRouterModelSNMeta,
+          pulloutRouterModelSN.isAcceptableOrUnknown(
+              data['pullout_router_model_s_n']!, _pulloutRouterModelSNMeta));
+    }
+    if (data.containsKey('pullout_remarks')) {
+      context.handle(
+          _pulloutRemarksMeta,
+          pulloutRemarks.isAcceptableOrUnknown(
+              data['pullout_remarks']!, _pulloutRemarksMeta));
+    }
+    if (data.containsKey('materials_used_json')) {
+      context.handle(
+          _materialsUsedJsonMeta,
+          materialsUsedJson.isAcceptableOrUnknown(
+              data['materials_used_json']!, _materialsUsedJsonMeta));
+    }
+    if (data.containsKey('client_signature')) {
+      context.handle(
+          _clientSignatureMeta,
+          clientSignature.isAcceptableOrUnknown(
+              data['client_signature']!, _clientSignatureMeta));
+    }
+    if (data.containsKey('image1')) {
+      context.handle(_image1Meta,
+          image1.isAcceptableOrUnknown(data['image1']!, _image1Meta));
+    }
+    if (data.containsKey('image2')) {
+      context.handle(_image2Meta,
+          image2.isAcceptableOrUnknown(data['image2']!, _image2Meta));
+    }
+    if (data.containsKey('image3')) {
+      context.handle(_image3Meta,
+          image3.isAcceptableOrUnknown(data['image3']!, _image3Meta));
+    }
+    if (data.containsKey('house_front_picture')) {
+      context.handle(
+          _houseFrontPictureMeta,
+          houseFrontPicture.isAcceptableOrUnknown(
+              data['house_front_picture']!, _houseFrontPictureMeta));
+    }
+    if (data.containsKey('address_coordinates')) {
+      context.handle(
+          _addressCoordinatesMeta,
+          addressCoordinates.isAcceptableOrUnknown(
+              data['address_coordinates']!, _addressCoordinatesMeta));
+    }
+    if (data.containsKey('service_charge')) {
+      context.handle(
+          _serviceChargeMeta,
+          serviceCharge.isAcceptableOrUnknown(
+              data['service_charge']!, _serviceChargeMeta));
+    }
+    if (data.containsKey('raw_json')) {
+      context.handle(_rawJsonMeta,
+          rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta));
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(_isSyncedMeta,
+          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ServiceOrder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ServiceOrder(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      accountNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}account_number'])!,
+      fullName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}full_name'])!,
+      contactNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}contact_number']),
+      emailAddress: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}email_address']),
+      address: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
+      barangay: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}barangay']),
+      city: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}city']),
+      provider: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}provider']),
+      plan: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}plan']),
+      username: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}username']),
+      connectionType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}connection_type']),
+      routerModemSN: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}router_modem_s_n']),
+      lcp: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}lcp']),
+      nap: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}nap']),
+      port: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}port']),
+      vlan: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}vlan']),
+      supportStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}support_status'])!,
+      concern: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}concern'])!,
+      priorityLevel: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}priority_level']),
+      visitStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}visit_status']),
+      visitBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}visit_by']),
+      visitRemarks: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}visit_remarks']),
+      assignedEmail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}assigned_email']),
+      createdDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_date']),
+      dateInstalled: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}date_installed']),
+      newRouterModemSN: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}new_router_modem_s_n']),
+      newLCP: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}new_l_c_p']),
+      newNAP: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}new_n_a_p']),
+      newPORT: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}new_p_o_r_t']),
+      newVLAN: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}new_v_l_a_n']),
+      routerModel: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}router_model']),
+      pulloutRouterModel: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}pullout_router_model']),
+      pulloutRouterModelSN: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}pullout_router_model_s_n']),
+      pulloutRemarks: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pullout_remarks']),
+      materialsUsedJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}materials_used_json']),
+      clientSignature: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}client_signature']),
+      image1: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image1']),
+      image2: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image2']),
+      image3: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image3']),
+      houseFrontPicture: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}house_front_picture']),
+      addressCoordinates: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}address_coordinates']),
+      serviceCharge: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}service_charge'])!,
+      rawJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}raw_json']),
+      isSynced: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $ServiceOrdersTable createAlias(String alias) {
+    return $ServiceOrdersTable(attachedDatabase, alias);
+  }
+}
+
+class ServiceOrder extends DataClass implements Insertable<ServiceOrder> {
+  final int id;
+  final String accountNumber;
+  final String fullName;
+  final String? contactNumber;
+  final String? emailAddress;
+  final String address;
+  final String? barangay;
+  final String? city;
+  final String? provider;
+  final String? plan;
+  final String? username;
+  final String? connectionType;
+  final String? routerModemSN;
+  final String? lcp;
+  final String? nap;
+  final String? port;
+  final String? vlan;
+  final String supportStatus;
+  final String concern;
+  final String? priorityLevel;
+  final String? visitStatus;
+  final String? visitBy;
+  final String? visitRemarks;
+  final String? assignedEmail;
+  final DateTime? createdDate;
+  final DateTime? dateInstalled;
+  final String? newRouterModemSN;
+  final String? newLCP;
+  final String? newNAP;
+  final String? newPORT;
+  final String? newVLAN;
+  final String? routerModel;
+  final String? pulloutRouterModel;
+  final String? pulloutRouterModelSN;
+  final String? pulloutRemarks;
+  final String? materialsUsedJson;
+  final String? clientSignature;
+  final String? image1;
+  final String? image2;
+  final String? image3;
+  final String? houseFrontPicture;
+  final String? addressCoordinates;
+  final double serviceCharge;
+  final String? rawJson;
+  final bool isSynced;
+  final DateTime updatedAt;
+  const ServiceOrder(
+      {required this.id,
+      required this.accountNumber,
+      required this.fullName,
+      this.contactNumber,
+      this.emailAddress,
+      required this.address,
+      this.barangay,
+      this.city,
+      this.provider,
+      this.plan,
+      this.username,
+      this.connectionType,
+      this.routerModemSN,
+      this.lcp,
+      this.nap,
+      this.port,
+      this.vlan,
+      required this.supportStatus,
+      required this.concern,
+      this.priorityLevel,
+      this.visitStatus,
+      this.visitBy,
+      this.visitRemarks,
+      this.assignedEmail,
+      this.createdDate,
+      this.dateInstalled,
+      this.newRouterModemSN,
+      this.newLCP,
+      this.newNAP,
+      this.newPORT,
+      this.newVLAN,
+      this.routerModel,
+      this.pulloutRouterModel,
+      this.pulloutRouterModelSN,
+      this.pulloutRemarks,
+      this.materialsUsedJson,
+      this.clientSignature,
+      this.image1,
+      this.image2,
+      this.image3,
+      this.houseFrontPicture,
+      this.addressCoordinates,
+      required this.serviceCharge,
+      this.rawJson,
+      required this.isSynced,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['account_number'] = Variable<String>(accountNumber);
+    map['full_name'] = Variable<String>(fullName);
+    if (!nullToAbsent || contactNumber != null) {
+      map['contact_number'] = Variable<String>(contactNumber);
+    }
+    if (!nullToAbsent || emailAddress != null) {
+      map['email_address'] = Variable<String>(emailAddress);
+    }
+    map['address'] = Variable<String>(address);
+    if (!nullToAbsent || barangay != null) {
+      map['barangay'] = Variable<String>(barangay);
+    }
+    if (!nullToAbsent || city != null) {
+      map['city'] = Variable<String>(city);
+    }
+    if (!nullToAbsent || provider != null) {
+      map['provider'] = Variable<String>(provider);
+    }
+    if (!nullToAbsent || plan != null) {
+      map['plan'] = Variable<String>(plan);
+    }
+    if (!nullToAbsent || username != null) {
+      map['username'] = Variable<String>(username);
+    }
+    if (!nullToAbsent || connectionType != null) {
+      map['connection_type'] = Variable<String>(connectionType);
+    }
+    if (!nullToAbsent || routerModemSN != null) {
+      map['router_modem_s_n'] = Variable<String>(routerModemSN);
+    }
+    if (!nullToAbsent || lcp != null) {
+      map['lcp'] = Variable<String>(lcp);
+    }
+    if (!nullToAbsent || nap != null) {
+      map['nap'] = Variable<String>(nap);
+    }
+    if (!nullToAbsent || port != null) {
+      map['port'] = Variable<String>(port);
+    }
+    if (!nullToAbsent || vlan != null) {
+      map['vlan'] = Variable<String>(vlan);
+    }
+    map['support_status'] = Variable<String>(supportStatus);
+    map['concern'] = Variable<String>(concern);
+    if (!nullToAbsent || priorityLevel != null) {
+      map['priority_level'] = Variable<String>(priorityLevel);
+    }
+    if (!nullToAbsent || visitStatus != null) {
+      map['visit_status'] = Variable<String>(visitStatus);
+    }
+    if (!nullToAbsent || visitBy != null) {
+      map['visit_by'] = Variable<String>(visitBy);
+    }
+    if (!nullToAbsent || visitRemarks != null) {
+      map['visit_remarks'] = Variable<String>(visitRemarks);
+    }
+    if (!nullToAbsent || assignedEmail != null) {
+      map['assigned_email'] = Variable<String>(assignedEmail);
+    }
+    if (!nullToAbsent || createdDate != null) {
+      map['created_date'] = Variable<DateTime>(createdDate);
+    }
+    if (!nullToAbsent || dateInstalled != null) {
+      map['date_installed'] = Variable<DateTime>(dateInstalled);
+    }
+    if (!nullToAbsent || newRouterModemSN != null) {
+      map['new_router_modem_s_n'] = Variable<String>(newRouterModemSN);
+    }
+    if (!nullToAbsent || newLCP != null) {
+      map['new_l_c_p'] = Variable<String>(newLCP);
+    }
+    if (!nullToAbsent || newNAP != null) {
+      map['new_n_a_p'] = Variable<String>(newNAP);
+    }
+    if (!nullToAbsent || newPORT != null) {
+      map['new_p_o_r_t'] = Variable<String>(newPORT);
+    }
+    if (!nullToAbsent || newVLAN != null) {
+      map['new_v_l_a_n'] = Variable<String>(newVLAN);
+    }
+    if (!nullToAbsent || routerModel != null) {
+      map['router_model'] = Variable<String>(routerModel);
+    }
+    if (!nullToAbsent || pulloutRouterModel != null) {
+      map['pullout_router_model'] = Variable<String>(pulloutRouterModel);
+    }
+    if (!nullToAbsent || pulloutRouterModelSN != null) {
+      map['pullout_router_model_s_n'] = Variable<String>(pulloutRouterModelSN);
+    }
+    if (!nullToAbsent || pulloutRemarks != null) {
+      map['pullout_remarks'] = Variable<String>(pulloutRemarks);
+    }
+    if (!nullToAbsent || materialsUsedJson != null) {
+      map['materials_used_json'] = Variable<String>(materialsUsedJson);
+    }
+    if (!nullToAbsent || clientSignature != null) {
+      map['client_signature'] = Variable<String>(clientSignature);
+    }
+    if (!nullToAbsent || image1 != null) {
+      map['image1'] = Variable<String>(image1);
+    }
+    if (!nullToAbsent || image2 != null) {
+      map['image2'] = Variable<String>(image2);
+    }
+    if (!nullToAbsent || image3 != null) {
+      map['image3'] = Variable<String>(image3);
+    }
+    if (!nullToAbsent || houseFrontPicture != null) {
+      map['house_front_picture'] = Variable<String>(houseFrontPicture);
+    }
+    if (!nullToAbsent || addressCoordinates != null) {
+      map['address_coordinates'] = Variable<String>(addressCoordinates);
+    }
+    map['service_charge'] = Variable<double>(serviceCharge);
+    if (!nullToAbsent || rawJson != null) {
+      map['raw_json'] = Variable<String>(rawJson);
+    }
+    map['is_synced'] = Variable<bool>(isSynced);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ServiceOrdersCompanion toCompanion(bool nullToAbsent) {
+    return ServiceOrdersCompanion(
+      id: Value(id),
+      accountNumber: Value(accountNumber),
+      fullName: Value(fullName),
+      contactNumber: contactNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactNumber),
+      emailAddress: emailAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(emailAddress),
+      address: Value(address),
+      barangay: barangay == null && nullToAbsent
+          ? const Value.absent()
+          : Value(barangay),
+      city: city == null && nullToAbsent ? const Value.absent() : Value(city),
+      provider: provider == null && nullToAbsent
+          ? const Value.absent()
+          : Value(provider),
+      plan: plan == null && nullToAbsent ? const Value.absent() : Value(plan),
+      username: username == null && nullToAbsent
+          ? const Value.absent()
+          : Value(username),
+      connectionType: connectionType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(connectionType),
+      routerModemSN: routerModemSN == null && nullToAbsent
+          ? const Value.absent()
+          : Value(routerModemSN),
+      lcp: lcp == null && nullToAbsent ? const Value.absent() : Value(lcp),
+      nap: nap == null && nullToAbsent ? const Value.absent() : Value(nap),
+      port: port == null && nullToAbsent ? const Value.absent() : Value(port),
+      vlan: vlan == null && nullToAbsent ? const Value.absent() : Value(vlan),
+      supportStatus: Value(supportStatus),
+      concern: Value(concern),
+      priorityLevel: priorityLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(priorityLevel),
+      visitStatus: visitStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(visitStatus),
+      visitBy: visitBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(visitBy),
+      visitRemarks: visitRemarks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(visitRemarks),
+      assignedEmail: assignedEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedEmail),
+      createdDate: createdDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdDate),
+      dateInstalled: dateInstalled == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateInstalled),
+      newRouterModemSN: newRouterModemSN == null && nullToAbsent
+          ? const Value.absent()
+          : Value(newRouterModemSN),
+      newLCP:
+          newLCP == null && nullToAbsent ? const Value.absent() : Value(newLCP),
+      newNAP:
+          newNAP == null && nullToAbsent ? const Value.absent() : Value(newNAP),
+      newPORT: newPORT == null && nullToAbsent
+          ? const Value.absent()
+          : Value(newPORT),
+      newVLAN: newVLAN == null && nullToAbsent
+          ? const Value.absent()
+          : Value(newVLAN),
+      routerModel: routerModel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(routerModel),
+      pulloutRouterModel: pulloutRouterModel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pulloutRouterModel),
+      pulloutRouterModelSN: pulloutRouterModelSN == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pulloutRouterModelSN),
+      pulloutRemarks: pulloutRemarks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pulloutRemarks),
+      materialsUsedJson: materialsUsedJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(materialsUsedJson),
+      clientSignature: clientSignature == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientSignature),
+      image1:
+          image1 == null && nullToAbsent ? const Value.absent() : Value(image1),
+      image2:
+          image2 == null && nullToAbsent ? const Value.absent() : Value(image2),
+      image3:
+          image3 == null && nullToAbsent ? const Value.absent() : Value(image3),
+      houseFrontPicture: houseFrontPicture == null && nullToAbsent
+          ? const Value.absent()
+          : Value(houseFrontPicture),
+      addressCoordinates: addressCoordinates == null && nullToAbsent
+          ? const Value.absent()
+          : Value(addressCoordinates),
+      serviceCharge: Value(serviceCharge),
+      rawJson: rawJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rawJson),
+      isSynced: Value(isSynced),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ServiceOrder.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ServiceOrder(
+      id: serializer.fromJson<int>(json['id']),
+      accountNumber: serializer.fromJson<String>(json['accountNumber']),
+      fullName: serializer.fromJson<String>(json['fullName']),
+      contactNumber: serializer.fromJson<String?>(json['contactNumber']),
+      emailAddress: serializer.fromJson<String?>(json['emailAddress']),
+      address: serializer.fromJson<String>(json['address']),
+      barangay: serializer.fromJson<String?>(json['barangay']),
+      city: serializer.fromJson<String?>(json['city']),
+      provider: serializer.fromJson<String?>(json['provider']),
+      plan: serializer.fromJson<String?>(json['plan']),
+      username: serializer.fromJson<String?>(json['username']),
+      connectionType: serializer.fromJson<String?>(json['connectionType']),
+      routerModemSN: serializer.fromJson<String?>(json['routerModemSN']),
+      lcp: serializer.fromJson<String?>(json['lcp']),
+      nap: serializer.fromJson<String?>(json['nap']),
+      port: serializer.fromJson<String?>(json['port']),
+      vlan: serializer.fromJson<String?>(json['vlan']),
+      supportStatus: serializer.fromJson<String>(json['supportStatus']),
+      concern: serializer.fromJson<String>(json['concern']),
+      priorityLevel: serializer.fromJson<String?>(json['priorityLevel']),
+      visitStatus: serializer.fromJson<String?>(json['visitStatus']),
+      visitBy: serializer.fromJson<String?>(json['visitBy']),
+      visitRemarks: serializer.fromJson<String?>(json['visitRemarks']),
+      assignedEmail: serializer.fromJson<String?>(json['assignedEmail']),
+      createdDate: serializer.fromJson<DateTime?>(json['createdDate']),
+      dateInstalled: serializer.fromJson<DateTime?>(json['dateInstalled']),
+      newRouterModemSN: serializer.fromJson<String?>(json['newRouterModemSN']),
+      newLCP: serializer.fromJson<String?>(json['newLCP']),
+      newNAP: serializer.fromJson<String?>(json['newNAP']),
+      newPORT: serializer.fromJson<String?>(json['newPORT']),
+      newVLAN: serializer.fromJson<String?>(json['newVLAN']),
+      routerModel: serializer.fromJson<String?>(json['routerModel']),
+      pulloutRouterModel:
+          serializer.fromJson<String?>(json['pulloutRouterModel']),
+      pulloutRouterModelSN:
+          serializer.fromJson<String?>(json['pulloutRouterModelSN']),
+      pulloutRemarks: serializer.fromJson<String?>(json['pulloutRemarks']),
+      materialsUsedJson:
+          serializer.fromJson<String?>(json['materialsUsedJson']),
+      clientSignature: serializer.fromJson<String?>(json['clientSignature']),
+      image1: serializer.fromJson<String?>(json['image1']),
+      image2: serializer.fromJson<String?>(json['image2']),
+      image3: serializer.fromJson<String?>(json['image3']),
+      houseFrontPicture:
+          serializer.fromJson<String?>(json['houseFrontPicture']),
+      addressCoordinates:
+          serializer.fromJson<String?>(json['addressCoordinates']),
+      serviceCharge: serializer.fromJson<double>(json['serviceCharge']),
+      rawJson: serializer.fromJson<String?>(json['rawJson']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'accountNumber': serializer.toJson<String>(accountNumber),
+      'fullName': serializer.toJson<String>(fullName),
+      'contactNumber': serializer.toJson<String?>(contactNumber),
+      'emailAddress': serializer.toJson<String?>(emailAddress),
+      'address': serializer.toJson<String>(address),
+      'barangay': serializer.toJson<String?>(barangay),
+      'city': serializer.toJson<String?>(city),
+      'provider': serializer.toJson<String?>(provider),
+      'plan': serializer.toJson<String?>(plan),
+      'username': serializer.toJson<String?>(username),
+      'connectionType': serializer.toJson<String?>(connectionType),
+      'routerModemSN': serializer.toJson<String?>(routerModemSN),
+      'lcp': serializer.toJson<String?>(lcp),
+      'nap': serializer.toJson<String?>(nap),
+      'port': serializer.toJson<String?>(port),
+      'vlan': serializer.toJson<String?>(vlan),
+      'supportStatus': serializer.toJson<String>(supportStatus),
+      'concern': serializer.toJson<String>(concern),
+      'priorityLevel': serializer.toJson<String?>(priorityLevel),
+      'visitStatus': serializer.toJson<String?>(visitStatus),
+      'visitBy': serializer.toJson<String?>(visitBy),
+      'visitRemarks': serializer.toJson<String?>(visitRemarks),
+      'assignedEmail': serializer.toJson<String?>(assignedEmail),
+      'createdDate': serializer.toJson<DateTime?>(createdDate),
+      'dateInstalled': serializer.toJson<DateTime?>(dateInstalled),
+      'newRouterModemSN': serializer.toJson<String?>(newRouterModemSN),
+      'newLCP': serializer.toJson<String?>(newLCP),
+      'newNAP': serializer.toJson<String?>(newNAP),
+      'newPORT': serializer.toJson<String?>(newPORT),
+      'newVLAN': serializer.toJson<String?>(newVLAN),
+      'routerModel': serializer.toJson<String?>(routerModel),
+      'pulloutRouterModel': serializer.toJson<String?>(pulloutRouterModel),
+      'pulloutRouterModelSN': serializer.toJson<String?>(pulloutRouterModelSN),
+      'pulloutRemarks': serializer.toJson<String?>(pulloutRemarks),
+      'materialsUsedJson': serializer.toJson<String?>(materialsUsedJson),
+      'clientSignature': serializer.toJson<String?>(clientSignature),
+      'image1': serializer.toJson<String?>(image1),
+      'image2': serializer.toJson<String?>(image2),
+      'image3': serializer.toJson<String?>(image3),
+      'houseFrontPicture': serializer.toJson<String?>(houseFrontPicture),
+      'addressCoordinates': serializer.toJson<String?>(addressCoordinates),
+      'serviceCharge': serializer.toJson<double>(serviceCharge),
+      'rawJson': serializer.toJson<String?>(rawJson),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ServiceOrder copyWith(
+          {int? id,
+          String? accountNumber,
+          String? fullName,
+          Value<String?> contactNumber = const Value.absent(),
+          Value<String?> emailAddress = const Value.absent(),
+          String? address,
+          Value<String?> barangay = const Value.absent(),
+          Value<String?> city = const Value.absent(),
+          Value<String?> provider = const Value.absent(),
+          Value<String?> plan = const Value.absent(),
+          Value<String?> username = const Value.absent(),
+          Value<String?> connectionType = const Value.absent(),
+          Value<String?> routerModemSN = const Value.absent(),
+          Value<String?> lcp = const Value.absent(),
+          Value<String?> nap = const Value.absent(),
+          Value<String?> port = const Value.absent(),
+          Value<String?> vlan = const Value.absent(),
+          String? supportStatus,
+          String? concern,
+          Value<String?> priorityLevel = const Value.absent(),
+          Value<String?> visitStatus = const Value.absent(),
+          Value<String?> visitBy = const Value.absent(),
+          Value<String?> visitRemarks = const Value.absent(),
+          Value<String?> assignedEmail = const Value.absent(),
+          Value<DateTime?> createdDate = const Value.absent(),
+          Value<DateTime?> dateInstalled = const Value.absent(),
+          Value<String?> newRouterModemSN = const Value.absent(),
+          Value<String?> newLCP = const Value.absent(),
+          Value<String?> newNAP = const Value.absent(),
+          Value<String?> newPORT = const Value.absent(),
+          Value<String?> newVLAN = const Value.absent(),
+          Value<String?> routerModel = const Value.absent(),
+          Value<String?> pulloutRouterModel = const Value.absent(),
+          Value<String?> pulloutRouterModelSN = const Value.absent(),
+          Value<String?> pulloutRemarks = const Value.absent(),
+          Value<String?> materialsUsedJson = const Value.absent(),
+          Value<String?> clientSignature = const Value.absent(),
+          Value<String?> image1 = const Value.absent(),
+          Value<String?> image2 = const Value.absent(),
+          Value<String?> image3 = const Value.absent(),
+          Value<String?> houseFrontPicture = const Value.absent(),
+          Value<String?> addressCoordinates = const Value.absent(),
+          double? serviceCharge,
+          Value<String?> rawJson = const Value.absent(),
+          bool? isSynced,
+          DateTime? updatedAt}) =>
+      ServiceOrder(
+        id: id ?? this.id,
+        accountNumber: accountNumber ?? this.accountNumber,
+        fullName: fullName ?? this.fullName,
+        contactNumber:
+            contactNumber.present ? contactNumber.value : this.contactNumber,
+        emailAddress:
+            emailAddress.present ? emailAddress.value : this.emailAddress,
+        address: address ?? this.address,
+        barangay: barangay.present ? barangay.value : this.barangay,
+        city: city.present ? city.value : this.city,
+        provider: provider.present ? provider.value : this.provider,
+        plan: plan.present ? plan.value : this.plan,
+        username: username.present ? username.value : this.username,
+        connectionType:
+            connectionType.present ? connectionType.value : this.connectionType,
+        routerModemSN:
+            routerModemSN.present ? routerModemSN.value : this.routerModemSN,
+        lcp: lcp.present ? lcp.value : this.lcp,
+        nap: nap.present ? nap.value : this.nap,
+        port: port.present ? port.value : this.port,
+        vlan: vlan.present ? vlan.value : this.vlan,
+        supportStatus: supportStatus ?? this.supportStatus,
+        concern: concern ?? this.concern,
+        priorityLevel:
+            priorityLevel.present ? priorityLevel.value : this.priorityLevel,
+        visitStatus: visitStatus.present ? visitStatus.value : this.visitStatus,
+        visitBy: visitBy.present ? visitBy.value : this.visitBy,
+        visitRemarks:
+            visitRemarks.present ? visitRemarks.value : this.visitRemarks,
+        assignedEmail:
+            assignedEmail.present ? assignedEmail.value : this.assignedEmail,
+        createdDate: createdDate.present ? createdDate.value : this.createdDate,
+        dateInstalled:
+            dateInstalled.present ? dateInstalled.value : this.dateInstalled,
+        newRouterModemSN: newRouterModemSN.present
+            ? newRouterModemSN.value
+            : this.newRouterModemSN,
+        newLCP: newLCP.present ? newLCP.value : this.newLCP,
+        newNAP: newNAP.present ? newNAP.value : this.newNAP,
+        newPORT: newPORT.present ? newPORT.value : this.newPORT,
+        newVLAN: newVLAN.present ? newVLAN.value : this.newVLAN,
+        routerModel: routerModel.present ? routerModel.value : this.routerModel,
+        pulloutRouterModel: pulloutRouterModel.present
+            ? pulloutRouterModel.value
+            : this.pulloutRouterModel,
+        pulloutRouterModelSN: pulloutRouterModelSN.present
+            ? pulloutRouterModelSN.value
+            : this.pulloutRouterModelSN,
+        pulloutRemarks:
+            pulloutRemarks.present ? pulloutRemarks.value : this.pulloutRemarks,
+        materialsUsedJson: materialsUsedJson.present
+            ? materialsUsedJson.value
+            : this.materialsUsedJson,
+        clientSignature: clientSignature.present
+            ? clientSignature.value
+            : this.clientSignature,
+        image1: image1.present ? image1.value : this.image1,
+        image2: image2.present ? image2.value : this.image2,
+        image3: image3.present ? image3.value : this.image3,
+        houseFrontPicture: houseFrontPicture.present
+            ? houseFrontPicture.value
+            : this.houseFrontPicture,
+        addressCoordinates: addressCoordinates.present
+            ? addressCoordinates.value
+            : this.addressCoordinates,
+        serviceCharge: serviceCharge ?? this.serviceCharge,
+        rawJson: rawJson.present ? rawJson.value : this.rawJson,
+        isSynced: isSynced ?? this.isSynced,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  ServiceOrder copyWithCompanion(ServiceOrdersCompanion data) {
+    return ServiceOrder(
+      id: data.id.present ? data.id.value : this.id,
+      accountNumber: data.accountNumber.present
+          ? data.accountNumber.value
+          : this.accountNumber,
+      fullName: data.fullName.present ? data.fullName.value : this.fullName,
+      contactNumber: data.contactNumber.present
+          ? data.contactNumber.value
+          : this.contactNumber,
+      emailAddress: data.emailAddress.present
+          ? data.emailAddress.value
+          : this.emailAddress,
+      address: data.address.present ? data.address.value : this.address,
+      barangay: data.barangay.present ? data.barangay.value : this.barangay,
+      city: data.city.present ? data.city.value : this.city,
+      provider: data.provider.present ? data.provider.value : this.provider,
+      plan: data.plan.present ? data.plan.value : this.plan,
+      username: data.username.present ? data.username.value : this.username,
+      connectionType: data.connectionType.present
+          ? data.connectionType.value
+          : this.connectionType,
+      routerModemSN: data.routerModemSN.present
+          ? data.routerModemSN.value
+          : this.routerModemSN,
+      lcp: data.lcp.present ? data.lcp.value : this.lcp,
+      nap: data.nap.present ? data.nap.value : this.nap,
+      port: data.port.present ? data.port.value : this.port,
+      vlan: data.vlan.present ? data.vlan.value : this.vlan,
+      supportStatus: data.supportStatus.present
+          ? data.supportStatus.value
+          : this.supportStatus,
+      concern: data.concern.present ? data.concern.value : this.concern,
+      priorityLevel: data.priorityLevel.present
+          ? data.priorityLevel.value
+          : this.priorityLevel,
+      visitStatus:
+          data.visitStatus.present ? data.visitStatus.value : this.visitStatus,
+      visitBy: data.visitBy.present ? data.visitBy.value : this.visitBy,
+      visitRemarks: data.visitRemarks.present
+          ? data.visitRemarks.value
+          : this.visitRemarks,
+      assignedEmail: data.assignedEmail.present
+          ? data.assignedEmail.value
+          : this.assignedEmail,
+      createdDate:
+          data.createdDate.present ? data.createdDate.value : this.createdDate,
+      dateInstalled: data.dateInstalled.present
+          ? data.dateInstalled.value
+          : this.dateInstalled,
+      newRouterModemSN: data.newRouterModemSN.present
+          ? data.newRouterModemSN.value
+          : this.newRouterModemSN,
+      newLCP: data.newLCP.present ? data.newLCP.value : this.newLCP,
+      newNAP: data.newNAP.present ? data.newNAP.value : this.newNAP,
+      newPORT: data.newPORT.present ? data.newPORT.value : this.newPORT,
+      newVLAN: data.newVLAN.present ? data.newVLAN.value : this.newVLAN,
+      routerModel:
+          data.routerModel.present ? data.routerModel.value : this.routerModel,
+      pulloutRouterModel: data.pulloutRouterModel.present
+          ? data.pulloutRouterModel.value
+          : this.pulloutRouterModel,
+      pulloutRouterModelSN: data.pulloutRouterModelSN.present
+          ? data.pulloutRouterModelSN.value
+          : this.pulloutRouterModelSN,
+      pulloutRemarks: data.pulloutRemarks.present
+          ? data.pulloutRemarks.value
+          : this.pulloutRemarks,
+      materialsUsedJson: data.materialsUsedJson.present
+          ? data.materialsUsedJson.value
+          : this.materialsUsedJson,
+      clientSignature: data.clientSignature.present
+          ? data.clientSignature.value
+          : this.clientSignature,
+      image1: data.image1.present ? data.image1.value : this.image1,
+      image2: data.image2.present ? data.image2.value : this.image2,
+      image3: data.image3.present ? data.image3.value : this.image3,
+      houseFrontPicture: data.houseFrontPicture.present
+          ? data.houseFrontPicture.value
+          : this.houseFrontPicture,
+      addressCoordinates: data.addressCoordinates.present
+          ? data.addressCoordinates.value
+          : this.addressCoordinates,
+      serviceCharge: data.serviceCharge.present
+          ? data.serviceCharge.value
+          : this.serviceCharge,
+      rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ServiceOrder(')
+          ..write('id: $id, ')
+          ..write('accountNumber: $accountNumber, ')
+          ..write('fullName: $fullName, ')
+          ..write('contactNumber: $contactNumber, ')
+          ..write('emailAddress: $emailAddress, ')
+          ..write('address: $address, ')
+          ..write('barangay: $barangay, ')
+          ..write('city: $city, ')
+          ..write('provider: $provider, ')
+          ..write('plan: $plan, ')
+          ..write('username: $username, ')
+          ..write('connectionType: $connectionType, ')
+          ..write('routerModemSN: $routerModemSN, ')
+          ..write('lcp: $lcp, ')
+          ..write('nap: $nap, ')
+          ..write('port: $port, ')
+          ..write('vlan: $vlan, ')
+          ..write('supportStatus: $supportStatus, ')
+          ..write('concern: $concern, ')
+          ..write('priorityLevel: $priorityLevel, ')
+          ..write('visitStatus: $visitStatus, ')
+          ..write('visitBy: $visitBy, ')
+          ..write('visitRemarks: $visitRemarks, ')
+          ..write('assignedEmail: $assignedEmail, ')
+          ..write('createdDate: $createdDate, ')
+          ..write('dateInstalled: $dateInstalled, ')
+          ..write('newRouterModemSN: $newRouterModemSN, ')
+          ..write('newLCP: $newLCP, ')
+          ..write('newNAP: $newNAP, ')
+          ..write('newPORT: $newPORT, ')
+          ..write('newVLAN: $newVLAN, ')
+          ..write('routerModel: $routerModel, ')
+          ..write('pulloutRouterModel: $pulloutRouterModel, ')
+          ..write('pulloutRouterModelSN: $pulloutRouterModelSN, ')
+          ..write('pulloutRemarks: $pulloutRemarks, ')
+          ..write('materialsUsedJson: $materialsUsedJson, ')
+          ..write('clientSignature: $clientSignature, ')
+          ..write('image1: $image1, ')
+          ..write('image2: $image2, ')
+          ..write('image3: $image3, ')
+          ..write('houseFrontPicture: $houseFrontPicture, ')
+          ..write('addressCoordinates: $addressCoordinates, ')
+          ..write('serviceCharge: $serviceCharge, ')
+          ..write('rawJson: $rawJson, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        id,
+        accountNumber,
+        fullName,
+        contactNumber,
+        emailAddress,
+        address,
+        barangay,
+        city,
+        provider,
+        plan,
+        username,
+        connectionType,
+        routerModemSN,
+        lcp,
+        nap,
+        port,
+        vlan,
+        supportStatus,
+        concern,
+        priorityLevel,
+        visitStatus,
+        visitBy,
+        visitRemarks,
+        assignedEmail,
+        createdDate,
+        dateInstalled,
+        newRouterModemSN,
+        newLCP,
+        newNAP,
+        newPORT,
+        newVLAN,
+        routerModel,
+        pulloutRouterModel,
+        pulloutRouterModelSN,
+        pulloutRemarks,
+        materialsUsedJson,
+        clientSignature,
+        image1,
+        image2,
+        image3,
+        houseFrontPicture,
+        addressCoordinates,
+        serviceCharge,
+        rawJson,
+        isSynced,
+        updatedAt
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ServiceOrder &&
+          other.id == this.id &&
+          other.accountNumber == this.accountNumber &&
+          other.fullName == this.fullName &&
+          other.contactNumber == this.contactNumber &&
+          other.emailAddress == this.emailAddress &&
+          other.address == this.address &&
+          other.barangay == this.barangay &&
+          other.city == this.city &&
+          other.provider == this.provider &&
+          other.plan == this.plan &&
+          other.username == this.username &&
+          other.connectionType == this.connectionType &&
+          other.routerModemSN == this.routerModemSN &&
+          other.lcp == this.lcp &&
+          other.nap == this.nap &&
+          other.port == this.port &&
+          other.vlan == this.vlan &&
+          other.supportStatus == this.supportStatus &&
+          other.concern == this.concern &&
+          other.priorityLevel == this.priorityLevel &&
+          other.visitStatus == this.visitStatus &&
+          other.visitBy == this.visitBy &&
+          other.visitRemarks == this.visitRemarks &&
+          other.assignedEmail == this.assignedEmail &&
+          other.createdDate == this.createdDate &&
+          other.dateInstalled == this.dateInstalled &&
+          other.newRouterModemSN == this.newRouterModemSN &&
+          other.newLCP == this.newLCP &&
+          other.newNAP == this.newNAP &&
+          other.newPORT == this.newPORT &&
+          other.newVLAN == this.newVLAN &&
+          other.routerModel == this.routerModel &&
+          other.pulloutRouterModel == this.pulloutRouterModel &&
+          other.pulloutRouterModelSN == this.pulloutRouterModelSN &&
+          other.pulloutRemarks == this.pulloutRemarks &&
+          other.materialsUsedJson == this.materialsUsedJson &&
+          other.clientSignature == this.clientSignature &&
+          other.image1 == this.image1 &&
+          other.image2 == this.image2 &&
+          other.image3 == this.image3 &&
+          other.houseFrontPicture == this.houseFrontPicture &&
+          other.addressCoordinates == this.addressCoordinates &&
+          other.serviceCharge == this.serviceCharge &&
+          other.rawJson == this.rawJson &&
+          other.isSynced == this.isSynced &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ServiceOrdersCompanion extends UpdateCompanion<ServiceOrder> {
+  final Value<int> id;
+  final Value<String> accountNumber;
+  final Value<String> fullName;
+  final Value<String?> contactNumber;
+  final Value<String?> emailAddress;
+  final Value<String> address;
+  final Value<String?> barangay;
+  final Value<String?> city;
+  final Value<String?> provider;
+  final Value<String?> plan;
+  final Value<String?> username;
+  final Value<String?> connectionType;
+  final Value<String?> routerModemSN;
+  final Value<String?> lcp;
+  final Value<String?> nap;
+  final Value<String?> port;
+  final Value<String?> vlan;
+  final Value<String> supportStatus;
+  final Value<String> concern;
+  final Value<String?> priorityLevel;
+  final Value<String?> visitStatus;
+  final Value<String?> visitBy;
+  final Value<String?> visitRemarks;
+  final Value<String?> assignedEmail;
+  final Value<DateTime?> createdDate;
+  final Value<DateTime?> dateInstalled;
+  final Value<String?> newRouterModemSN;
+  final Value<String?> newLCP;
+  final Value<String?> newNAP;
+  final Value<String?> newPORT;
+  final Value<String?> newVLAN;
+  final Value<String?> routerModel;
+  final Value<String?> pulloutRouterModel;
+  final Value<String?> pulloutRouterModelSN;
+  final Value<String?> pulloutRemarks;
+  final Value<String?> materialsUsedJson;
+  final Value<String?> clientSignature;
+  final Value<String?> image1;
+  final Value<String?> image2;
+  final Value<String?> image3;
+  final Value<String?> houseFrontPicture;
+  final Value<String?> addressCoordinates;
+  final Value<double> serviceCharge;
+  final Value<String?> rawJson;
+  final Value<bool> isSynced;
+  final Value<DateTime> updatedAt;
+  const ServiceOrdersCompanion({
+    this.id = const Value.absent(),
+    this.accountNumber = const Value.absent(),
+    this.fullName = const Value.absent(),
+    this.contactNumber = const Value.absent(),
+    this.emailAddress = const Value.absent(),
+    this.address = const Value.absent(),
+    this.barangay = const Value.absent(),
+    this.city = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.plan = const Value.absent(),
+    this.username = const Value.absent(),
+    this.connectionType = const Value.absent(),
+    this.routerModemSN = const Value.absent(),
+    this.lcp = const Value.absent(),
+    this.nap = const Value.absent(),
+    this.port = const Value.absent(),
+    this.vlan = const Value.absent(),
+    this.supportStatus = const Value.absent(),
+    this.concern = const Value.absent(),
+    this.priorityLevel = const Value.absent(),
+    this.visitStatus = const Value.absent(),
+    this.visitBy = const Value.absent(),
+    this.visitRemarks = const Value.absent(),
+    this.assignedEmail = const Value.absent(),
+    this.createdDate = const Value.absent(),
+    this.dateInstalled = const Value.absent(),
+    this.newRouterModemSN = const Value.absent(),
+    this.newLCP = const Value.absent(),
+    this.newNAP = const Value.absent(),
+    this.newPORT = const Value.absent(),
+    this.newVLAN = const Value.absent(),
+    this.routerModel = const Value.absent(),
+    this.pulloutRouterModel = const Value.absent(),
+    this.pulloutRouterModelSN = const Value.absent(),
+    this.pulloutRemarks = const Value.absent(),
+    this.materialsUsedJson = const Value.absent(),
+    this.clientSignature = const Value.absent(),
+    this.image1 = const Value.absent(),
+    this.image2 = const Value.absent(),
+    this.image3 = const Value.absent(),
+    this.houseFrontPicture = const Value.absent(),
+    this.addressCoordinates = const Value.absent(),
+    this.serviceCharge = const Value.absent(),
+    this.rawJson = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ServiceOrdersCompanion.insert({
+    this.id = const Value.absent(),
+    required String accountNumber,
+    required String fullName,
+    this.contactNumber = const Value.absent(),
+    this.emailAddress = const Value.absent(),
+    required String address,
+    this.barangay = const Value.absent(),
+    this.city = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.plan = const Value.absent(),
+    this.username = const Value.absent(),
+    this.connectionType = const Value.absent(),
+    this.routerModemSN = const Value.absent(),
+    this.lcp = const Value.absent(),
+    this.nap = const Value.absent(),
+    this.port = const Value.absent(),
+    this.vlan = const Value.absent(),
+    this.supportStatus = const Value.absent(),
+    this.concern = const Value.absent(),
+    this.priorityLevel = const Value.absent(),
+    this.visitStatus = const Value.absent(),
+    this.visitBy = const Value.absent(),
+    this.visitRemarks = const Value.absent(),
+    this.assignedEmail = const Value.absent(),
+    this.createdDate = const Value.absent(),
+    this.dateInstalled = const Value.absent(),
+    this.newRouterModemSN = const Value.absent(),
+    this.newLCP = const Value.absent(),
+    this.newNAP = const Value.absent(),
+    this.newPORT = const Value.absent(),
+    this.newVLAN = const Value.absent(),
+    this.routerModel = const Value.absent(),
+    this.pulloutRouterModel = const Value.absent(),
+    this.pulloutRouterModelSN = const Value.absent(),
+    this.pulloutRemarks = const Value.absent(),
+    this.materialsUsedJson = const Value.absent(),
+    this.clientSignature = const Value.absent(),
+    this.image1 = const Value.absent(),
+    this.image2 = const Value.absent(),
+    this.image3 = const Value.absent(),
+    this.houseFrontPicture = const Value.absent(),
+    this.addressCoordinates = const Value.absent(),
+    this.serviceCharge = const Value.absent(),
+    this.rawJson = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : accountNumber = Value(accountNumber),
+        fullName = Value(fullName),
+        address = Value(address);
+  static Insertable<ServiceOrder> custom({
+    Expression<int>? id,
+    Expression<String>? accountNumber,
+    Expression<String>? fullName,
+    Expression<String>? contactNumber,
+    Expression<String>? emailAddress,
+    Expression<String>? address,
+    Expression<String>? barangay,
+    Expression<String>? city,
+    Expression<String>? provider,
+    Expression<String>? plan,
+    Expression<String>? username,
+    Expression<String>? connectionType,
+    Expression<String>? routerModemSN,
+    Expression<String>? lcp,
+    Expression<String>? nap,
+    Expression<String>? port,
+    Expression<String>? vlan,
+    Expression<String>? supportStatus,
+    Expression<String>? concern,
+    Expression<String>? priorityLevel,
+    Expression<String>? visitStatus,
+    Expression<String>? visitBy,
+    Expression<String>? visitRemarks,
+    Expression<String>? assignedEmail,
+    Expression<DateTime>? createdDate,
+    Expression<DateTime>? dateInstalled,
+    Expression<String>? newRouterModemSN,
+    Expression<String>? newLCP,
+    Expression<String>? newNAP,
+    Expression<String>? newPORT,
+    Expression<String>? newVLAN,
+    Expression<String>? routerModel,
+    Expression<String>? pulloutRouterModel,
+    Expression<String>? pulloutRouterModelSN,
+    Expression<String>? pulloutRemarks,
+    Expression<String>? materialsUsedJson,
+    Expression<String>? clientSignature,
+    Expression<String>? image1,
+    Expression<String>? image2,
+    Expression<String>? image3,
+    Expression<String>? houseFrontPicture,
+    Expression<String>? addressCoordinates,
+    Expression<double>? serviceCharge,
+    Expression<String>? rawJson,
+    Expression<bool>? isSynced,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (accountNumber != null) 'account_number': accountNumber,
+      if (fullName != null) 'full_name': fullName,
+      if (contactNumber != null) 'contact_number': contactNumber,
+      if (emailAddress != null) 'email_address': emailAddress,
+      if (address != null) 'address': address,
+      if (barangay != null) 'barangay': barangay,
+      if (city != null) 'city': city,
+      if (provider != null) 'provider': provider,
+      if (plan != null) 'plan': plan,
+      if (username != null) 'username': username,
+      if (connectionType != null) 'connection_type': connectionType,
+      if (routerModemSN != null) 'router_modem_s_n': routerModemSN,
+      if (lcp != null) 'lcp': lcp,
+      if (nap != null) 'nap': nap,
+      if (port != null) 'port': port,
+      if (vlan != null) 'vlan': vlan,
+      if (supportStatus != null) 'support_status': supportStatus,
+      if (concern != null) 'concern': concern,
+      if (priorityLevel != null) 'priority_level': priorityLevel,
+      if (visitStatus != null) 'visit_status': visitStatus,
+      if (visitBy != null) 'visit_by': visitBy,
+      if (visitRemarks != null) 'visit_remarks': visitRemarks,
+      if (assignedEmail != null) 'assigned_email': assignedEmail,
+      if (createdDate != null) 'created_date': createdDate,
+      if (dateInstalled != null) 'date_installed': dateInstalled,
+      if (newRouterModemSN != null) 'new_router_modem_s_n': newRouterModemSN,
+      if (newLCP != null) 'new_l_c_p': newLCP,
+      if (newNAP != null) 'new_n_a_p': newNAP,
+      if (newPORT != null) 'new_p_o_r_t': newPORT,
+      if (newVLAN != null) 'new_v_l_a_n': newVLAN,
+      if (routerModel != null) 'router_model': routerModel,
+      if (pulloutRouterModel != null)
+        'pullout_router_model': pulloutRouterModel,
+      if (pulloutRouterModelSN != null)
+        'pullout_router_model_s_n': pulloutRouterModelSN,
+      if (pulloutRemarks != null) 'pullout_remarks': pulloutRemarks,
+      if (materialsUsedJson != null) 'materials_used_json': materialsUsedJson,
+      if (clientSignature != null) 'client_signature': clientSignature,
+      if (image1 != null) 'image1': image1,
+      if (image2 != null) 'image2': image2,
+      if (image3 != null) 'image3': image3,
+      if (houseFrontPicture != null) 'house_front_picture': houseFrontPicture,
+      if (addressCoordinates != null) 'address_coordinates': addressCoordinates,
+      if (serviceCharge != null) 'service_charge': serviceCharge,
+      if (rawJson != null) 'raw_json': rawJson,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ServiceOrdersCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? accountNumber,
+      Value<String>? fullName,
+      Value<String?>? contactNumber,
+      Value<String?>? emailAddress,
+      Value<String>? address,
+      Value<String?>? barangay,
+      Value<String?>? city,
+      Value<String?>? provider,
+      Value<String?>? plan,
+      Value<String?>? username,
+      Value<String?>? connectionType,
+      Value<String?>? routerModemSN,
+      Value<String?>? lcp,
+      Value<String?>? nap,
+      Value<String?>? port,
+      Value<String?>? vlan,
+      Value<String>? supportStatus,
+      Value<String>? concern,
+      Value<String?>? priorityLevel,
+      Value<String?>? visitStatus,
+      Value<String?>? visitBy,
+      Value<String?>? visitRemarks,
+      Value<String?>? assignedEmail,
+      Value<DateTime?>? createdDate,
+      Value<DateTime?>? dateInstalled,
+      Value<String?>? newRouterModemSN,
+      Value<String?>? newLCP,
+      Value<String?>? newNAP,
+      Value<String?>? newPORT,
+      Value<String?>? newVLAN,
+      Value<String?>? routerModel,
+      Value<String?>? pulloutRouterModel,
+      Value<String?>? pulloutRouterModelSN,
+      Value<String?>? pulloutRemarks,
+      Value<String?>? materialsUsedJson,
+      Value<String?>? clientSignature,
+      Value<String?>? image1,
+      Value<String?>? image2,
+      Value<String?>? image3,
+      Value<String?>? houseFrontPicture,
+      Value<String?>? addressCoordinates,
+      Value<double>? serviceCharge,
+      Value<String?>? rawJson,
+      Value<bool>? isSynced,
+      Value<DateTime>? updatedAt}) {
+    return ServiceOrdersCompanion(
+      id: id ?? this.id,
+      accountNumber: accountNumber ?? this.accountNumber,
+      fullName: fullName ?? this.fullName,
+      contactNumber: contactNumber ?? this.contactNumber,
+      emailAddress: emailAddress ?? this.emailAddress,
+      address: address ?? this.address,
+      barangay: barangay ?? this.barangay,
+      city: city ?? this.city,
+      provider: provider ?? this.provider,
+      plan: plan ?? this.plan,
+      username: username ?? this.username,
+      connectionType: connectionType ?? this.connectionType,
+      routerModemSN: routerModemSN ?? this.routerModemSN,
+      lcp: lcp ?? this.lcp,
+      nap: nap ?? this.nap,
+      port: port ?? this.port,
+      vlan: vlan ?? this.vlan,
+      supportStatus: supportStatus ?? this.supportStatus,
+      concern: concern ?? this.concern,
+      priorityLevel: priorityLevel ?? this.priorityLevel,
+      visitStatus: visitStatus ?? this.visitStatus,
+      visitBy: visitBy ?? this.visitBy,
+      visitRemarks: visitRemarks ?? this.visitRemarks,
+      assignedEmail: assignedEmail ?? this.assignedEmail,
+      createdDate: createdDate ?? this.createdDate,
+      dateInstalled: dateInstalled ?? this.dateInstalled,
+      newRouterModemSN: newRouterModemSN ?? this.newRouterModemSN,
+      newLCP: newLCP ?? this.newLCP,
+      newNAP: newNAP ?? this.newNAP,
+      newPORT: newPORT ?? this.newPORT,
+      newVLAN: newVLAN ?? this.newVLAN,
+      routerModel: routerModel ?? this.routerModel,
+      pulloutRouterModel: pulloutRouterModel ?? this.pulloutRouterModel,
+      pulloutRouterModelSN: pulloutRouterModelSN ?? this.pulloutRouterModelSN,
+      pulloutRemarks: pulloutRemarks ?? this.pulloutRemarks,
+      materialsUsedJson: materialsUsedJson ?? this.materialsUsedJson,
+      clientSignature: clientSignature ?? this.clientSignature,
+      image1: image1 ?? this.image1,
+      image2: image2 ?? this.image2,
+      image3: image3 ?? this.image3,
+      houseFrontPicture: houseFrontPicture ?? this.houseFrontPicture,
+      addressCoordinates: addressCoordinates ?? this.addressCoordinates,
+      serviceCharge: serviceCharge ?? this.serviceCharge,
+      rawJson: rawJson ?? this.rawJson,
+      isSynced: isSynced ?? this.isSynced,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (accountNumber.present) {
+      map['account_number'] = Variable<String>(accountNumber.value);
+    }
+    if (fullName.present) {
+      map['full_name'] = Variable<String>(fullName.value);
+    }
+    if (contactNumber.present) {
+      map['contact_number'] = Variable<String>(contactNumber.value);
+    }
+    if (emailAddress.present) {
+      map['email_address'] = Variable<String>(emailAddress.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (barangay.present) {
+      map['barangay'] = Variable<String>(barangay.value);
+    }
+    if (city.present) {
+      map['city'] = Variable<String>(city.value);
+    }
+    if (provider.present) {
+      map['provider'] = Variable<String>(provider.value);
+    }
+    if (plan.present) {
+      map['plan'] = Variable<String>(plan.value);
+    }
+    if (username.present) {
+      map['username'] = Variable<String>(username.value);
+    }
+    if (connectionType.present) {
+      map['connection_type'] = Variable<String>(connectionType.value);
+    }
+    if (routerModemSN.present) {
+      map['router_modem_s_n'] = Variable<String>(routerModemSN.value);
+    }
+    if (lcp.present) {
+      map['lcp'] = Variable<String>(lcp.value);
+    }
+    if (nap.present) {
+      map['nap'] = Variable<String>(nap.value);
+    }
+    if (port.present) {
+      map['port'] = Variable<String>(port.value);
+    }
+    if (vlan.present) {
+      map['vlan'] = Variable<String>(vlan.value);
+    }
+    if (supportStatus.present) {
+      map['support_status'] = Variable<String>(supportStatus.value);
+    }
+    if (concern.present) {
+      map['concern'] = Variable<String>(concern.value);
+    }
+    if (priorityLevel.present) {
+      map['priority_level'] = Variable<String>(priorityLevel.value);
+    }
+    if (visitStatus.present) {
+      map['visit_status'] = Variable<String>(visitStatus.value);
+    }
+    if (visitBy.present) {
+      map['visit_by'] = Variable<String>(visitBy.value);
+    }
+    if (visitRemarks.present) {
+      map['visit_remarks'] = Variable<String>(visitRemarks.value);
+    }
+    if (assignedEmail.present) {
+      map['assigned_email'] = Variable<String>(assignedEmail.value);
+    }
+    if (createdDate.present) {
+      map['created_date'] = Variable<DateTime>(createdDate.value);
+    }
+    if (dateInstalled.present) {
+      map['date_installed'] = Variable<DateTime>(dateInstalled.value);
+    }
+    if (newRouterModemSN.present) {
+      map['new_router_modem_s_n'] = Variable<String>(newRouterModemSN.value);
+    }
+    if (newLCP.present) {
+      map['new_l_c_p'] = Variable<String>(newLCP.value);
+    }
+    if (newNAP.present) {
+      map['new_n_a_p'] = Variable<String>(newNAP.value);
+    }
+    if (newPORT.present) {
+      map['new_p_o_r_t'] = Variable<String>(newPORT.value);
+    }
+    if (newVLAN.present) {
+      map['new_v_l_a_n'] = Variable<String>(newVLAN.value);
+    }
+    if (routerModel.present) {
+      map['router_model'] = Variable<String>(routerModel.value);
+    }
+    if (pulloutRouterModel.present) {
+      map['pullout_router_model'] = Variable<String>(pulloutRouterModel.value);
+    }
+    if (pulloutRouterModelSN.present) {
+      map['pullout_router_model_s_n'] =
+          Variable<String>(pulloutRouterModelSN.value);
+    }
+    if (pulloutRemarks.present) {
+      map['pullout_remarks'] = Variable<String>(pulloutRemarks.value);
+    }
+    if (materialsUsedJson.present) {
+      map['materials_used_json'] = Variable<String>(materialsUsedJson.value);
+    }
+    if (clientSignature.present) {
+      map['client_signature'] = Variable<String>(clientSignature.value);
+    }
+    if (image1.present) {
+      map['image1'] = Variable<String>(image1.value);
+    }
+    if (image2.present) {
+      map['image2'] = Variable<String>(image2.value);
+    }
+    if (image3.present) {
+      map['image3'] = Variable<String>(image3.value);
+    }
+    if (houseFrontPicture.present) {
+      map['house_front_picture'] = Variable<String>(houseFrontPicture.value);
+    }
+    if (addressCoordinates.present) {
+      map['address_coordinates'] = Variable<String>(addressCoordinates.value);
+    }
+    if (serviceCharge.present) {
+      map['service_charge'] = Variable<double>(serviceCharge.value);
+    }
+    if (rawJson.present) {
+      map['raw_json'] = Variable<String>(rawJson.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ServiceOrdersCompanion(')
+          ..write('id: $id, ')
+          ..write('accountNumber: $accountNumber, ')
+          ..write('fullName: $fullName, ')
+          ..write('contactNumber: $contactNumber, ')
+          ..write('emailAddress: $emailAddress, ')
+          ..write('address: $address, ')
+          ..write('barangay: $barangay, ')
+          ..write('city: $city, ')
+          ..write('provider: $provider, ')
+          ..write('plan: $plan, ')
+          ..write('username: $username, ')
+          ..write('connectionType: $connectionType, ')
+          ..write('routerModemSN: $routerModemSN, ')
+          ..write('lcp: $lcp, ')
+          ..write('nap: $nap, ')
+          ..write('port: $port, ')
+          ..write('vlan: $vlan, ')
+          ..write('supportStatus: $supportStatus, ')
+          ..write('concern: $concern, ')
+          ..write('priorityLevel: $priorityLevel, ')
+          ..write('visitStatus: $visitStatus, ')
+          ..write('visitBy: $visitBy, ')
+          ..write('visitRemarks: $visitRemarks, ')
+          ..write('assignedEmail: $assignedEmail, ')
+          ..write('createdDate: $createdDate, ')
+          ..write('dateInstalled: $dateInstalled, ')
+          ..write('newRouterModemSN: $newRouterModemSN, ')
+          ..write('newLCP: $newLCP, ')
+          ..write('newNAP: $newNAP, ')
+          ..write('newPORT: $newPORT, ')
+          ..write('newVLAN: $newVLAN, ')
+          ..write('routerModel: $routerModel, ')
+          ..write('pulloutRouterModel: $pulloutRouterModel, ')
+          ..write('pulloutRouterModelSN: $pulloutRouterModelSN, ')
+          ..write('pulloutRemarks: $pulloutRemarks, ')
+          ..write('materialsUsedJson: $materialsUsedJson, ')
+          ..write('clientSignature: $clientSignature, ')
+          ..write('image1: $image1, ')
+          ..write('image2: $image2, ')
+          ..write('image3: $image3, ')
+          ..write('houseFrontPicture: $houseFrontPicture, ')
+          ..write('addressCoordinates: $addressCoordinates, ')
+          ..write('serviceCharge: $serviceCharge, ')
+          ..write('rawJson: $rawJson, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2774,15 +4802,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncQueuesTable syncQueues = $SyncQueuesTable(this);
   late final $LcpNapLocationsTable lcpNapLocations =
       $LcpNapLocationsTable(this);
+  late final $ServiceOrdersTable serviceOrders = $ServiceOrdersTable(this);
   late final JobOrdersDao jobOrdersDao = JobOrdersDao(this as AppDatabase);
   late final LcpNapLocationsDao lcpNapLocationsDao =
       LcpNapLocationsDao(this as AppDatabase);
+  late final ServiceOrdersDao serviceOrdersDao =
+      ServiceOrdersDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [jobOrders, syncQueues, lcpNapLocations];
+      [jobOrders, syncQueues, lcpNapLocations, serviceOrders];
 }
 
 typedef $$JobOrdersTableCreateCompanionBuilder = JobOrdersCompanion Function({
@@ -3967,6 +5998,820 @@ typedef $$LcpNapLocationsTableProcessedTableManager = ProcessedTableManager<
     ),
     LcpNapLocation,
     PrefetchHooks Function()>;
+typedef $$ServiceOrdersTableCreateCompanionBuilder = ServiceOrdersCompanion
+    Function({
+  Value<int> id,
+  required String accountNumber,
+  required String fullName,
+  Value<String?> contactNumber,
+  Value<String?> emailAddress,
+  required String address,
+  Value<String?> barangay,
+  Value<String?> city,
+  Value<String?> provider,
+  Value<String?> plan,
+  Value<String?> username,
+  Value<String?> connectionType,
+  Value<String?> routerModemSN,
+  Value<String?> lcp,
+  Value<String?> nap,
+  Value<String?> port,
+  Value<String?> vlan,
+  Value<String> supportStatus,
+  Value<String> concern,
+  Value<String?> priorityLevel,
+  Value<String?> visitStatus,
+  Value<String?> visitBy,
+  Value<String?> visitRemarks,
+  Value<String?> assignedEmail,
+  Value<DateTime?> createdDate,
+  Value<DateTime?> dateInstalled,
+  Value<String?> newRouterModemSN,
+  Value<String?> newLCP,
+  Value<String?> newNAP,
+  Value<String?> newPORT,
+  Value<String?> newVLAN,
+  Value<String?> routerModel,
+  Value<String?> pulloutRouterModel,
+  Value<String?> pulloutRouterModelSN,
+  Value<String?> pulloutRemarks,
+  Value<String?> materialsUsedJson,
+  Value<String?> clientSignature,
+  Value<String?> image1,
+  Value<String?> image2,
+  Value<String?> image3,
+  Value<String?> houseFrontPicture,
+  Value<String?> addressCoordinates,
+  Value<double> serviceCharge,
+  Value<String?> rawJson,
+  Value<bool> isSynced,
+  Value<DateTime> updatedAt,
+});
+typedef $$ServiceOrdersTableUpdateCompanionBuilder = ServiceOrdersCompanion
+    Function({
+  Value<int> id,
+  Value<String> accountNumber,
+  Value<String> fullName,
+  Value<String?> contactNumber,
+  Value<String?> emailAddress,
+  Value<String> address,
+  Value<String?> barangay,
+  Value<String?> city,
+  Value<String?> provider,
+  Value<String?> plan,
+  Value<String?> username,
+  Value<String?> connectionType,
+  Value<String?> routerModemSN,
+  Value<String?> lcp,
+  Value<String?> nap,
+  Value<String?> port,
+  Value<String?> vlan,
+  Value<String> supportStatus,
+  Value<String> concern,
+  Value<String?> priorityLevel,
+  Value<String?> visitStatus,
+  Value<String?> visitBy,
+  Value<String?> visitRemarks,
+  Value<String?> assignedEmail,
+  Value<DateTime?> createdDate,
+  Value<DateTime?> dateInstalled,
+  Value<String?> newRouterModemSN,
+  Value<String?> newLCP,
+  Value<String?> newNAP,
+  Value<String?> newPORT,
+  Value<String?> newVLAN,
+  Value<String?> routerModel,
+  Value<String?> pulloutRouterModel,
+  Value<String?> pulloutRouterModelSN,
+  Value<String?> pulloutRemarks,
+  Value<String?> materialsUsedJson,
+  Value<String?> clientSignature,
+  Value<String?> image1,
+  Value<String?> image2,
+  Value<String?> image3,
+  Value<String?> houseFrontPicture,
+  Value<String?> addressCoordinates,
+  Value<double> serviceCharge,
+  Value<String?> rawJson,
+  Value<bool> isSynced,
+  Value<DateTime> updatedAt,
+});
+
+class $$ServiceOrdersTableFilterComposer
+    extends Composer<_$AppDatabase, $ServiceOrdersTable> {
+  $$ServiceOrdersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountNumber => $composableBuilder(
+      column: $table.accountNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fullName => $composableBuilder(
+      column: $table.fullName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get contactNumber => $composableBuilder(
+      column: $table.contactNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get emailAddress => $composableBuilder(
+      column: $table.emailAddress, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get barangay => $composableBuilder(
+      column: $table.barangay, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get city => $composableBuilder(
+      column: $table.city, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get provider => $composableBuilder(
+      column: $table.provider, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get plan => $composableBuilder(
+      column: $table.plan, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get username => $composableBuilder(
+      column: $table.username, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get connectionType => $composableBuilder(
+      column: $table.connectionType,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get routerModemSN => $composableBuilder(
+      column: $table.routerModemSN, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lcp => $composableBuilder(
+      column: $table.lcp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nap => $composableBuilder(
+      column: $table.nap, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get port => $composableBuilder(
+      column: $table.port, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get vlan => $composableBuilder(
+      column: $table.vlan, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supportStatus => $composableBuilder(
+      column: $table.supportStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get concern => $composableBuilder(
+      column: $table.concern, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get priorityLevel => $composableBuilder(
+      column: $table.priorityLevel, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get visitStatus => $composableBuilder(
+      column: $table.visitStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get visitBy => $composableBuilder(
+      column: $table.visitBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get visitRemarks => $composableBuilder(
+      column: $table.visitRemarks, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get assignedEmail => $composableBuilder(
+      column: $table.assignedEmail, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdDate => $composableBuilder(
+      column: $table.createdDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateInstalled => $composableBuilder(
+      column: $table.dateInstalled, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get newRouterModemSN => $composableBuilder(
+      column: $table.newRouterModemSN,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get newLCP => $composableBuilder(
+      column: $table.newLCP, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get newNAP => $composableBuilder(
+      column: $table.newNAP, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get newPORT => $composableBuilder(
+      column: $table.newPORT, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get newVLAN => $composableBuilder(
+      column: $table.newVLAN, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get routerModel => $composableBuilder(
+      column: $table.routerModel, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pulloutRouterModel => $composableBuilder(
+      column: $table.pulloutRouterModel,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pulloutRouterModelSN => $composableBuilder(
+      column: $table.pulloutRouterModelSN,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pulloutRemarks => $composableBuilder(
+      column: $table.pulloutRemarks,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get materialsUsedJson => $composableBuilder(
+      column: $table.materialsUsedJson,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get clientSignature => $composableBuilder(
+      column: $table.clientSignature,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get image1 => $composableBuilder(
+      column: $table.image1, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get image2 => $composableBuilder(
+      column: $table.image2, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get image3 => $composableBuilder(
+      column: $table.image3, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get houseFrontPicture => $composableBuilder(
+      column: $table.houseFrontPicture,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get addressCoordinates => $composableBuilder(
+      column: $table.addressCoordinates,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get serviceCharge => $composableBuilder(
+      column: $table.serviceCharge, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get rawJson => $composableBuilder(
+      column: $table.rawJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+      column: $table.isSynced, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ServiceOrdersTableOrderingComposer
+    extends Composer<_$AppDatabase, $ServiceOrdersTable> {
+  $$ServiceOrdersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountNumber => $composableBuilder(
+      column: $table.accountNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fullName => $composableBuilder(
+      column: $table.fullName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get contactNumber => $composableBuilder(
+      column: $table.contactNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get emailAddress => $composableBuilder(
+      column: $table.emailAddress,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get address => $composableBuilder(
+      column: $table.address, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get barangay => $composableBuilder(
+      column: $table.barangay, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get city => $composableBuilder(
+      column: $table.city, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get provider => $composableBuilder(
+      column: $table.provider, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get plan => $composableBuilder(
+      column: $table.plan, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get username => $composableBuilder(
+      column: $table.username, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get connectionType => $composableBuilder(
+      column: $table.connectionType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get routerModemSN => $composableBuilder(
+      column: $table.routerModemSN,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lcp => $composableBuilder(
+      column: $table.lcp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get nap => $composableBuilder(
+      column: $table.nap, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get port => $composableBuilder(
+      column: $table.port, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get vlan => $composableBuilder(
+      column: $table.vlan, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supportStatus => $composableBuilder(
+      column: $table.supportStatus,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get concern => $composableBuilder(
+      column: $table.concern, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get priorityLevel => $composableBuilder(
+      column: $table.priorityLevel,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get visitStatus => $composableBuilder(
+      column: $table.visitStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get visitBy => $composableBuilder(
+      column: $table.visitBy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get visitRemarks => $composableBuilder(
+      column: $table.visitRemarks,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get assignedEmail => $composableBuilder(
+      column: $table.assignedEmail,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdDate => $composableBuilder(
+      column: $table.createdDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateInstalled => $composableBuilder(
+      column: $table.dateInstalled,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get newRouterModemSN => $composableBuilder(
+      column: $table.newRouterModemSN,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get newLCP => $composableBuilder(
+      column: $table.newLCP, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get newNAP => $composableBuilder(
+      column: $table.newNAP, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get newPORT => $composableBuilder(
+      column: $table.newPORT, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get newVLAN => $composableBuilder(
+      column: $table.newVLAN, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get routerModel => $composableBuilder(
+      column: $table.routerModel, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pulloutRouterModel => $composableBuilder(
+      column: $table.pulloutRouterModel,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pulloutRouterModelSN => $composableBuilder(
+      column: $table.pulloutRouterModelSN,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pulloutRemarks => $composableBuilder(
+      column: $table.pulloutRemarks,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get materialsUsedJson => $composableBuilder(
+      column: $table.materialsUsedJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get clientSignature => $composableBuilder(
+      column: $table.clientSignature,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get image1 => $composableBuilder(
+      column: $table.image1, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get image2 => $composableBuilder(
+      column: $table.image2, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get image3 => $composableBuilder(
+      column: $table.image3, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get houseFrontPicture => $composableBuilder(
+      column: $table.houseFrontPicture,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get addressCoordinates => $composableBuilder(
+      column: $table.addressCoordinates,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get serviceCharge => $composableBuilder(
+      column: $table.serviceCharge,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get rawJson => $composableBuilder(
+      column: $table.rawJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ServiceOrdersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ServiceOrdersTable> {
+  $$ServiceOrdersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get accountNumber => $composableBuilder(
+      column: $table.accountNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get fullName =>
+      $composableBuilder(column: $table.fullName, builder: (column) => column);
+
+  GeneratedColumn<String> get contactNumber => $composableBuilder(
+      column: $table.contactNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get emailAddress => $composableBuilder(
+      column: $table.emailAddress, builder: (column) => column);
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<String> get barangay =>
+      $composableBuilder(column: $table.barangay, builder: (column) => column);
+
+  GeneratedColumn<String> get city =>
+      $composableBuilder(column: $table.city, builder: (column) => column);
+
+  GeneratedColumn<String> get provider =>
+      $composableBuilder(column: $table.provider, builder: (column) => column);
+
+  GeneratedColumn<String> get plan =>
+      $composableBuilder(column: $table.plan, builder: (column) => column);
+
+  GeneratedColumn<String> get username =>
+      $composableBuilder(column: $table.username, builder: (column) => column);
+
+  GeneratedColumn<String> get connectionType => $composableBuilder(
+      column: $table.connectionType, builder: (column) => column);
+
+  GeneratedColumn<String> get routerModemSN => $composableBuilder(
+      column: $table.routerModemSN, builder: (column) => column);
+
+  GeneratedColumn<String> get lcp =>
+      $composableBuilder(column: $table.lcp, builder: (column) => column);
+
+  GeneratedColumn<String> get nap =>
+      $composableBuilder(column: $table.nap, builder: (column) => column);
+
+  GeneratedColumn<String> get port =>
+      $composableBuilder(column: $table.port, builder: (column) => column);
+
+  GeneratedColumn<String> get vlan =>
+      $composableBuilder(column: $table.vlan, builder: (column) => column);
+
+  GeneratedColumn<String> get supportStatus => $composableBuilder(
+      column: $table.supportStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get concern =>
+      $composableBuilder(column: $table.concern, builder: (column) => column);
+
+  GeneratedColumn<String> get priorityLevel => $composableBuilder(
+      column: $table.priorityLevel, builder: (column) => column);
+
+  GeneratedColumn<String> get visitStatus => $composableBuilder(
+      column: $table.visitStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get visitBy =>
+      $composableBuilder(column: $table.visitBy, builder: (column) => column);
+
+  GeneratedColumn<String> get visitRemarks => $composableBuilder(
+      column: $table.visitRemarks, builder: (column) => column);
+
+  GeneratedColumn<String> get assignedEmail => $composableBuilder(
+      column: $table.assignedEmail, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdDate => $composableBuilder(
+      column: $table.createdDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateInstalled => $composableBuilder(
+      column: $table.dateInstalled, builder: (column) => column);
+
+  GeneratedColumn<String> get newRouterModemSN => $composableBuilder(
+      column: $table.newRouterModemSN, builder: (column) => column);
+
+  GeneratedColumn<String> get newLCP =>
+      $composableBuilder(column: $table.newLCP, builder: (column) => column);
+
+  GeneratedColumn<String> get newNAP =>
+      $composableBuilder(column: $table.newNAP, builder: (column) => column);
+
+  GeneratedColumn<String> get newPORT =>
+      $composableBuilder(column: $table.newPORT, builder: (column) => column);
+
+  GeneratedColumn<String> get newVLAN =>
+      $composableBuilder(column: $table.newVLAN, builder: (column) => column);
+
+  GeneratedColumn<String> get routerModel => $composableBuilder(
+      column: $table.routerModel, builder: (column) => column);
+
+  GeneratedColumn<String> get pulloutRouterModel => $composableBuilder(
+      column: $table.pulloutRouterModel, builder: (column) => column);
+
+  GeneratedColumn<String> get pulloutRouterModelSN => $composableBuilder(
+      column: $table.pulloutRouterModelSN, builder: (column) => column);
+
+  GeneratedColumn<String> get pulloutRemarks => $composableBuilder(
+      column: $table.pulloutRemarks, builder: (column) => column);
+
+  GeneratedColumn<String> get materialsUsedJson => $composableBuilder(
+      column: $table.materialsUsedJson, builder: (column) => column);
+
+  GeneratedColumn<String> get clientSignature => $composableBuilder(
+      column: $table.clientSignature, builder: (column) => column);
+
+  GeneratedColumn<String> get image1 =>
+      $composableBuilder(column: $table.image1, builder: (column) => column);
+
+  GeneratedColumn<String> get image2 =>
+      $composableBuilder(column: $table.image2, builder: (column) => column);
+
+  GeneratedColumn<String> get image3 =>
+      $composableBuilder(column: $table.image3, builder: (column) => column);
+
+  GeneratedColumn<String> get houseFrontPicture => $composableBuilder(
+      column: $table.houseFrontPicture, builder: (column) => column);
+
+  GeneratedColumn<String> get addressCoordinates => $composableBuilder(
+      column: $table.addressCoordinates, builder: (column) => column);
+
+  GeneratedColumn<double> get serviceCharge => $composableBuilder(
+      column: $table.serviceCharge, builder: (column) => column);
+
+  GeneratedColumn<String> get rawJson =>
+      $composableBuilder(column: $table.rawJson, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ServiceOrdersTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ServiceOrdersTable,
+    ServiceOrder,
+    $$ServiceOrdersTableFilterComposer,
+    $$ServiceOrdersTableOrderingComposer,
+    $$ServiceOrdersTableAnnotationComposer,
+    $$ServiceOrdersTableCreateCompanionBuilder,
+    $$ServiceOrdersTableUpdateCompanionBuilder,
+    (
+      ServiceOrder,
+      BaseReferences<_$AppDatabase, $ServiceOrdersTable, ServiceOrder>
+    ),
+    ServiceOrder,
+    PrefetchHooks Function()> {
+  $$ServiceOrdersTableTableManager(_$AppDatabase db, $ServiceOrdersTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ServiceOrdersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ServiceOrdersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ServiceOrdersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> accountNumber = const Value.absent(),
+            Value<String> fullName = const Value.absent(),
+            Value<String?> contactNumber = const Value.absent(),
+            Value<String?> emailAddress = const Value.absent(),
+            Value<String> address = const Value.absent(),
+            Value<String?> barangay = const Value.absent(),
+            Value<String?> city = const Value.absent(),
+            Value<String?> provider = const Value.absent(),
+            Value<String?> plan = const Value.absent(),
+            Value<String?> username = const Value.absent(),
+            Value<String?> connectionType = const Value.absent(),
+            Value<String?> routerModemSN = const Value.absent(),
+            Value<String?> lcp = const Value.absent(),
+            Value<String?> nap = const Value.absent(),
+            Value<String?> port = const Value.absent(),
+            Value<String?> vlan = const Value.absent(),
+            Value<String> supportStatus = const Value.absent(),
+            Value<String> concern = const Value.absent(),
+            Value<String?> priorityLevel = const Value.absent(),
+            Value<String?> visitStatus = const Value.absent(),
+            Value<String?> visitBy = const Value.absent(),
+            Value<String?> visitRemarks = const Value.absent(),
+            Value<String?> assignedEmail = const Value.absent(),
+            Value<DateTime?> createdDate = const Value.absent(),
+            Value<DateTime?> dateInstalled = const Value.absent(),
+            Value<String?> newRouterModemSN = const Value.absent(),
+            Value<String?> newLCP = const Value.absent(),
+            Value<String?> newNAP = const Value.absent(),
+            Value<String?> newPORT = const Value.absent(),
+            Value<String?> newVLAN = const Value.absent(),
+            Value<String?> routerModel = const Value.absent(),
+            Value<String?> pulloutRouterModel = const Value.absent(),
+            Value<String?> pulloutRouterModelSN = const Value.absent(),
+            Value<String?> pulloutRemarks = const Value.absent(),
+            Value<String?> materialsUsedJson = const Value.absent(),
+            Value<String?> clientSignature = const Value.absent(),
+            Value<String?> image1 = const Value.absent(),
+            Value<String?> image2 = const Value.absent(),
+            Value<String?> image3 = const Value.absent(),
+            Value<String?> houseFrontPicture = const Value.absent(),
+            Value<String?> addressCoordinates = const Value.absent(),
+            Value<double> serviceCharge = const Value.absent(),
+            Value<String?> rawJson = const Value.absent(),
+            Value<bool> isSynced = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              ServiceOrdersCompanion(
+            id: id,
+            accountNumber: accountNumber,
+            fullName: fullName,
+            contactNumber: contactNumber,
+            emailAddress: emailAddress,
+            address: address,
+            barangay: barangay,
+            city: city,
+            provider: provider,
+            plan: plan,
+            username: username,
+            connectionType: connectionType,
+            routerModemSN: routerModemSN,
+            lcp: lcp,
+            nap: nap,
+            port: port,
+            vlan: vlan,
+            supportStatus: supportStatus,
+            concern: concern,
+            priorityLevel: priorityLevel,
+            visitStatus: visitStatus,
+            visitBy: visitBy,
+            visitRemarks: visitRemarks,
+            assignedEmail: assignedEmail,
+            createdDate: createdDate,
+            dateInstalled: dateInstalled,
+            newRouterModemSN: newRouterModemSN,
+            newLCP: newLCP,
+            newNAP: newNAP,
+            newPORT: newPORT,
+            newVLAN: newVLAN,
+            routerModel: routerModel,
+            pulloutRouterModel: pulloutRouterModel,
+            pulloutRouterModelSN: pulloutRouterModelSN,
+            pulloutRemarks: pulloutRemarks,
+            materialsUsedJson: materialsUsedJson,
+            clientSignature: clientSignature,
+            image1: image1,
+            image2: image2,
+            image3: image3,
+            houseFrontPicture: houseFrontPicture,
+            addressCoordinates: addressCoordinates,
+            serviceCharge: serviceCharge,
+            rawJson: rawJson,
+            isSynced: isSynced,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String accountNumber,
+            required String fullName,
+            Value<String?> contactNumber = const Value.absent(),
+            Value<String?> emailAddress = const Value.absent(),
+            required String address,
+            Value<String?> barangay = const Value.absent(),
+            Value<String?> city = const Value.absent(),
+            Value<String?> provider = const Value.absent(),
+            Value<String?> plan = const Value.absent(),
+            Value<String?> username = const Value.absent(),
+            Value<String?> connectionType = const Value.absent(),
+            Value<String?> routerModemSN = const Value.absent(),
+            Value<String?> lcp = const Value.absent(),
+            Value<String?> nap = const Value.absent(),
+            Value<String?> port = const Value.absent(),
+            Value<String?> vlan = const Value.absent(),
+            Value<String> supportStatus = const Value.absent(),
+            Value<String> concern = const Value.absent(),
+            Value<String?> priorityLevel = const Value.absent(),
+            Value<String?> visitStatus = const Value.absent(),
+            Value<String?> visitBy = const Value.absent(),
+            Value<String?> visitRemarks = const Value.absent(),
+            Value<String?> assignedEmail = const Value.absent(),
+            Value<DateTime?> createdDate = const Value.absent(),
+            Value<DateTime?> dateInstalled = const Value.absent(),
+            Value<String?> newRouterModemSN = const Value.absent(),
+            Value<String?> newLCP = const Value.absent(),
+            Value<String?> newNAP = const Value.absent(),
+            Value<String?> newPORT = const Value.absent(),
+            Value<String?> newVLAN = const Value.absent(),
+            Value<String?> routerModel = const Value.absent(),
+            Value<String?> pulloutRouterModel = const Value.absent(),
+            Value<String?> pulloutRouterModelSN = const Value.absent(),
+            Value<String?> pulloutRemarks = const Value.absent(),
+            Value<String?> materialsUsedJson = const Value.absent(),
+            Value<String?> clientSignature = const Value.absent(),
+            Value<String?> image1 = const Value.absent(),
+            Value<String?> image2 = const Value.absent(),
+            Value<String?> image3 = const Value.absent(),
+            Value<String?> houseFrontPicture = const Value.absent(),
+            Value<String?> addressCoordinates = const Value.absent(),
+            Value<double> serviceCharge = const Value.absent(),
+            Value<String?> rawJson = const Value.absent(),
+            Value<bool> isSynced = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              ServiceOrdersCompanion.insert(
+            id: id,
+            accountNumber: accountNumber,
+            fullName: fullName,
+            contactNumber: contactNumber,
+            emailAddress: emailAddress,
+            address: address,
+            barangay: barangay,
+            city: city,
+            provider: provider,
+            plan: plan,
+            username: username,
+            connectionType: connectionType,
+            routerModemSN: routerModemSN,
+            lcp: lcp,
+            nap: nap,
+            port: port,
+            vlan: vlan,
+            supportStatus: supportStatus,
+            concern: concern,
+            priorityLevel: priorityLevel,
+            visitStatus: visitStatus,
+            visitBy: visitBy,
+            visitRemarks: visitRemarks,
+            assignedEmail: assignedEmail,
+            createdDate: createdDate,
+            dateInstalled: dateInstalled,
+            newRouterModemSN: newRouterModemSN,
+            newLCP: newLCP,
+            newNAP: newNAP,
+            newPORT: newPORT,
+            newVLAN: newVLAN,
+            routerModel: routerModel,
+            pulloutRouterModel: pulloutRouterModel,
+            pulloutRouterModelSN: pulloutRouterModelSN,
+            pulloutRemarks: pulloutRemarks,
+            materialsUsedJson: materialsUsedJson,
+            clientSignature: clientSignature,
+            image1: image1,
+            image2: image2,
+            image3: image3,
+            houseFrontPicture: houseFrontPicture,
+            addressCoordinates: addressCoordinates,
+            serviceCharge: serviceCharge,
+            rawJson: rawJson,
+            isSynced: isSynced,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable<$ServiceOrdersTable, ServiceOrder>(table),
+                    BaseReferences<_$AppDatabase, $ServiceOrdersTable,
+                        ServiceOrder>(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ServiceOrdersTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ServiceOrdersTable,
+    ServiceOrder,
+    $$ServiceOrdersTableFilterComposer,
+    $$ServiceOrdersTableOrderingComposer,
+    $$ServiceOrdersTableAnnotationComposer,
+    $$ServiceOrdersTableCreateCompanionBuilder,
+    $$ServiceOrdersTableUpdateCompanionBuilder,
+    (
+      ServiceOrder,
+      BaseReferences<_$AppDatabase, $ServiceOrdersTable, ServiceOrder>
+    ),
+    ServiceOrder,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3977,4 +6822,6 @@ class $AppDatabaseManager {
       $$SyncQueuesTableTableManager(_db, _db.syncQueues);
   $$LcpNapLocationsTableTableManager get lcpNapLocations =>
       $$LcpNapLocationsTableTableManager(_db, _db.lcpNapLocations);
+  $$ServiceOrdersTableTableManager get serviceOrders =>
+      $$ServiceOrdersTableTableManager(_db, _db.serviceOrders);
 }

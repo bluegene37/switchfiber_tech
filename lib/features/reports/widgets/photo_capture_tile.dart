@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/exif_service.dart';
+import '../../../core/services/photo_storage_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
@@ -59,7 +60,8 @@ class PhotoCaptureTile extends StatelessWidget {
   }
 
   Future<void> _showActions(BuildContext context) async {
-    final bytes = DataUrl.decode(value);
+    final bytes =
+        PhotoStorageService.instance.resolveBytes(value) ?? DataUrl.decode(value);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final action = await showModalBottomSheet<_PhotoAction>(
@@ -144,7 +146,8 @@ class PhotoCaptureTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
-    final bytes = DataUrl.decode(value);
+    final bytes =
+        PhotoStorageService.instance.resolveBytes(value) ?? DataUrl.decode(value);
     final onServer = _hasValue && bytes == null;
 
     return InkWell(
@@ -234,30 +237,34 @@ class PhotoCaptureTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: Text(
-                              DataUrl.formatBytes(DataUrl.approxBytes(value!)),
+                              DataUrl.formatBytes(bytes.length),
                               style: context.text.labelSmall!.copyWith(
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                        // Retake / remove. It sits apart from the image so a
-                        // plain tap can open the photo instead.
                         Positioned(
-                          bottom: 6,
-                          right: 6,
+                          bottom: 0,
+                          right: 0,
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () => _showActions(context),
                             child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.65),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.more_horiz_rounded,
-                                color: Colors.white,
-                                size: 24,
+                              width: 48,
+                              height: 48,
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.more_horiz_rounded,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),

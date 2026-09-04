@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/services/image_capture_service.dart';
+import '../../../core/services/photo_storage_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
@@ -78,8 +81,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     });
   }
 
+  Timer? _signatureDebounce;
+
   @override
   void dispose() {
+    _signatureDebounce?.cancel();
     _signatureController.dispose();
     _serialController.dispose();
     _remarksController.dispose();
@@ -90,8 +96,15 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   Future<String?> _pick(ImageSource source) =>
       (widget.pickImage ?? ImageCaptureService.instance.pickAsDataUrl)(source);
 
-  /// Export the pad after every stroke so the signature is ready to submit
-  /// the moment the subscriber lifts their finger.
+  /// Debounced export after a stroke so fast consecutive strokes don't
+  /// repeatedly encode PNGs on the UI thread, while ensuring signature is ready.
+  void _onStrokeEnd() {
+    _signatureDebounce?.cancel();
+    _signatureDebounce = Timer(const Duration(milliseconds: 300), () {
+      _captureSignature();
+    });
+  }
+
   Future<void> _captureSignature() async {
     final dataUrl = await _signatureController.toDataUrl();
     if (!mounted) return;
@@ -180,6 +193,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     }
 
     FocusScope.of(context).unfocus();
+    _signatureDebounce?.cancel();
 
     if (!_signatureController.isEmpty) {
       rep.setSignature(await _signatureController.toDataUrl());
@@ -794,7 +808,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             SignalBuilder(
               builder: (context) {
                 final existing = rep.signature.value;
-                final existingBytes = DataUrl.decode(existing);
+                final existingBytes =
+                    PhotoStorageService.instance.resolveBytes(existing) ??
+                        DataUrl.decode(existing);
                 final padHasInk = !_signatureController.isEmpty;
 
                 // A signature already on the job is shown as-is until the
@@ -851,7 +867,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   children: [
                     SignaturePad(
                       controller: _signatureController,
-                      onStrokeEnd: _captureSignature,
+                      onStrokeEnd: _onStrokeEnd,
                     ),
                     const SizedBox(height: 8),
                     Row(

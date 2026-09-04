@@ -277,7 +277,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       const SizedBox(width: 8),
                       // Prominent Segmented Toggle for List vs Map
                       Container(
-                        height: AppSearchField.minHeight,
+                        constraints: const BoxConstraints(
+                            minHeight: AppSearchField.minHeight),
                         decoration: BoxDecoration(
                           color:
                               isDark ? AppTheme.darkInput : AppTheme.fillLight,

@@ -33,7 +33,7 @@ System-native typography delivers zero runtime overhead, instant cold start, and
 | Action CTA | `labelLarge` | 14 / 600 | 1.2 | Buttons, full-width action bars |
 | Status Badge | `labelMedium` | 13 / 600 | 1.2 | Status pills, filter chips |
 | Metadata Floor | `bodySmall` | 13 / 500 | 1.35 | Timestamps, secondary subtitles (in secondary ink) |
-| Instrument Data | `headlineSmall` | 20 / 700 (mono) | 1.15 | Optical power (-19.5 dBm), ports, ticket tags |
+| Instrument Data | `headlineSmall` | 26 / 700 (mono) | 1.15 | Optical power (-19.5 dBm), ports, ticket tags |
 
 - **Strict Rules:**
   1. **13px Minimum Floor:** Nothing below 13px in UI components. Only fixed map pin labels (map furniture) may drop to 9px with `TextScaler.noScaling`.

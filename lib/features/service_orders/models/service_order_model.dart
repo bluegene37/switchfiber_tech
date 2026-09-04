@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'package:drift/drift.dart' show Value;
 import 'package:latlong2/latlong.dart';
+import '../../../core/database/app_database.dart';
+import '../../../core/services/photo_storage_service.dart';
 
 /// Data Transfer Object representing a Field Repair / Trouble Ticket / Service Order.
 class ServiceOrderDto {
@@ -56,6 +59,9 @@ class ServiceOrderDto {
   // Raw JSON
   final String? rawJson;
 
+  final bool isSynced;
+  final DateTime? updatedAt;
+
   const ServiceOrderDto({
     required this.id,
     required this.accountNumber,
@@ -101,7 +107,246 @@ class ServiceOrderDto {
     this.addressCoordinates,
     this.serviceCharge = 0.0,
     this.rawJson,
+    this.isSynced = true,
+    this.updatedAt,
   });
+
+  ServiceOrderDto copyWith({
+    int? id,
+    String? accountNumber,
+    String? fullName,
+    String? contactNumber,
+    String? emailAddress,
+    String? address,
+    String? barangay,
+    String? city,
+    String? provider,
+    String? plan,
+    String? username,
+    String? connectionType,
+    String? routerModemSN,
+    String? lcp,
+    String? nap,
+    String? port,
+    String? vlan,
+    String? supportStatus,
+    String? concern,
+    String? priorityLevel,
+    String? visitStatus,
+    String? visitBy,
+    String? visitRemarks,
+    String? assignedEmail,
+    DateTime? createdDate,
+    DateTime? dateInstalled,
+    String? newRouterModemSN,
+    String? newLCP,
+    String? newNAP,
+    String? newPORT,
+    String? newVLAN,
+    String? routerModel,
+    String? pulloutRouterModel,
+    String? pulloutRouterModelSN,
+    String? pulloutRemarks,
+    Map<String, int>? materialsUsed,
+    String? clientSignature,
+    String? image1,
+    String? image2,
+    String? image3,
+    String? houseFrontPicture,
+    String? addressCoordinates,
+    double? serviceCharge,
+    String? rawJson,
+    bool? isSynced,
+    DateTime? updatedAt,
+  }) {
+    return ServiceOrderDto(
+      id: id ?? this.id,
+      accountNumber: accountNumber ?? this.accountNumber,
+      fullName: fullName ?? this.fullName,
+      contactNumber: contactNumber ?? this.contactNumber,
+      emailAddress: emailAddress ?? this.emailAddress,
+      address: address ?? this.address,
+      barangay: barangay ?? this.barangay,
+      city: city ?? this.city,
+      provider: provider ?? this.provider,
+      plan: plan ?? this.plan,
+      username: username ?? this.username,
+      connectionType: connectionType ?? this.connectionType,
+      routerModemSN: routerModemSN ?? this.routerModemSN,
+      lcp: lcp ?? this.lcp,
+      nap: nap ?? this.nap,
+      port: port ?? this.port,
+      vlan: vlan ?? this.vlan,
+      supportStatus: supportStatus ?? this.supportStatus,
+      concern: concern ?? this.concern,
+      priorityLevel: priorityLevel ?? this.priorityLevel,
+      visitStatus: visitStatus ?? this.visitStatus,
+      visitBy: visitBy ?? this.visitBy,
+      visitRemarks: visitRemarks ?? this.visitRemarks,
+      assignedEmail: assignedEmail ?? this.assignedEmail,
+      createdDate: createdDate ?? this.createdDate,
+      dateInstalled: dateInstalled ?? this.dateInstalled,
+      newRouterModemSN: newRouterModemSN ?? this.newRouterModemSN,
+      newLCP: newLCP ?? this.newLCP,
+      newNAP: newNAP ?? this.newNAP,
+      newPORT: newPORT ?? this.newPORT,
+      newVLAN: newVLAN ?? this.newVLAN,
+      routerModel: routerModel ?? this.routerModel,
+      pulloutRouterModel: pulloutRouterModel ?? this.pulloutRouterModel,
+      pulloutRouterModelSN: pulloutRouterModelSN ?? this.pulloutRouterModelSN,
+      pulloutRemarks: pulloutRemarks ?? this.pulloutRemarks,
+      materialsUsed: materialsUsed ?? this.materialsUsed,
+      clientSignature: clientSignature ?? this.clientSignature,
+      image1: image1 ?? this.image1,
+      image2: image2 ?? this.image2,
+      image3: image3 ?? this.image3,
+      houseFrontPicture: houseFrontPicture ?? this.houseFrontPicture,
+      addressCoordinates: addressCoordinates ?? this.addressCoordinates,
+      serviceCharge: serviceCharge ?? this.serviceCharge,
+      rawJson: rawJson ?? this.rawJson,
+      isSynced: isSynced ?? this.isSynced,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory ServiceOrderDto.fromDrift(ServiceOrder row) {
+    Map<String, int> materials = const {};
+    if (row.materialsUsedJson != null &&
+        row.materialsUsedJson!.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(row.materialsUsedJson!);
+        if (decoded is Map) {
+          materials = decoded.map(
+              (k, v) => MapEntry(k.toString(), (v as num).toInt()));
+        }
+      } catch (_) {}
+    }
+    return ServiceOrderDto(
+      id: row.id,
+      accountNumber: row.accountNumber,
+      fullName: row.fullName,
+      contactNumber: row.contactNumber ?? '',
+      emailAddress: row.emailAddress ?? '',
+      address: row.address,
+      barangay: row.barangay,
+      city: row.city,
+      provider: row.provider,
+      plan: row.plan,
+      username: row.username,
+      connectionType: row.connectionType,
+      routerModemSN: row.routerModemSN,
+      lcp: row.lcp,
+      nap: row.nap,
+      port: row.port,
+      vlan: row.vlan,
+      supportStatus: row.supportStatus,
+      concern: row.concern,
+      priorityLevel: row.priorityLevel,
+      visitStatus: row.visitStatus,
+      visitBy: row.visitBy,
+      visitRemarks: row.visitRemarks,
+      assignedEmail: row.assignedEmail,
+      createdDate: row.createdDate,
+      dateInstalled: row.dateInstalled,
+      newRouterModemSN: row.newRouterModemSN,
+      newLCP: row.newLCP,
+      newNAP: row.newNAP,
+      newPORT: row.newPORT,
+      newVLAN: row.newVLAN,
+      routerModel: row.routerModel,
+      pulloutRouterModel: row.pulloutRouterModel,
+      pulloutRouterModelSN: row.pulloutRouterModelSN,
+      pulloutRemarks: row.pulloutRemarks,
+      materialsUsed: materials,
+      clientSignature: row.clientSignature,
+      image1: row.image1,
+      image2: row.image2,
+      image3: row.image3,
+      houseFrontPicture: row.houseFrontPicture,
+      addressCoordinates: row.addressCoordinates,
+      serviceCharge: row.serviceCharge,
+      rawJson: row.rawJson,
+      isSynced: row.isSynced,
+      updatedAt: row.updatedAt,
+    );
+  }
+
+  ServiceOrdersCompanion toCompanion({bool synced = true}) {
+    return ServiceOrdersCompanion(
+      id: Value(id),
+      accountNumber: Value(accountNumber),
+      fullName: Value(fullName),
+      contactNumber: Value(contactNumber),
+      emailAddress: Value(emailAddress),
+      address: Value(address),
+      barangay: Value(barangay),
+      city: Value(city),
+      provider: Value(provider),
+      plan: Value(plan),
+      username: Value(username),
+      connectionType: Value(connectionType),
+      routerModemSN: Value(routerModemSN),
+      lcp: Value(lcp),
+      nap: Value(nap),
+      port: Value(port),
+      vlan: Value(vlan),
+      supportStatus: Value(supportStatus),
+      concern: Value(concern),
+      priorityLevel: Value(priorityLevel),
+      visitStatus: Value(visitStatus),
+      visitBy: Value(visitBy),
+      visitRemarks: Value(visitRemarks),
+      assignedEmail: Value(assignedEmail),
+      createdDate: Value(createdDate),
+      dateInstalled: Value(dateInstalled),
+      newRouterModemSN: Value(newRouterModemSN),
+      newLCP: Value(newLCP),
+      newNAP: Value(newNAP),
+      newPORT: Value(newPORT),
+      newVLAN: Value(newVLAN),
+      routerModel: Value(routerModel),
+      pulloutRouterModel: Value(pulloutRouterModel),
+      pulloutRouterModelSN: Value(pulloutRouterModelSN),
+      pulloutRemarks: Value(pulloutRemarks),
+      materialsUsedJson: Value(
+          materialsUsed.isNotEmpty ? jsonEncode(materialsUsed) : null),
+      clientSignature: Value(clientSignature),
+      image1: Value(image1),
+      image2: Value(image2),
+      image3: Value(image3),
+      houseFrontPicture: Value(houseFrontPicture),
+      addressCoordinates: Value(addressCoordinates),
+      serviceCharge: Value(serviceCharge),
+      rawJson: Value(rawJson),
+      isSynced: Value(synced),
+      updatedAt: Value(updatedAt ?? DateTime.now()),
+    );
+  }
+
+  /// Converts fields to API JSON map, resolving local photo file paths
+  /// back into Base64 data URLs as required by the backend API.
+  Future<Map<String, dynamic>> toApiJsonAsync() async {
+    final base = toJson();
+    final photoStorage = PhotoStorageService.instance;
+    if (clientSignature != null) {
+      base['clientSignature'] =
+          await photoStorage.resolveToDataUrl(clientSignature);
+    }
+    if (image1 != null) {
+      base['image1'] = await photoStorage.resolveToDataUrl(image1);
+    }
+    if (image2 != null) {
+      base['image2'] = await photoStorage.resolveToDataUrl(image2);
+    }
+    if (image3 != null) {
+      base['image3'] = await photoStorage.resolveToDataUrl(image3);
+    }
+    if (houseFrontPicture != null) {
+      base['houseFrontPicture'] =
+          await photoStorage.resolveToDataUrl(houseFrontPicture);
+    }
+    return base;
+  }
 
   /// Parse GPS coordinates from addressCoordinates string (e.g. "14.4705, 121.2150")
   LatLng? get latLng {

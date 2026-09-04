@@ -61,9 +61,13 @@ class ReportSignals {
     routerSerial.value = job.modemRouterSN ?? '';
     if (job.routerModel != null && job.routerModel!.isNotEmpty) {
       routerModel.value = job.routerModel!;
+    } else {
+      routerModel.value = 'Huawei 5v5';
     }
     if (job.portId != null && job.portId!.isNotEmpty) {
       napPort.value = job.portId!;
+    } else {
+      napPort.value = 'Port 1';
     }
     if (job.nap != null && job.nap!.isNotEmpty) {
       nap.value = job.nap;
@@ -133,6 +137,8 @@ class ReportSignals {
     selectedJobOrder.value = null;
     opticalPower.value = -19.5;
     routerSerial.value = '';
+    routerModel.value = 'Huawei 5v5';
+    napPort.value = 'Port 1';
     remarks.value = '';
     nap.value = null;
     signature.value = null;

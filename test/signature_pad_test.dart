@@ -82,7 +82,6 @@ void main() {
     // Perform a vertical drag on the SignaturePad.
     // Without EagerPanGestureRecognizer, the vertical drag would be claimed
     // by SingleChildScrollView, scrolling the view and leaving the pad untouched.
-    final center = tester.getCenter(find.byType(SignaturePad));
     await tester.timedDrag(
       find.byType(SignaturePad),
       const Offset(0, 50),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/daos/job_orders_dao.dart';
+import '../../../core/services/photo_storage_service.dart';
 import '../models/job_order_model.dart';
 import '../services/job_orders_api.dart';
 import '../services/sync_worker.dart';
@@ -154,6 +155,26 @@ class JobRepository {
     String? houseFront,
     String? assignedEmail,
   }) async {
+    final photoStorage = PhotoStorageService.instance;
+    final savedBox = await photoStorage.savePhotoLocally(boxReadingImage,
+        tag: 'box_reading', entityId: id);
+    final savedRouter = await photoStorage.savePhotoLocally(routerReadingImage,
+        tag: 'router_reading', entityId: id);
+    final savedSig = await photoStorage.savePhotoLocally(clientSignature,
+        tag: 'signature', entityId: id);
+    final savedSetup = await photoStorage.savePhotoLocally(setupImage,
+        tag: 'setup', entityId: id);
+    final savedSpeed = await photoStorage.savePhotoLocally(speedtestImage,
+        tag: 'speedtest', entityId: id);
+    final savedPort = await photoStorage.savePhotoLocally(portLabelImage,
+        tag: 'port_label', entityId: id);
+    final savedContract = await photoStorage.savePhotoLocally(
+        signedContractImage,
+        tag: 'signed_contract',
+        entityId: id);
+    final savedHouse = await photoStorage.savePhotoLocally(houseFront,
+        tag: 'house_front', entityId: id);
+
     await _dao.updateJobCompletion(
       id: id,
       status: status,
@@ -163,14 +184,14 @@ class JobRepository {
       modemRouterSN: modemRouterSN,
       routerModel: routerModel,
       nap: nap,
-      boxReadingImage: boxReadingImage,
-      routerReadingImage: routerReadingImage,
-      clientSignature: clientSignature,
-      setupImage: setupImage,
-      speedtestImage: speedtestImage,
-      portLabelImage: portLabelImage,
-      signedContractImage: signedContractImage,
-      houseFront: houseFront,
+      boxReadingImage: savedBox,
+      routerReadingImage: savedRouter,
+      clientSignature: savedSig,
+      setupImage: savedSetup,
+      speedtestImage: savedSpeed,
+      portLabelImage: savedPort,
+      signedContractImage: savedContract,
+      houseFront: savedHouse,
       assignedEmail: assignedEmail,
       isSynced: false,
     );

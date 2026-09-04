@@ -23,12 +23,14 @@ class TechnicianShell extends StatefulWidget {
   final AuthSignals authSignals;
   final JobsSignals jobsSignals;
   final LcpNapSignals lcpNapSignals;
+  final ServiceOrdersSignals? serviceOrdersSignals;
 
   const TechnicianShell({
     super.key,
     required this.authSignals,
     required this.jobsSignals,
     required this.lcpNapSignals,
+    this.serviceOrdersSignals,
   });
 
   @override
@@ -51,7 +53,8 @@ class _TechnicianShellState extends State<TechnicianShell> {
   void initState() {
     super.initState();
     _reportSignals = ReportSignals();
-    _serviceOrdersSignals = ServiceOrdersSignals();
+    _serviceOrdersSignals =
+        widget.serviceOrdersSignals ?? ServiceOrdersSignals();
     // The job history is scoped to the signed-in technician's email. Kept in
     // sync reactively so a profile refresh that fills in the email (the login
     // response does not carry it) immediately unlocks the history.
@@ -86,6 +89,9 @@ class _TechnicianShellState extends State<TechnicianShell> {
   @override
   void dispose() {
     _disposeEmailSync();
+    if (widget.serviceOrdersSignals == null) {
+      _serviceOrdersSignals.dispose();
+    }
     super.dispose();
   }
 

@@ -1,20 +1,21 @@
 import 'package:drift/drift.dart';
 import 'daos/job_orders_dao.dart';
 import 'daos/lcp_nap_dao.dart';
+import 'daos/service_orders_dao.dart';
 import 'native_database.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [JobOrders, SyncQueues, LcpNapLocations],
-  daos: [JobOrdersDao, LcpNapLocationsDao],
+  tables: [JobOrders, SyncQueues, LcpNapLocations, ServiceOrders],
+  daos: [JobOrdersDao, LcpNapLocationsDao, ServiceOrdersDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -52,6 +53,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 6) {
             // Selected NAP from /api/Naps
             await m.addColumn(jobOrders, jobOrders.nap);
+          }
+          if (from < 7) {
+            // Service orders table for offline repairs & maintenance
+            await m.createTable(serviceOrders);
           }
         },
       );

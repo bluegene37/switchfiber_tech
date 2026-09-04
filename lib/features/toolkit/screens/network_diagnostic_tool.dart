@@ -274,8 +274,9 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                               )
                             else
                               IconButton(
+                                tooltip: 'Re-ping ${t.label}',
                                 icon:
-                                    const Icon(Icons.refresh_rounded, size: 18),
+                                    const Icon(Icons.refresh_rounded, size: 20),
                                 onPressed: () => _pingHost(t),
                               ),
                           ],
