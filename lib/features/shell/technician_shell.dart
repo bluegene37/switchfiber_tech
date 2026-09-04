@@ -147,7 +147,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
   Widget _buildIosBottomBar(
       BuildContext context, JobsSignals jobs, bool isDark) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final barBg = isDark ? const Color(0xEB1C1C1E) : const Color(0xF2FFFFFF);
+    final barBg = isDark ? const Color(0xEB161F30) : const Color(0xF8FFFFFF);
     final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
 
     return ClipRect(
@@ -238,7 +238,7 @@ class _TechnicianShellState extends State<TechnicianShell> {
     final isSelected = _currentIndex == index;
     final activeColor = AppTheme.brandInkOf(context);
     final inactiveColor =
-        isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
+        isDark ? AppTheme.textSecondaryDark : AppTheme.secondaryInk;
 
     return Expanded(
       child: Semantics(

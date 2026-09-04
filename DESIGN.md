@@ -45,35 +45,37 @@ System-native typography delivers zero runtime overhead, instant cold start, and
 ## Color & Outdoor Contrast System
 Bright colors are strictly reserved for fills, badges, and icons. **Text is never rendered with unadjusted bright tokens.** Text routes through calibrated ink tokens that mathematically pass WCAG 2.1 AA (≥4.5:1) on both card and page surfaces in both themes.
 
-### Light Mode (Outdoor Daylight Target)
-- **Page Background:** `#F2F2F7` (iOS System Grouped Background)
+### Light Mode (Crisp Modern Slate Canvas)
+- **Page Background:** `#F8FAFC` (Slate 50 — clean, luminous, modern airy tech canvas)
 - **Card Surface:** `#FFFFFF` (Pure White)
-- **Brand Primary:** `#E74C5A` (Warm Rose Red fill)
-- **Hairline Border:** `#E5E5EA` (0.5px border)
+- **Brand Primary:** `#E02424` (Electric Fiber Red — high-energy telecom standard, 4.72:1 white contrast)
+- **Hairline Border:** `#E2E8F0` (Slate 200 — precision 0.5px border)
+- **Secondary Fill:** `#F1F5F9` (Slate 100 — search fields, tag backgrounds)
 
 #### Light Mode Semantic Inks (WCAG Text Tested)
-- **Primary Text:** `#1C1C1E` (15.8:1 on white, 14.2:1 on page)
-- **Secondary Ink:** `#5A5A60` (6.85:1 on white, 6.14:1 on page) — `AppTheme.secondaryInkOf(context)`
-- **Brand Ink:** `#C02E3C` (5.68:1 on white) — `AppTheme.brandInkOf(context)`
-- **Success Ink:** `#1B7F3B` (5.07:1 on white, 4.54:1 on page) — `AppTheme.successInkOf(context)`
-- **Warning Ink:** `#8A5200` (6.39:1 on white, 5.73:1 on page) — `AppTheme.warningInkOf(context)`
-- **Danger Ink:** `#C1291F` (5.83:1 on white, 5.22:1 on page) — `AppTheme.dangerInkOf(context)`
-- **Info Ink:** `#0062CC` (5.80:1 on white, 5.20:1 on page) — `AppTheme.infoInkOf(context)`
+- **Primary Text:** `#0F172A` (Slate 900 — 16.2:1 on white, 15.5:1 on page)
+- **Secondary Ink:** `#475569` (Slate 600 — 7.58:1 on white, 7.24:1 on page) — `AppTheme.secondaryInkOf(context)`
+- **Brand Ink:** `#B91C1C` (Red 700 — 6.47:1 on white, 6.18:1 on page) — `AppTheme.brandInkOf(context)`
+- **Success Ink:** `#15803D` (Emerald 700 — 5.02:1 on white, 4.79:1 on page) — `AppTheme.successInkOf(context)`
+- **Warning Ink:** `#B45309` (Amber 700 — 5.02:1 on white, 4.80:1 on page) — `AppTheme.warningInkOf(context)`
+- **Danger Ink:** `#B91C1C` (Red 700 — 6.47:1 on white, 6.18:1 on page) — `AppTheme.dangerInkOf(context)`
+- **Info Ink:** `#0369A1` (Sky 700 — 5.93:1 on white, 5.67:1 on page) — `AppTheme.infoInkOf(context)`
 
-### Dark Mode (OLED Field & Low-Glare Target)
-- **Page Background:** `#000000` (Pitch Black OLED battery-saver)
-- **Card Surface:** `#1C1C1E` (Dark Grouped Surface)
-- **Input Fill:** `#2C2C2E`
-- **Hairline Border:** `#38383A` (0.5px border)
+### Dark Mode (Midnight Obsidian Tech Palette)
+- **Page Background:** `#0B0F19` (Deep Midnight Obsidian — rich space navy canvas)
+- **Card Surface:** `#161F30` (Midnight Navy Slate — elevated card surface)
+- **Elevated Surfaces:** `#243048` (Tertiary / Modal elevated card)
+- **Input Fill:** `#1B2538` (Modern Slate dark input fill)
+- **Hairline Border:** `#283548` (Precision dark hairline border)
 
 #### Dark Mode Semantic Inks
-- **Primary Text:** `#FFFFFF` (15.5:1 on card)
-- **Secondary Ink Dark:** `#AEAEB2` (7.69:1 on card, 9.50:1 on page)
-- **Brand Ink Dark:** `#FF8A94` (7.55:1 on card)
-- **Success Ink Dark:** `#5CD27A` (8.88:1 on card)
-- **Warning Ink Dark:** `#FFB340` (9.54:1 on card)
-- **Danger Ink Dark:** `#FF6B62` (6.10:1 on card)
-- **Info Ink Dark:** `#5AA9FF` (6.93:1 on card)
+- **Primary Text:** `#FFFFFF` (16.0:1 on card)
+- **Secondary Ink Dark:** `#94A3B8` (Slate 400 — 6.43:1 on card, 7.47:1 on page)
+- **Brand Ink Dark:** `#FF6B7A` (Radiant Coral Red — 6.00:1 on card, 6.96:1 on page)
+- **Success Ink Dark:** `#4ADE80` (Emerald 400 — 9.47:1 on card, 10.99:1 on page)
+- **Warning Ink Dark:** `#FBBF24` (Amber 400 — 9.88:1 on card, 11.47:1 on page)
+- **Danger Ink Dark:** `#F87171` (Red 400 — 5.96:1 on card, 6.92:1 on page)
+- **Info Ink Dark:** `#38BDF8` (Sky 400 — 7.70:1 on card, 8.94:1 on page)
 
 ---
 
