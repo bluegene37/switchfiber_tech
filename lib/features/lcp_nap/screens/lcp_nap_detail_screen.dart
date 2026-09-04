@@ -485,8 +485,6 @@ class _LcpNapDetailScreenState extends State<LcpNapDetailScreen> {
                   label: const Text('Navigate'),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],

@@ -5,13 +5,19 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:swithfiber_tech/core/database/app_database.dart';
+import 'package:swithfiber_tech/core/database/daos/lcp_nap_dao.dart';
 import 'package:swithfiber_tech/core/theme/app_theme.dart';
 import 'package:swithfiber_tech/core/utils/data_url.dart';
+import 'package:swithfiber_tech/features/auth/signals/auth_signals.dart';
 import 'package:swithfiber_tech/features/jobs/models/job_order_model.dart';
 import 'package:swithfiber_tech/features/jobs/repositories/job_repository.dart';
 import 'package:swithfiber_tech/features/jobs/screens/job_order_detail_screen.dart';
 import 'package:swithfiber_tech/features/jobs/signals/jobs_signals.dart';
+import 'package:swithfiber_tech/features/jobs/widgets/job_card.dart';
 import 'package:swithfiber_tech/features/jobs/widgets/jobs_map_view.dart';
+import 'package:swithfiber_tech/features/lcp_nap/repositories/lcp_nap_repository.dart';
+import 'package:swithfiber_tech/features/lcp_nap/signals/lcp_nap_signals.dart';
+import 'package:swithfiber_tech/features/shell/technician_shell.dart';
 
 /// A real 1x1 PNG (same fixture as create_report_screen_test.dart and
 /// photo_capture_tile_test.dart): the on-site report card renders an
@@ -123,21 +129,111 @@ void main() {
     expect(size.height, greaterThanOrEqualTo(48));
   });
 
-  test('no widget asks for compact density any more', () {
+  test(
+      'no widget asks for compact density, a shrink-wrapped tap target, or '
+      'a zeroed minimum size', () {
     // The theme's minimum sizes (Task 2) only hold if nothing overrides
-    // them with a desktop-mouse density. Walk every .dart source file
-    // under lib/ and fail if VisualDensity.compact has crept back in,
-    // rather than merely documenting the intent.
-    final offenders = <String>[];
+    // them with a desktop-mouse density, or shrinks the Material tap target
+    // padding back down below 48dp. Walk every .dart source file under
+    // lib/ and fail if any of the three has crept back in, rather than
+    // merely documenting the intent.
+    final compactOffenders = <String>[];
+    final shrinkWrapOffenders = <String>[];
+    final zeroMinSizeOffenders = <String>[];
     final libDir = Directory('lib');
     for (final entity in libDir.listSync(recursive: true)) {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
       final contents = entity.readAsStringSync();
       if (contents.contains('VisualDensity.compact')) {
-        offenders.add(entity.path);
+        compactOffenders.add(entity.path);
+      }
+      if (contents.contains('MaterialTapTargetSize.shrinkWrap')) {
+        shrinkWrapOffenders.add(entity.path);
+      }
+      if (contents.contains('minimumSize: Size.zero')) {
+        zeroMinSizeOffenders.add(entity.path);
       }
     }
-    expect(offenders, isEmpty,
-        reason: 'VisualDensity.compact found in: ${offenders.join(', ')}');
+    expect(compactOffenders, isEmpty,
+        reason:
+            'VisualDensity.compact found in: ${compactOffenders.join(', ')}');
+    expect(shrinkWrapOffenders, isEmpty,
+        reason: 'MaterialTapTargetSize.shrinkWrap found in: '
+            '${shrinkWrapOffenders.join(', ')}');
+    expect(zeroMinSizeOffenders, isEmpty,
+        reason:
+            'minimumSize: Size.zero found in: ${zeroMinSizeOffenders.join(', ')}');
+  });
+
+  testWidgets('bottom tab bar hit areas are at least 48dp tall',
+      (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    final shellJobs = JobsSignals(JobRepository(db.jobOrdersDao));
+    final lcpNap = LcpNapSignals(LcpNapRepository(LcpNapLocationsDao(db)));
+    final auth = AuthSignals.instance;
+    auth.currentUser.value = null;
+
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.lightTheme,
+      home: TechnicianShell(
+        authSignals: auth,
+        jobsSignals: shellJobs,
+        lcpNapSignals: lcpNap,
+      ),
+    ));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    for (final label in [
+      'Scheduled',
+      'Repairs',
+      'LCP NAP',
+      'Tech Toolkit',
+      'Settings',
+    ]) {
+      final tab = find.ancestor(
+          of: find.text(label), matching: find.byType(GestureDetector));
+      expect(tester.getSize(tab).height, greaterThanOrEqualTo(48),
+          reason: '$label tab');
+    }
+
+    await tester.runAsync(() async {
+      await shellJobs.dispose();
+      await lcpNap.dispose();
+      await db.close();
+    });
+  });
+
+  testWidgets('JobCard Call and Directions pills are at least 48dp tall',
+      (tester) async {
+    final job = JobOrderDto(
+      id: 42,
+      ticketNumber: 'SF-2026-0042',
+      customerName: 'Tap Target Torres',
+      address: 'Lot 42, Fiber Street',
+      status: 'Scheduled',
+      onsiteStatus: 'Scheduled',
+      contactNumber: '09171234567',
+      updatedAt: DateTime.now(),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.lightTheme,
+      home: Scaffold(body: JobCard(job: job, onTap: () {})),
+    ));
+    await tester.pump();
+
+    for (final label in ['Call', 'Directions']) {
+      // The card itself is wrapped in an InkWell, which builds its own
+      // internal GestureDetector, so the ancestor chain above each pill's
+      // own tap-target GestureDetector also passes through that one. The
+      // pill's is the nearer of the two matches.
+      final pill = find
+          .ancestor(
+              of: find.text(label), matching: find.byType(GestureDetector))
+          .first;
+      expect(tester.getSize(pill).height, greaterThanOrEqualTo(48),
+          reason: '$label pill');
+    }
   });
 }

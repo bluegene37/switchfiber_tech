@@ -468,9 +468,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     style: TextButton.styleFrom(
                                       padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
                                   ),
                                 ],

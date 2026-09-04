@@ -144,17 +144,22 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.network_ping_rounded,
-                              size: 18, color: AppTheme.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Field Latency & DNS Ping',
-                            style: context.text.titleMedium,
-                          ),
-                        ],
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.network_ping_rounded,
+                                size: 18, color: AppTheme.primary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Field Latency & DNS Ping',
+                                style: context.text.titleMedium,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       ElevatedButton.icon(
                         onPressed: _isTestingAll ? null : _pingAll,
                         icon: _isTestingAll

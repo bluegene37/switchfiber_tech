@@ -98,42 +98,49 @@ class _DropCableToolState extends State<DropCableTool> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'RECOMMENDED DROP WIRE',
-                          style: context.text.labelSmall,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${totalMeters.ceil()} Meters',
-                          style: context.text.headlineSmall!.copyWith(
-                            color: AppTheme.brandInkOf(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppTheme.darkInput : Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark
-                              ? AppTheme.borderDark
-                              : AppTheme.borderLight,
-                        ),
-                      ),
+                    Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Exact Length', style: context.text.labelSmall),
                           Text(
-                            '${totalMeters.toStringAsFixed(1)} m',
-                            style: context.text.titleSmall,
+                            'RECOMMENDED DROP WIRE',
+                            style: context.text.labelSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${totalMeters.ceil()} Meters',
+                            style: context.text.headlineSmall!.copyWith(
+                              color: AppTheme.brandInkOf(context),
+                            ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppTheme.darkInput : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isDark
+                                ? AppTheme.borderDark
+                                : AppTheme.borderLight,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Exact Length',
+                                style: context.text.labelSmall),
+                            Text(
+                              '${totalMeters.toStringAsFixed(1)} m',
+                              style: context.text.titleSmall,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -146,12 +153,18 @@ class _DropCableToolState extends State<DropCableTool> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildSubstat(context, 'Aerial Span',
-                        '${estimator.aerialSpanLength.toStringAsFixed(1)}m'),
-                    _buildSubstat(context, 'Indoor Run',
-                        '${_indoorRunMeters.toStringAsFixed(1)}m'),
-                    _buildSubstat(context, 'Coil/Slack',
-                        '${(_facadeLoopMeters + _serviceLoopMeters).toStringAsFixed(1)}m'),
+                    Expanded(
+                      child: _buildSubstat(context, 'Aerial Span',
+                          '${estimator.aerialSpanLength.toStringAsFixed(1)}m'),
+                    ),
+                    Expanded(
+                      child: _buildSubstat(context, 'Indoor Run',
+                          '${_indoorRunMeters.toStringAsFixed(1)}m'),
+                    ),
+                    Expanded(
+                      child: _buildSubstat(context, 'Coil/Slack',
+                          '${(_facadeLoopMeters + _serviceLoopMeters).toStringAsFixed(1)}m'),
+                    ),
                   ],
                 ),
               ],
@@ -171,9 +184,11 @@ class _DropCableToolState extends State<DropCableTool> {
                       const Icon(Icons.cable_rounded,
                           size: 18, color: AppTheme.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        'Span & Route Parameters',
-                        style: context.text.titleMedium,
+                      Expanded(
+                        child: Text(
+                          'Span & Route Parameters',
+                          style: context.text.titleMedium,
+                        ),
                       ),
                     ],
                   ),
@@ -183,8 +198,11 @@ class _DropCableToolState extends State<DropCableTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Pole Spans (Pole to Pole):',
-                          style: context.text.bodySmall),
+                      Expanded(
+                        child: Text('Pole Spans (Pole to Pole):',
+                            style: context.text.bodySmall),
+                      ),
+                      const SizedBox(width: 8),
                       Text('$_poleSpans spans',
                           style: context.text.titleSmall!
                               .copyWith(color: AppTheme.brandInkOf(context))),
@@ -203,8 +221,11 @@ class _DropCableToolState extends State<DropCableTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Avg Span Distance (Meters):',
-                          style: context.text.bodySmall),
+                      Expanded(
+                        child: Text('Avg Span Distance (Meters):',
+                            style: context.text.bodySmall),
+                      ),
+                      const SizedBox(width: 8),
                       Text('${_averageSpanMeters.toStringAsFixed(0)} m',
                           style: context.text.titleSmall!
                               .copyWith(color: AppTheme.brandInkOf(context))),
@@ -223,8 +244,11 @@ class _DropCableToolState extends State<DropCableTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Indoor Conduit Run to ONT:',
-                          style: context.text.bodySmall),
+                      Expanded(
+                        child: Text('Indoor Conduit Run to ONT:',
+                            style: context.text.bodySmall),
+                      ),
+                      const SizedBox(width: 8),
                       Text('${_indoorRunMeters.toStringAsFixed(0)} m',
                           style: context.text.titleSmall!
                               .copyWith(color: AppTheme.brandInkOf(context))),
@@ -256,9 +280,11 @@ class _DropCableToolState extends State<DropCableTool> {
                       const Icon(Icons.inventory_2_outlined,
                           size: 18, color: AppTheme.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        'Bill of Materials Checklist',
-                        style: context.text.titleMedium,
+                      Expanded(
+                        child: Text(
+                          'Bill of Materials Checklist',
+                          style: context.text.titleMedium,
+                        ),
                       ),
                     ],
                   ),
@@ -301,9 +327,13 @@ class _DropCableToolState extends State<DropCableTool> {
                                 style: context.text.titleSmall,
                               ),
                             ),
-                            Text(
-                              item.quantity,
-                              style: context.text.titleSmall,
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                item.quantity,
+                                textAlign: TextAlign.end,
+                                style: context.text.titleSmall,
+                              ),
                             ),
                           ],
                         ),

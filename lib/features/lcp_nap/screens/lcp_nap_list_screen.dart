@@ -265,8 +265,6 @@ class _LcpNapListScreenState extends State<LcpNapListScreen> {
                       onPressed: () => signals.setLcpFilter('All'),
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: const Text('Show All'),
                     ),

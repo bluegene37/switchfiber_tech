@@ -66,9 +66,11 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                       const Icon(Icons.colorize_rounded,
                           size: 18, color: AppTheme.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        'Core Number to Color Lookup',
-                        style: context.text.titleMedium,
+                      Expanded(
+                        child: Text(
+                          'Core Number to Color Lookup',
+                          style: context.text.titleMedium,
+                        ),
                       ),
                     ],
                   ),
@@ -100,6 +102,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                         flex: 2,
                         child: DropdownButtonFormField<int>(
                           initialValue: _fibersPerTube,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Fibers/Tube',
                           ),

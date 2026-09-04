@@ -202,8 +202,7 @@ class JobCard extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         const Icon(CupertinoIcons.phone_fill,
-                                            size: 24,
-                                            color: Color(0xFF10B981)),
+                                            size: 24, color: Color(0xFF10B981)),
                                         const SizedBox(width: 4),
                                         Flexible(
                                           child: Text(

@@ -253,65 +253,65 @@ class _TechnicianShellState extends State<TechnicianShell> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(
-                    isSelected ? activeIcon : icon,
-                    size: 22,
-                    color: isSelected ? activeColor : inactiveColor,
-                  ),
-                  if (badgeSignal != null)
-                    Positioned(
-                      top: -4,
-                      right: -10,
-                      child: SignalBuilder(
-                        builder: (context) {
-                          final count = badgeSignal.value;
-                          if (count <= 0) return const SizedBox.shrink();
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badgeColor ?? AppTheme.primary,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF1C1C1E)
-                                    : Colors.white,
-                                width: 1.5,
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              count > 99 ? '99+' : '$count',
-                              style: context.text.labelSmall!
-                                  .copyWith(color: Colors.white),
-                            ),
-                          );
-                        },
-                      ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      isSelected ? activeIcon : icon,
+                      size: 22,
+                      color: isSelected ? activeColor : inactiveColor,
                     ),
-                ],
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: context.text.labelSmall!.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected
-                      ? AppTheme.brandInkOf(context)
-                      : AppTheme.secondaryInkOf(context),
-                  letterSpacing: 0,
+                    if (badgeSignal != null)
+                      Positioned(
+                        top: -4,
+                        right: -10,
+                        child: SignalBuilder(
+                          builder: (context) {
+                            final count = badgeSignal.value;
+                            if (count <= 0) return const SizedBox.shrink();
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              decoration: BoxDecoration(
+                                color: badgeColor ?? AppTheme.primary,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF1C1C1E)
+                                      : Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                count > 99 ? '99+' : '$count',
+                                style: context.text.labelSmall!
+                                    .copyWith(color: Colors.white),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: context.text.labelSmall!.copyWith(
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? AppTheme.brandInkOf(context)
+                        : AppTheme.secondaryInkOf(context),
+                    letterSpacing: 0,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ),
@@ -332,7 +332,11 @@ class _TechnicianShellState extends State<TechnicianShell> {
               final user = auth.currentUser.value;
               return UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(
-                  color: AppTheme.primary,
+                  // The deeper brand red, not AppTheme.primary: white text
+                  // reaches only 3.76:1 on primary but 5.68:1 here, so the
+                  // header keeps its conventional white-on-red look instead
+                  // of needing dark text on a bright fill.
+                  color: AppTheme.primaryActive,
                 ),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: Colors.white,
@@ -352,14 +356,10 @@ class _TechnicianShellState extends State<TechnicianShell> {
                   user?.email.isNotEmpty == true
                       ? user!.email
                       : 'Switch Fiber Dispatch Tech',
-                  // Colors.white70 measured 2.57:1 on the AppTheme.primary
-                  // header; full Colors.white only reaches 3.76:1 there (the
-                  // header red's luminance sits high enough that white text
-                  // tops out below 4.5:1). darkSlate measures 4.52:1 on the
-                  // same header, the same "text on a bright fill" fix used
-                  // for the optical status badge.
-                  style: context.text.bodySmall!
-                      .copyWith(color: AppTheme.darkSlate),
+                  // white70 measured 2.57:1 on the old lighter header. On the
+                  // deeper primaryActive fill above, full white measures
+                  // 5.68:1, so both lines of the header read as one colour.
+                  style: context.text.bodySmall!.copyWith(color: Colors.white),
                 ),
               );
             },

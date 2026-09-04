@@ -441,8 +441,6 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
                           'Sync Now',

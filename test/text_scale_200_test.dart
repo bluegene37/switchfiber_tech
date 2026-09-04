@@ -14,6 +14,10 @@ import 'package:swithfiber_tech/features/lcp_nap/screens/lcp_nap_list_screen.dar
 import 'package:swithfiber_tech/features/lcp_nap/signals/lcp_nap_signals.dart';
 import 'package:swithfiber_tech/features/service_orders/screens/service_orders_screen.dart';
 import 'package:swithfiber_tech/features/service_orders/signals/service_orders_signals.dart';
+import 'package:swithfiber_tech/features/toolkit/screens/drop_cable_tool.dart';
+import 'package:swithfiber_tech/features/toolkit/screens/fiber_color_code_tool.dart';
+import 'package:swithfiber_tech/features/toolkit/screens/network_diagnostic_tool.dart';
+import 'package:swithfiber_tech/features/toolkit/screens/optical_budget_tool.dart';
 import 'package:swithfiber_tech/features/toolkit/screens/toolkit_screen.dart';
 import 'package:swithfiber_tech/features/toolkit/screens/troubleshooting_guide_tool.dart';
 
@@ -93,6 +97,10 @@ void main() {
     'LCP NAP list': (_, l, __) => LcpNapListScreen(signals: l),
     'toolkit hub': (_, __, ___) => const ToolkitScreen(),
     'troubleshooting guide': (_, __, ___) => const TroubleshootingGuideTool(),
+    'drop cable estimator': (_, __, ___) => const DropCableTool(),
+    'optical link budget': (_, __, ___) => const OpticalBudgetTool(),
+    'network diagnostics': (_, __, ___) => const NetworkDiagnosticTool(),
+    'fiber color code': (_, __, ___) => const FiberColorCodeTool(),
     'service orders': (_, __, s) => ServiceOrdersScreen(signals: s),
   }.entries) {
     testWidgets('${entry.key} has no overflow at 200% text', (tester) async {

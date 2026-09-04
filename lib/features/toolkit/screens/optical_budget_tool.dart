@@ -106,17 +106,19 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: status.color,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        status.label,
-                        style: context.text.labelLarge!.copyWith(
-                          color: AppTheme.darkSlate,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: status.color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          status.label,
+                          style: context.text.labelLarge!.copyWith(
+                            color: AppTheme.darkSlate,
+                          ),
                         ),
                       ),
                     ),
