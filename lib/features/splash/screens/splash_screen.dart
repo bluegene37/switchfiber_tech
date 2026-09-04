@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Branded Splash Screen displaying the official Switch Fiber logo and initializing the terminal environment.
@@ -116,25 +117,15 @@ class _SplashScreenState extends State<SplashScreen>
                 Text(
                   'Switch Fiber',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? AppTheme.white : AppTheme.darkSlate,
-                    letterSpacing: -0.6,
-                  ),
+                  style: context.text.titleLarge,
                 ),
                 const SizedBox(height: 6),
 
                 // App Subtitle / Role Tag
-                const Text(
+                Text(
                   'Field Technician Terminal',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.textMuted,
-                    letterSpacing: 0.2,
-                  ),
+                  style: context.text.bodySmall,
                 ),
                 const SizedBox(height: 48),
 

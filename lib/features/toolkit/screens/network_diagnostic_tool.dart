@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Network Diagnostic Tool for Field Technicians (Ping, DNS, IP/VLAN calculator).
@@ -121,13 +122,12 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Network Diagnostics',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Network Diagnostics', style: context.text.titleMedium),
             Text('Ping, DNS latency & Subnet calculator',
-                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                style: context.text.bodySmall),
           ],
         ),
       ),
@@ -144,18 +144,22 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.network_ping_rounded,
-                              size: 18, color: AppTheme.primary),
-                          SizedBox(width: 8),
-                          Text(
-                            'Field Latency & DNS Ping',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                        ],
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.network_ping_rounded,
+                                size: 18, color: AppTheme.primary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Field Latency & DNS Ping',
+                                style: context.text.titleMedium,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       ElevatedButton.icon(
                         onPressed: _isTestingAll ? null : _pingAll,
                         icon: _isTestingAll
@@ -165,13 +169,13 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : const Icon(Icons.play_arrow_rounded, size: 16),
-                        label: const Text('Test All',
-                            style: TextStyle(fontSize: 12)),
+                            : const Icon(Icons.play_arrow_rounded, size: 24),
+                        label: Text('Test All',
+                            style: context.text.labelLarge!
+                                .copyWith(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
-                          visualDensity: VisualDensity.compact,
                         ),
                       ),
                     ],
@@ -209,18 +213,11 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(t.label,
-                                      style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700)),
+                                  Text(t.label, style: context.text.titleSmall),
                                   Text(
                                     '${t.host}:${t.port}',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark
-                                          ? AppTheme.textSecondaryDark
-                                          : AppTheme.textMuted,
-                                    ),
+                                    style: context.text.bodyMedium!
+                                        .copyWith(fontFamily: 'monospace'),
                                   ),
                                 ],
                               ),
@@ -250,12 +247,10 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                                 ),
                                 child: Text(
                                   '${t.latencyMs} ms',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
+                                  style: context.text.titleSmall!.copyWith(
                                     color: t.latencyMs! < 50
-                                        ? AppTheme.success
-                                        : AppTheme.warning,
+                                        ? AppTheme.successInkOf(context)
+                                        : AppTheme.warningInkOf(context),
                                   ),
                                 ),
                               )
@@ -270,12 +265,11 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                                       : AppTheme.dangerSubtle,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Timeout',
-                                  style: TextStyle(
-                                      fontSize: 11,
+                                  style: context.text.labelSmall!.copyWith(
                                       fontWeight: FontWeight.w700,
-                                      color: AppTheme.danger),
+                                      color: AppTheme.dangerInkOf(context)),
                                 ),
                               )
                             else
@@ -302,15 +296,14 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.dns_rounded,
+                      const Icon(Icons.dns_rounded,
                           size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'IP Subnet & CGNAT Helper',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
+                        style: context.text.titleMedium,
                       ),
                     ],
                   ),
@@ -339,14 +332,14 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
                     ),
                     child: Column(
                       children: [
-                        _buildSubnetRow('Subnet Mask',
-                            _cidrProfiles[_selectedCidr]!['mask']!, isDark),
+                        _buildSubnetRow(context, 'Subnet Mask',
+                            _cidrProfiles[_selectedCidr]!['mask']!),
                         const SizedBox(height: 6),
-                        _buildSubnetRow('Usable Hosts',
-                            _cidrProfiles[_selectedCidr]!['usable']!, isDark),
+                        _buildSubnetRow(context, 'Usable Hosts',
+                            _cidrProfiles[_selectedCidr]!['usable']!),
                         const SizedBox(height: 6),
-                        _buildSubnetRow('Common Use',
-                            _cidrProfiles[_selectedCidr]!['usage']!, isDark),
+                        _buildSubnetRow(context, 'Common Use',
+                            _cidrProfiles[_selectedCidr]!['usage']!),
                       ],
                     ),
                   ),
@@ -363,24 +356,24 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.router_outlined,
+                      const Icon(Icons.router_outlined,
                           size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'Standard ONT Gateway Addresses',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
+                        style: context.text.titleMedium,
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
+                  _buildOntRow(context, 'Huawei EG8145V5 / HG8145',
+                      '192.168.100.1', isDark),
                   _buildOntRow(
-                      'Huawei EG8145V5 / HG8145', '192.168.100.1', isDark),
-                  _buildOntRow('ZTE F670L / F660', '192.168.1.1', isDark),
-                  _buildOntRow(
-                      'FiberHome HG680 / AN5506', '192.168.1.1', isDark),
+                      context, 'ZTE F670L / F660', '192.168.1.1', isDark),
+                  _buildOntRow(context, 'FiberHome HG680 / AN5506',
+                      '192.168.1.1', isDark),
                 ],
               ),
             ),
@@ -390,33 +383,30 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
     );
   }
 
-  Widget _buildSubnetRow(String label, String val, bool isDark) {
+  Widget _buildSubnetRow(BuildContext context, String label, String val) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style: TextStyle(
-                fontSize: 12,
-                color:
-                    isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted)),
+        Text(label, style: context.text.bodySmall),
         Flexible(
           child: Text(
             val,
             textAlign: TextAlign.end,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            style: context.text.titleSmall,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildOntRow(String model, String ip, bool isDark) {
+  Widget _buildOntRow(
+      BuildContext context, String model, String ip, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(model, style: const TextStyle(fontSize: 13)),
+          Text(model, style: context.text.bodyMedium),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
@@ -424,10 +414,9 @@ class _NetworkDiagnosticToolState extends State<NetworkDiagnosticTool> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(ip,
-                style: const TextStyle(
-                    fontSize: 12,
+                style: context.text.labelSmall!.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.primary)),
+                    color: AppTheme.brandInkOf(context))),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/optical_budget_model.dart';
 
@@ -45,13 +46,12 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Optical Link Budget',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Optical Link Budget', style: context.text.titleMedium),
             Text('GPON / FTTH loss calculation & power meter validation',
-                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                style: context.text.bodySmall),
           ],
         ),
       ),
@@ -86,41 +86,39 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                         children: [
                           Text(
                             'THEORETICAL ONT RX POWER',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted,
-                            ),
+                            style: context.text.labelSmall,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${budget.expectedRxPower.toStringAsFixed(2)} dBm',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w900,
-                              color: status.color,
+                            style: context.text.headlineSmall!.copyWith(
+                              color: switch (status) {
+                                OpticalPowerStatus.optimal =>
+                                  AppTheme.successInkOf(context),
+                                OpticalPowerStatus.marginal =>
+                                  AppTheme.warningInkOf(context),
+                                OpticalPowerStatus.faulty =>
+                                  AppTheme.dangerInkOf(context),
+                              },
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: status.color,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        status.label,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: status.color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          status.label,
+                          style: context.text.labelLarge!.copyWith(
+                            color: AppTheme.darkSlate,
+                          ),
                         ),
                       ),
                     ),
@@ -135,18 +133,14 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Expanded(
-                        child: _buildStatPill(
-                            'Total Loss',
-                            '-${budget.totalCalculatedLoss.toStringAsFixed(2)} dB',
-                            isDark)),
+                        child: _buildStatPill(context, 'Total Loss',
+                            '-${budget.totalCalculatedLoss.toStringAsFixed(2)} dB')),
                     Expanded(
-                        child: _buildStatPill('OLT Tx',
-                            '+${_oltTxPower.toStringAsFixed(1)} dBm', isDark)),
+                        child: _buildStatPill(context, 'OLT Tx',
+                            '+${_oltTxPower.toStringAsFixed(1)} dBm')),
                     Expanded(
-                        child: _buildStatPill(
-                            'Optics Margin',
-                            '${(budget.expectedRxPower - (-27.0)).toStringAsFixed(1)} dB',
-                            isDark)),
+                        child: _buildStatPill(context, 'Optics Margin',
+                            '${(budget.expectedRxPower - (-27.0)).toStringAsFixed(1)} dB')),
                   ],
                 ),
               ],
@@ -161,16 +155,15 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.speed_rounded,
+                      const Icon(Icons.speed_rounded,
                           size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Compare with Actual Meter Reading',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
+                          style: context.text.titleMedium,
                         ),
                       ),
                     ],
@@ -207,20 +200,13 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Variance',
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      color: isDark
-                                          ? AppTheme.textSecondaryDark
-                                          : AppTheme.textMuted)),
+                              Text('Variance', style: context.text.labelSmall),
                               Text(
                                 '${budget.variance! >= 0 ? "+" : ""}${budget.variance!.toStringAsFixed(1)} dB',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
+                                style: context.text.titleSmall!.copyWith(
                                   color: budget.variance!.abs() > 3.0
-                                      ? AppTheme.warning
-                                      : AppTheme.success,
+                                      ? AppTheme.warningInkOf(context)
+                                      : AppTheme.successInkOf(context),
                                 ),
                               ),
                             ],
@@ -242,15 +228,14 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.tune_rounded,
+                      const Icon(Icons.tune_rounded,
                           size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'Link Parameters',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
+                        style: context.text.titleMedium,
                       ),
                     ],
                   ),
@@ -260,15 +245,13 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                           child: Text('OLT Port Tx Power (Class B+/C+):',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600))),
+                              style: context.text.bodySmall)),
                       const SizedBox(width: 8),
                       Text('+${_oltTxPower.toStringAsFixed(1)} dBm',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.primary)),
+                          style: context.text.titleSmall!
+                              .copyWith(color: AppTheme.brandInkOf(context))),
                     ],
                   ),
                   Slider(
@@ -284,16 +267,14 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                           child: Text('Fiber Route Distance:',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600))),
+                              style: context.text.bodySmall)),
                       const SizedBox(width: 8),
                       Text(
                           '${_fiberDistanceKm.toStringAsFixed(1)} km (${(_fiberDistanceKm * 0.35).toStringAsFixed(2)} dB)',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.primary)),
+                          style: context.text.titleSmall!
+                              .copyWith(color: AppTheme.brandInkOf(context))),
                     ],
                   ),
                   Slider(
@@ -393,25 +374,12 @@ class _OpticalBudgetToolState extends State<OpticalBudgetTool> {
     );
   }
 
-  Widget _buildStatPill(String label, String value, bool isDark) {
+  Widget _buildStatPill(BuildContext context, String label, String value) {
     return Column(
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-          ),
-        ),
+        Text(label, style: context.text.labelSmall),
         const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        Text(value, style: context.text.titleSmall),
       ],
     );
   }

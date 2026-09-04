@@ -91,6 +91,17 @@ void main() {
     expect(find.byKey(const Key('lcpNapCluster')), findsWidgets);
   });
 
+  testWidgets('a cluster pin is a 48dp target', (tester) async {
+    // pumpMap seeds the five sample sites, which cluster at the default zoom;
+    // the test 'nearby sites cluster instead of stacking on each other' in
+    // this file already relies on that.
+    await pumpMap(tester);
+    final cluster = find.byKey(const Key('lcpNapCluster')).first;
+    final size = tester.getSize(cluster);
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
+  });
+
   testWidgets('an isolated site stays an individual pin', (tester) async {
     await pumpMap(tester);
     expect(find.byKey(const Key('lcpNapPin_5')), findsOneWidget);

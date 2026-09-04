@@ -1,19 +1,22 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/database/app_database.dart';
 
-/// Clean DTO representation of a Job Order from the API.
-/// The three job order statuses the technician works with.
+/// The two stages a job order moves through in the field.
 ///
-/// These are the values the backend's `status` field carries once a job enters
-/// the field workflow. Records outside these three - the application-side
-/// `Applied` and `Confirmed` that make up almost the whole table today - have a
-/// null [JobOrderDto.jobStatus] and appear only under the "All" tab.
+/// A job arrives **Scheduled** (the backend's `Applied` / `Confirmed` /
+/// `Scheduled`) and the technician marks it **Activated** once the subscriber
+/// is online. Activated jobs leave the scheduled queue and appear in the
+/// technician's history, where they are view-only.
+///
+/// Statuses written by earlier versions of this app are folded in so nothing
+/// already in the table vanishes: `In Progress` is still open work and counts
+/// as Scheduled; `Completed` is finished work and counts as Activated.
 enum JobStatus {
   scheduled('Scheduled'),
-  inProgress('In Progress'),
-  completed('Completed'),
-  activated('Activated');
+  activated('Activated'),
+  completed('Completed');
 
   const JobStatus(this.wireValue);
 
@@ -22,30 +25,52 @@ enum JobStatus {
 
   String get label => wireValue;
 
-  /// The next status when the technician advances the job.
-  /// [activated] is terminal: it must not roll back around a cycle.
+  /// The next stage. [activated] and [completed] are terminal stages.
   JobStatus? get next => switch (this) {
-        JobStatus.scheduled => JobStatus.inProgress,
-        JobStatus.inProgress => JobStatus.completed,
-        JobStatus.completed => JobStatus.activated,
+        JobStatus.scheduled => JobStatus.activated,
         JobStatus.activated => null,
+        JobStatus.completed => null,
       };
 
-  /// Match a raw `status` value to the workflow statuses.
+  /// Match a raw `status` value to the workflow stages.
   static JobStatus? parse(String? raw) {
     final v = raw?.trim().toLowerCase().replaceAll(RegExp(r'[-_\s]+'), '');
     return switch (v) {
       'scheduled' ||
       'confirmed' ||
       'applied' ||
-      'pending' =>
+      'pending' ||
+      'inprogress' =>
         JobStatus.scheduled,
-      'inprogress' => JobStatus.inProgress,
-      'completed' => JobStatus.completed,
       'activated' => JobStatus.activated,
+      'completed' => JobStatus.completed,
       _ => null,
     };
   }
+}
+
+/// The photo proofs a technician can attach to a job order, one per API
+/// field. [clientSignature] is drawn rather than photographed and lives
+/// alongside these on [JobOrderDto].
+enum JobPhoto {
+  boxReading('boxReadingImage', 'NAP Box Reading',
+      'Optical power meter reading at the NAP port'),
+  routerReading('routerReadingImage', 'ONT Rx Reading',
+      'Optical reading at the subscriber ONT'),
+  setup('setupImage', 'Installed Setup', 'ONT and router as installed'),
+  speedtest('speedtestImage', 'Speed Test', 'Speed test result screenshot'),
+  portLabel('portLabelImage', 'Port Label', 'Labelled NAP port'),
+  signedContract(
+      'signedContractImage', 'Signed Contract', 'Subscriber service contract'),
+  houseFront(
+      'houseFront', 'House Front', 'Subscriber premises from the street');
+
+  const JobPhoto(this.jsonKey, this.label, this.hint);
+
+  /// Field name on the API record and in [JobOrderDto.toApiJson].
+  final String jsonKey;
+  final String label;
+  final String hint;
 }
 
 /// An on-site outcome that needs the technician's attention, taken from
@@ -91,12 +116,18 @@ class JobOrderDto {
   final String? routerModel;
   final int? lcpId;
   final int? napId;
+  final String? nap;
   final String? portId;
   final int? vlanId;
   final DateTime? dateInstalled;
   final String? boxReadingImage;
   final String? routerReadingImage;
   final String? clientSignature;
+  final String? setupImage;
+  final String? speedtestImage;
+  final String? portLabelImage;
+  final String? signedContractImage;
+  final String? houseFront;
 
   /// Email of the technician the office assigned this job to.
   final String? assignedEmail;
@@ -126,36 +157,67 @@ class JobOrderDto {
     this.routerModel,
     this.lcpId,
     this.napId,
+    this.nap,
     this.portId,
     this.vlanId,
     this.dateInstalled,
     this.boxReadingImage,
     this.routerReadingImage,
     this.clientSignature,
+    this.setupImage,
+    this.speedtestImage,
+    this.portLabelImage,
+    this.signedContractImage,
+    this.houseFront,
     this.assignedEmail,
     this.modifiedDate,
     this.isSynced = true,
     this.updatedAt,
   });
 
-  /// This job's status, when it is one of the three the technician works with.
-  /// Null for any other backend status, such as `Applied` or `Confirmed`.
+  /// This job's workflow stage, or null for a backend status the app does
+  /// not recognise (shown verbatim in that case).
   JobStatus? get jobStatus => JobStatus.parse(status);
 
-  /// Convenient status helpers
   bool get isScheduled => jobStatus == JobStatus.scheduled;
-  bool get isInProgress => jobStatus == JobStatus.inProgress;
-  bool get isCompleted => jobStatus == JobStatus.completed;
   bool get isActivated => jobStatus == JobStatus.activated;
-  bool get canGrab => isScheduled;
+  bool get isCompleted => jobStatus == JobStatus.completed;
+  bool get isHistory => isActivated || isCompleted;
 
-  /// The next status when the technician advances this job. A job that is not
-  /// yet in the field workflow starts at In Progress.
+  /// Anything not yet in history can be activated.
+  bool get canActivate => !isHistory;
+
+  /// The next stage when the technician advances this job. A job outside the
+  /// workflow goes straight to Activated.
   JobStatus? get nextStatus =>
-      jobStatus == null ? JobStatus.inProgress : jobStatus!.next;
+      jobStatus == null ? JobStatus.activated : jobStatus!.next;
 
   /// A failed or postponed visit that must stay visible to the technician.
   SiteException? get siteException => SiteException.parse(onsiteStatus);
+
+  /// The stored value for a photo proof: a data URL captured on site, a path
+  /// the office uploaded, or null / empty when nothing is attached.
+  String? imageFor(JobPhoto photo) => switch (photo) {
+        JobPhoto.boxReading => boxReadingImage,
+        JobPhoto.routerReading => routerReadingImage,
+        JobPhoto.setup => setupImage,
+        JobPhoto.speedtest => speedtestImage,
+        JobPhoto.portLabel => portLabelImage,
+        JobPhoto.signedContract => signedContractImage,
+        JobPhoto.houseFront => houseFront,
+      };
+
+  bool hasImage(JobPhoto photo) => imageFor(photo)?.trim().isNotEmpty == true;
+
+  bool get hasSignature => clientSignature?.trim().isNotEmpty == true;
+
+  /// Whether the on-site completion report has been filed for this job.
+  ///
+  /// These are the same two fields `ReportSignals.isFormValid` requires before
+  /// it will let a report be submitted, so the two agree on what "complete"
+  /// means. Activation is final, so it is gated on this.
+  bool get hasCompletedReport =>
+      hasSignature && modemRouterSN?.trim().isNotEmpty == true;
 
   /// Whether this job is assigned to the technician with [email].
   ///
@@ -169,32 +231,90 @@ class JobOrderDto {
   }
 
   /// The date this job is placed at in the technician's history: when it was
-  /// installed, otherwise when the server record last changed, otherwise
-  /// when the app last touched it.
-  DateTime? get historyDate => dateInstalled ?? modifiedDate ?? updatedAt;
+  /// installed, otherwise when the server record last changed. Null when
+  /// neither is known; the local cache timestamp is deliberately not used
+  /// because it only says when the row was downloaded, not when the work
+  /// happened.
+  DateTime? get historyDate => dateInstalled ?? modifiedDate;
+
+  /// The subscriber or installation location fix, parsed from rawJson if present.
+  LatLng? get latLng {
+    if (rawJson != null) {
+      try {
+        final map = jsonDecode(rawJson!);
+        if (map is Map<String, dynamic>) {
+          final raw = map['coordinates'] ?? map['location'] ?? map['latLng'];
+          if (raw is String && raw.trim().isNotEmpty) {
+            final parts = raw
+                .replaceAll(RegExp(r'[^\d.,\s-]'), '')
+                .split(RegExp(r'[,;\s]+'));
+            if (parts.length >= 2) {
+              final lat = double.tryParse(parts[0]);
+              final lng = double.tryParse(parts[1]);
+              if (lat != null &&
+                  lng != null &&
+                  lat.abs() <= 90 &&
+                  lng.abs() <= 180 &&
+                  !(lat == 0 && lng == 0)) {
+                return LatLng(lat, lng);
+              }
+            }
+          }
+          final lat = map['latitude'] ?? map['lat'];
+          final lng = map['longitude'] ?? map['lng'] ?? map['lon'];
+          if (lat != null && lng != null) {
+            final latD = double.tryParse(lat.toString());
+            final lngD = double.tryParse(lng.toString());
+            if (latD != null &&
+                lngD != null &&
+                latD.abs() <= 90 &&
+                lngD.abs() <= 180 &&
+                !(latD == 0 && lngD == 0)) {
+              return LatLng(latD, lngD);
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
 
   factory JobOrderDto.fromJson(Map<String, dynamic> json) {
-    final firstName = json['firstName']?.toString() ?? '';
-    final lastName = json['lastName']?.toString() ?? '';
+    final id = json['id'] is int
+        ? json['id'] as int
+        : int.tryParse(json['id']?.toString() ?? '0') ?? 0;
+
+    final firstName = json['firstName']?.toString().trim() ?? '';
+    final lastName = json['lastName']?.toString().trim() ?? '';
     final name = '$firstName $lastName'.trim();
 
+    final rawAccountNo = json['accountNo']?.toString().trim() ?? '';
+    final rawTicket = json['ticketNumber']?.toString().trim() ?? '';
+    final ticketNumber = rawAccountNo.isNotEmpty
+        ? rawAccountNo
+        : (rawTicket.isNotEmpty ? rawTicket : 'JO-$id');
+
+    final customerName = name.isNotEmpty
+        ? name
+        : (json['fullName']?.toString().trim().isNotEmpty == true
+            ? json['fullName'].toString().trim()
+            : (json['customerName']?.toString().trim().isNotEmpty == true
+                ? json['customerName'].toString().trim()
+                : 'Subscriber #$id'));
+
+    final rawAddr = (json['address']?.toString() ??
+            json['installationAddress']?.toString() ??
+            '')
+        .trim();
+    final address = rawAddr.isNotEmpty ? rawAddr : 'N/A';
+
     return JobOrderDto(
-      id: json['id'] is int
-          ? json['id']
-          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      ticketNumber: json['accountNo']?.toString() ??
-          json['ticketNumber']?.toString() ??
-          'JO-${json['id'] ?? '000'}',
-      customerName: name.isNotEmpty
-          ? name
-          : json['fullName']?.toString() ??
-              json['customerName']?.toString() ??
-              'Subscriber',
+      id: id,
+      ticketNumber: ticketNumber,
+      customerName: customerName,
       contactNumber:
           json['contactNumber']?.toString() ?? json['mobileNumber']?.toString(),
-      address: json['address']?.toString() ??
-          json['installationAddress']?.toString() ??
-          'N/A',
+      address: address,
       barangay: json['barangay']?.toString(),
       city: json['city']?.toString(),
       planName: json['plan']?.toString() ??
@@ -221,6 +341,8 @@ class JobOrderDto {
       napId: json['napId'] is int
           ? json['napId']
           : int.tryParse(json['napId']?.toString() ?? ''),
+      nap: json['nap']?.toString() ??
+          (json['napId'] is String ? json['napId'] as String : null),
       portId: json['portId']?.toString() ?? json['port']?.toString(),
       vlanId: json['vlanId'] is int
           ? json['vlanId']
@@ -231,6 +353,11 @@ class JobOrderDto {
       boxReadingImage: json['boxReadingImage']?.toString(),
       routerReadingImage: json['routerReadingImage']?.toString(),
       clientSignature: json['clientSignature']?.toString(),
+      setupImage: json['setupImage']?.toString(),
+      speedtestImage: json['speedtestImage']?.toString(),
+      portLabelImage: json['portLabelImage']?.toString(),
+      signedContractImage: json['signedContractImage']?.toString(),
+      houseFront: json['houseFront']?.toString(),
       assignedEmail: json['assignedEmail']?.toString(),
       modifiedDate: json['modifiedDate'] != null
           ? DateTime.tryParse(json['modifiedDate'].toString())
@@ -260,12 +387,18 @@ class JobOrderDto {
       routerModel: row.routerModel,
       lcpId: row.lcpId,
       napId: row.napId,
+      nap: row.nap,
       portId: row.portId,
       vlanId: row.vlanId,
       dateInstalled: row.dateInstalled,
       boxReadingImage: row.boxReadingImage,
       routerReadingImage: row.routerReadingImage,
       clientSignature: row.clientSignature,
+      setupImage: row.setupImage,
+      speedtestImage: row.speedtestImage,
+      portLabelImage: row.portLabelImage,
+      signedContractImage: row.signedContractImage,
+      houseFront: row.houseFront,
       assignedEmail: row.assignedEmail,
       modifiedDate: row.modifiedDate,
       isSynced: row.isSynced,
@@ -293,12 +426,18 @@ class JobOrderDto {
       routerModel: Value(routerModel),
       lcpId: Value(lcpId),
       napId: Value(napId),
+      nap: Value(nap),
       portId: Value(portId),
       vlanId: Value(vlanId),
       dateInstalled: Value(dateInstalled),
       boxReadingImage: Value(boxReadingImage),
       routerReadingImage: Value(routerReadingImage),
       clientSignature: Value(clientSignature),
+      setupImage: Value(setupImage),
+      speedtestImage: Value(speedtestImage),
+      portLabelImage: Value(portLabelImage),
+      signedContractImage: Value(signedContractImage),
+      houseFront: Value(houseFront),
       assignedEmail: Value(assignedEmail),
       modifiedDate: Value(modifiedDate),
       isSynced: Value(synced),
@@ -315,10 +454,26 @@ class JobOrderDto {
         'onsiteRemarks': onsiteRemarks ?? '',
         'modemRouterSN': modemRouterSN ?? '',
         'routerModel': routerModel ?? '',
+        if (nap != null) 'nap': nap,
+        if (nap != null) 'napId': nap,
         'portId': portId ?? '',
-        'boxReadingImage': boxReadingImage ?? '',
-        'routerReadingImage': routerReadingImage ?? '',
-        'clientSignature': clientSignature ?? '',
+        // Photos and the signature are sent only when the app holds a value
+        // (an empty string clears one on purpose). A null means the column
+        // was added after the row was cached, and the server's copy in
+        // rawJson must win rather than be blanked.
+        if (boxReadingImage != null) 'boxReadingImage': boxReadingImage,
+        if (routerReadingImage != null)
+          'routerReadingImage': routerReadingImage,
+        if (clientSignature != null) 'clientSignature': clientSignature,
+        if (setupImage != null) 'setupImage': setupImage,
+        if (speedtestImage != null) 'speedtestImage': speedtestImage,
+        if (portLabelImage != null) 'portLabelImage': portLabelImage,
+        if (signedContractImage != null)
+          'signedContractImage': signedContractImage,
+        if (houseFront != null) 'houseFront': houseFront,
+        // Stamped on activation. Left out when unknown so a cached row from
+        // before this column existed never blanks the office's assignment.
+        if (assignedEmail != null) 'assignedEmail': assignedEmail,
       };
 
   /// Body for `PUT /api/JobOrders/{id}`.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
 
 /// Phases the technician data screens move through on first load:
@@ -55,16 +56,14 @@ class DownloadingIndicator extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              style: context.text.titleMedium,
             ),
             const SizedBox(height: 6),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
+              style: context.text.bodyMedium!
+                  .copyWith(color: AppTheme.secondaryInkOf(context)),
             ),
           ],
         ),

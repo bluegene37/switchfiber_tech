@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import '../../../core/services/image_capture_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/data_url.dart';
+import '../../../core/widgets/app_search_field.dart';
+import '../../catalogs/models/catalog_model.dart';
+import '../../catalogs/services/catalog_service.dart';
 import '../../jobs/models/job_order_model.dart';
 import '../../jobs/signals/jobs_signals.dart';
 import '../signals/report_signals.dart';
 import '../widgets/optical_power_gauge.dart';
+import '../widgets/photo_capture_tile.dart';
+import '../widgets/signature_pad.dart';
 
 /// On-Site Completion Report form screen for optical power validation and subscriber sign-off.
 class CreateReportScreen extends StatefulWidget {
   final JobsSignals jobsSignals;
   final ReportSignals reportSignals;
+
+  /// Photo source; injected so tests can hand over an image without a camera.
+  final Future<String?> Function(ImageSource source)? pickImage;
   final VoidCallback? onReportSubmitted;
 
   const CreateReportScreen({
@@ -17,6 +29,7 @@ class CreateReportScreen extends StatefulWidget {
     required this.jobsSignals,
     required this.reportSignals,
     this.onReportSubmitted,
+    this.pickImage,
   });
 
   @override
@@ -25,9 +38,12 @@ class CreateReportScreen extends StatefulWidget {
 
 class _CreateReportScreenState extends State<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _signatureController = SignatureController();
   late final TextEditingController _serialController;
   late final TextEditingController _remarksController;
   late final TextEditingController _dbmController;
+  List<RouterDto> _availableRouters = CatalogService.fallbackRouters;
+  List<NapDto> _availableNaps = CatalogService.fallbackNaps;
 
   @override
   void initState() {
@@ -38,6 +54,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     _dbmController =
         TextEditingController(text: rep.opticalPower.value.toStringAsFixed(1));
 
+    _loadCatalog();
+
     // Auto-select first available job order if none selected
     if (rep.selectedJobOrder.value == null &&
         widget.jobsSignals.allJobs.value.isNotEmpty) {
@@ -47,12 +65,35 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     }
   }
 
+  Future<void> _loadCatalog() async {
+    final routersFuture = CatalogService.instance.getRouters();
+    final napsFuture = CatalogService.instance.getNaps();
+    final results = await Future.wait([routersFuture, napsFuture]);
+    if (!mounted) return;
+    setState(() {
+      _availableRouters = results[0] as List<RouterDto>;
+      _availableNaps = results[1] as List<NapDto>;
+    });
+  }
+
   @override
   void dispose() {
+    _signatureController.dispose();
     _serialController.dispose();
     _remarksController.dispose();
     _dbmController.dispose();
     super.dispose();
+  }
+
+  Future<String?> _pick(ImageSource source) =>
+      (widget.pickImage ?? ImageCaptureService.instance.pickAsDataUrl)(source);
+
+  /// Export the pad after every stroke so the signature is ready to submit
+  /// the moment the subscriber lifts their finger.
+  Future<void> _captureSignature() async {
+    final dataUrl = await _signatureController.toDataUrl();
+    if (!mounted) return;
+    widget.reportSignals.setSignature(dataUrl);
   }
 
   Future<void> _handleSubmit() async {
@@ -60,10 +101,17 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     FocusScope.of(context).unfocus();
 
     final rep = widget.reportSignals;
+    if (!_signatureController.isEmpty) {
+      rep.setSignature(await _signatureController.toDataUrl());
+      if (!mounted) return;
+    }
     rep.routerSerial.value = _serialController.text.trim();
     rep.remarks.value = _remarksController.text.trim();
 
-    final success = await rep.submitReport(widget.jobsSignals.repository);
+    final success = await rep.submitReport(
+      widget.jobsSignals.repository,
+      technicianEmail: widget.jobsSignals.technicianEmail.value,
+    );
 
     if (!mounted) return;
 
@@ -79,7 +127,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 child: Text(
                   rep.submissionMessage.value ??
                       'Report submitted successfully!',
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: context.text.bodySmall!.copyWith(color: Colors.white),
                 ),
               ),
             ],
@@ -97,33 +145,35 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   @override
   Widget build(BuildContext context) {
     final rep = widget.reportSignals;
-    final jobs = widget.jobsSignals;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Field Completion Report',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: context.text.titleMedium,
             ),
             Text(
               'Optical calibration & subscriber hand-off',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+              style: context.text.bodySmall,
             ),
           ],
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        // The submit button sits at the very bottom, so the scroll has to
+        // clear the phone's navigation bar or it stays half covered.
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. Target Job Order Selector
-              _buildJobOrderSelector(jobs, rep),
+              _buildJobOrderSummary(rep),
               const SizedBox(height: 16),
 
               // 2. Optical Power Reading Gauge & Input
@@ -145,12 +195,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Technician On-Site Remarks',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: context.text.titleMedium,
                       ),
                       const SizedBox(height: 10),
                       TextFormField(
@@ -191,16 +238,17 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Row(
+                        : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check_circle_outline_rounded,
+                              const Icon(Icons.check_circle_outline_rounded,
                                   size: 20),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
-                                'Save Report & Mark Completed',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w700),
+                                'Save Completion Report',
+                                style: context.text.titleSmall!.copyWith(
+                                  color: Colors.white,
+                                ),
                               ),
                             ],
                           ),
@@ -215,72 +263,59 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     );
   }
 
-  Widget _buildJobOrderSelector(JobsSignals jobs, ReportSignals rep) {
+  /// A report always belongs to the job order the technician opened, so the
+  /// job is shown read-only rather than as a picker. Letting it be changed
+  /// here allowed a report to be filed against the wrong job.
+  Widget _buildJobOrderSummary(ReportSignals rep) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
+        child: SignalBuilder(
+          builder: (context) {
+            final job = rep.selectedJobOrder.value;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.receipt_long_rounded,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'Select Target Job Order',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SignalBuilder(
-              builder: (context) {
-                final jobList = jobs.allJobs.value;
-                final selected = rep.selectedJobOrder.value;
-
-                if (jobList.isEmpty) {
-                  return const Text(
-                    'No job orders available.',
-                    style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
-                  );
-                }
-
-                return DropdownButtonFormField<JobOrderDto>(
-                  initialValue: selected,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  items: jobList.map((j) {
-                    return DropdownMenuItem<JobOrderDto>(
-                      value: j,
+                Row(
+                  children: [
+                    const Icon(Icons.receipt_long_rounded,
+                        size: 18, color: AppTheme.primary),
+                    const SizedBox(width: 8),
+                    Expanded(
                       child: Text(
-                        '${j.ticketNumber} — ${j.customerName} (${j.address})',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 13),
+                        'Job Order',
+                        style: context.text.titleMedium,
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (newJob) {
-                    if (newJob != null) {
-                      rep.setJobOrder(newJob);
-                      _serialController.text = rep.routerSerial.value;
-                      _dbmController.text =
-                          rep.opticalPower.value.toStringAsFixed(1);
-                    }
-                  },
-                  validator: (val) =>
-                      val == null ? 'Please select a job order' : null,
-                );
-              },
-            ),
-          ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (job == null)
+                  Text(
+                    'No job order is linked to this report.',
+                    style: context.text.bodySmall,
+                  )
+                else ...[
+                  Text(
+                    job.ticketNumber,
+                    style: context.text.titleSmall!.copyWith(
+                      color: AppTheme.brandInkOf(context),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    job.customerName,
+                    style: context.text.titleSmall,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    job.address,
+                    style: context.text.bodySmall,
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -293,13 +328,16 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.speed_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'Optical Power Meter Reading (dBm)',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                const Icon(Icons.speed_rounded,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Optical Power Meter Reading (dBm)',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -368,19 +406,23 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _buildHardwareSection(ReportSignals rep) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.router_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'Hardware & Terminal Assignment',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                const Icon(Icons.router_rounded,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Hardware & Terminal Assignment',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -409,18 +451,30 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 Expanded(
                   child: SignalBuilder(
                     builder: (context) {
-                      final models = [
-                        'Huawei HG8145V5',
-                        'Huawei EG8145V5',
-                        'ZTE F670L',
-                        'FiberHome AN5506',
-                      ];
+                      final models =
+                          _availableRouters.map((r) => r.compactName).toList();
+                      if (!models.contains(rep.routerModel.value) &&
+                          rep.routerModel.value.isNotEmpty) {
+                        models.insert(0, rep.routerModel.value);
+                      }
+                      if (models.isEmpty) {
+                        models.addAll([
+                          'Huawei 5v5',
+                          'UT-KING UT-XP6486-S',
+                          'ZTE F670L',
+                        ]);
+                      }
+
                       return DropdownButtonFormField<String>(
+                        // Without this the button sizes to its widest item
+                        // ('UT-KING UT-XP6486-S') and overflows the column it
+                        // shares with the NAP port field.
+                        isExpanded: true,
                         initialValue: models.contains(rep.routerModel.value)
                             ? rep.routerModel.value
                             : models.first,
                         decoration: const InputDecoration(
-                          labelText: 'ONT Model',
+                          labelText: 'Approved ONT Model',
                           contentPadding: EdgeInsets.symmetric(
                               horizontal: 12, vertical: 10),
                         ),
@@ -428,7 +482,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           return DropdownMenuItem(
                               value: m,
                               child: Text(m,
-                                  style: const TextStyle(fontSize: 13)));
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: context.text.bodySmall));
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) rep.routerModel.value = val;
@@ -452,6 +508,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         'Port 8',
                       ];
                       return DropdownButtonFormField<String>(
+                        isExpanded: true,
                         initialValue: ports.contains(rep.napPort.value)
                             ? rep.napPort.value
                             : ports.first,
@@ -463,8 +520,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         items: ports.map((p) {
                           return DropdownMenuItem(
                               value: p,
-                              child: Text(p,
-                                  style: const TextStyle(fontSize: 13)));
+                              child: Text(p, style: context.text.bodySmall));
                         }).toList(),
                         onChanged: (val) {
                           if (val != null) rep.napPort.value = val;
@@ -475,11 +531,73 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+
+            // NAP Box Dropdown with Filter in List
+            SignalBuilder(
+              builder: (context) {
+                final selected = rep.nap.value;
+                return InkWell(
+                  key: const ValueKey('nap_dropdown_field'),
+                  onTap: () => _showNapFilterDialog(context, rep, isDark),
+                  borderRadius: BorderRadius.circular(12),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'NAP Box',
+                      hintText: 'Select or filter NAP...',
+                      prefixIcon: Icon(Icons.hub_rounded, size: 20),
+                      suffixIcon: Icon(Icons.arrow_drop_down_rounded, size: 24),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    child: Text(
+                      selected?.isNotEmpty == true
+                          ? selected!
+                          : 'Select or filter NAP (e.g. NAP 001)...',
+                      style: context.text.bodyMedium!.copyWith(
+                        fontWeight: selected?.isNotEmpty == true
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: selected?.isNotEmpty == true
+                            ? null
+                            : AppTheme.secondaryInkOf(context),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
+
+  void _showNapFilterDialog(
+      BuildContext context, ReportSignals rep, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _NapFilterBottomSheet(
+        availableNaps: _availableNaps,
+        selectedNap: rep.nap.value,
+        onSelect: (napName) {
+          rep.nap.value = napName;
+        },
+      ),
+    );
+  }
+
+  static IconData _iconFor(JobPhoto photo) => switch (photo) {
+        JobPhoto.boxReading => Icons.speed_rounded,
+        JobPhoto.routerReading => Icons.router_rounded,
+        JobPhoto.setup => Icons.settings_input_antenna_rounded,
+        JobPhoto.speedtest => Icons.network_check_rounded,
+        JobPhoto.portLabel => Icons.label_rounded,
+        JobPhoto.signedContract => Icons.description_rounded,
+        JobPhoto.houseFront => Icons.house_rounded,
+      };
 
   Widget _buildPhotoProofSection(ReportSignals rep) {
     return Card(
@@ -488,117 +606,69 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
-              children: [
-                Icon(Icons.camera_alt_outlined,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'On-Site Photo Proofs',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
             Row(
               children: [
+                const Icon(Icons.camera_alt_outlined,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: SignalBuilder(
-                    builder: (context) {
-                      final attached = rep.boxPhotoAttached.value;
-                      return _buildPhotoTile(
-                        label: 'NAP Box Reading',
-                        isAttached: attached,
-                        onToggle: () {
-                          rep.boxPhotoAttached.value = !attached;
-                        },
-                      );
-                    },
+                  child: Text(
+                    'On-Site Photo Proofs',
+                    style: context.text.titleMedium,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SignalBuilder(
-                    builder: (context) {
-                      final attached = rep.routerPhotoAttached.value;
-                      return _buildPhotoTile(
-                        label: 'ONT Rx Reading',
-                        isAttached: attached,
-                        onToggle: () {
-                          rep.routerPhotoAttached.value = !attached;
-                        },
-                      );
-                    },
-                  ),
+                SignalBuilder(
+                  builder: (context) {
+                    final job = rep.selectedJobOrder.value;
+                    final count = JobPhoto.values
+                        .where((p) => rep.photoFor(p)?.isNotEmpty == true)
+                        .length;
+                    final label = '$count / ${JobPhoto.values.length}';
+                    return Text(
+                      job == null ? '' : label,
+                      style: context.text.bodySmall!.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhotoTile({
-    required String label,
-    required bool isAttached,
-    required VoidCallback onToggle,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: onToggle,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isAttached
-              ? (isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg)
-              : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isAttached
-                ? AppTheme.primary
-                : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-            width: isAttached ? 1.5 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              isAttached
-                  ? Icons.check_circle_rounded
-                  : Icons.add_a_photo_outlined,
-              size: 26,
-              color: isAttached
-                  ? AppTheme.primary
-                  : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
-            ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isAttached ? FontWeight.w700 : FontWeight.w500,
-                color: isAttached
-                    ? (isDark
-                        ? const Color(0xFFFF8591)
-                        : AppTheme.primaryActive)
-                    : (isDark ? Colors.white : AppTheme.darkSlate),
-              ),
+              'Photos are compressed on the phone and saved with the job order.',
+              style: context.text.labelSmall,
             ),
-            const SizedBox(height: 2),
-            Text(
-              isAttached ? 'Attached ✓' : 'Tap to attach',
-              style: TextStyle(
-                fontSize: 10,
-                color: isAttached
-                    ? AppTheme.primary
-                    : (isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted),
-              ),
+            const SizedBox(height: 12),
+            SignalBuilder(
+              builder: (context) {
+                // Read so the grid rebuilds when any photo changes.
+                rep.photos.value;
+                rep.selectedJobOrder.value;
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.98,
+                  ),
+                  itemCount: JobPhoto.values.length,
+                  itemBuilder: (context, index) {
+                    final photo = JobPhoto.values[index];
+                    return PhotoCaptureTile(
+                      key: ValueKey(photo),
+                      label: photo.label,
+                      hint: photo.hint,
+                      icon: _iconFor(photo),
+                      value: rep.photoFor(photo),
+                      pick: _pick,
+                      onChanged: (v) => rep.setPhoto(photo, v),
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
@@ -608,6 +678,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   Widget _buildCustomerSignOffSection(ReportSignals rep) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
     return Card(
       child: Padding(
@@ -615,93 +686,315 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.draw_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'Customer Sign-Off & Acceptance',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                const Icon(Icons.draw_rounded,
+                    size: 18, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Customer Sign-Off & Acceptance',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               'Subscriber acknowledges proper optical installation and functional internet connectivity.',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
+              style: context.text.bodySmall,
             ),
             const SizedBox(height: 12),
             SignalBuilder(
               builder: (context) {
-                final signed = rep.hasSignature.value;
-                return Container(
-                  height: 90,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: signed
-                        ? (isDark
-                            ? const Color(0xFF059669).withValues(alpha: 0.25)
-                            : AppTheme.successSubtle)
-                        : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: signed
-                          ? (isDark
-                              ? const Color(0xFF059669).withValues(alpha: 0.4)
-                              : AppTheme.success)
-                          : (isDark
-                              ? AppTheme.borderDark
-                              : AppTheme.borderLight),
-                      width: 1.5,
+                final existing = rep.signature.value;
+                final existingBytes = DataUrl.decode(existing);
+                final padHasInk = !_signatureController.isEmpty;
+
+                // A signature already on the job is shown as-is until the
+                // technician chooses to capture a new one.
+                if (existingBytes != null && !padHasInk) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        height: 140,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.success.withValues(alpha: 0.6),
+                            width: 1.5,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.memory(existingBytes, fit: BoxFit.contain),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.verified_rounded,
+                              size: 20, color: AppTheme.success),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Signature captured',
+                              style: context.text.labelMedium!.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.successInkOf(context),
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () {
+                              rep.setSignature(null);
+                              _signatureController.clear();
+                            },
+                            icon: const Icon(Icons.refresh_rounded, size: 24),
+                            label: const Text('Sign again'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SignaturePad(
+                      controller: _signatureController,
+                      onStrokeEnd: _captureSignature,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          padHasInk
+                              ? Icons.check_circle_rounded
+                              : Icons.touch_app_rounded,
+                          size: 20,
+                          color: padHasInk ? AppTheme.success : muted,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            padHasInk
+                                ? 'Signature captured'
+                                : 'Ask the subscriber to sign in the box above',
+                            style: context.text.labelMedium!.copyWith(
+                              color: padHasInk
+                                  ? AppTheme.successInkOf(context)
+                                  : AppTheme.secondaryInkOf(context),
+                            ),
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: padHasInk
+                              ? () {
+                                  _signatureController.clear();
+                                  rep.setSignature(null);
+                                }
+                              : null,
+                          icon: const Icon(Icons.backspace_outlined, size: 24),
+                          label: const Text('Clear'),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NapFilterBottomSheet extends StatefulWidget {
+  final List<NapDto> availableNaps;
+  final String? selectedNap;
+  final ValueChanged<String> onSelect;
+
+  const _NapFilterBottomSheet({
+    required this.availableNaps,
+    required this.selectedNap,
+    required this.onSelect,
+  });
+
+  @override
+  State<_NapFilterBottomSheet> createState() => _NapFilterBottomSheetState();
+}
+
+class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppTheme.darkCard : Colors.white;
+    final textTheme = Theme.of(context).textTheme;
+
+    final filtered = widget.availableNaps.where((n) {
+      if (_query.isEmpty) return true;
+      final q = _query.toLowerCase();
+      return n.name.toLowerCase().contains(q) ||
+          n.description.toLowerCase().contains(q);
+    }).toList();
+
+    return Material(
+      color: bg,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            const SizedBox(height: 12),
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Icon(Icons.hub_rounded,
+                      size: 22, color: AppTheme.primary),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Select NAP Box',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: InkWell(
-                    onTap: () {
-                      rep.hasSignature.value = !signed;
-                    },
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Filter in list input
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: AppSearchField(
+                controller: _searchController,
+                hintText: 'Filter NAP list (e.g. 001, test)...',
+                onChanged: (val) {
+                  setState(() => _query = val.trim());
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Divider(height: 1),
+
+            // NAP items list
+            Flexible(
+              child: filtered.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            signed
-                                ? Icons.verified_rounded
-                                : Icons.touch_app_rounded,
-                            color: signed
-                                ? (isDark
-                                    ? const Color(0xFF4ADE80)
-                                    : AppTheme.success)
-                                : (isDark
-                                    ? AppTheme.textSecondaryDark
-                                    : AppTheme.textMuted),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
+                          Icon(Icons.search_off_rounded,
+                              size: 40,
+                              color: isDark
+                                  ? AppTheme.textSecondaryDark
+                                  : AppTheme.textMuted),
+                          const SizedBox(height: 8),
                           Text(
-                            signed
-                                ? 'Signature Captured & Verified (Tap to clear)'
-                                : 'Tap to Capture Subscriber Signature',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: signed
-                                  ? (isDark
-                                      ? const Color(0xFF4ADE80)
-                                      : const Color(0xFF166534))
+                            'No NAP matching "$_query"',
+                            style: context.text.bodyMedium!.copyWith(
+                              color: AppTheme.secondaryInkOf(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (ctx, i) {
+                        final item = filtered[i];
+                        final isSelected = widget.selectedNap == item.name;
+                        return ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppTheme.primary.withValues(alpha: 0.15)
+                                  : (isDark
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : Colors.black.withValues(alpha: 0.04)),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.hub_rounded,
+                              size: 20,
+                              color: isSelected
+                                  ? AppTheme.primary
                                   : (isDark
                                       ? AppTheme.textSecondaryDark
                                       : AppTheme.textMuted),
                             ),
                           ),
-                        ],
-                      ),
+                          title: Text(
+                            item.name,
+                            style: context.text.titleSmall!.copyWith(
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? AppTheme.brandInkOf(context)
+                                  : null,
+                            ),
+                          ),
+                          subtitle: item.description.isNotEmpty
+                              ? Text(
+                                  item.description,
+                                  style: context.text.bodySmall,
+                                )
+                              : null,
+                          trailing: isSelected
+                              ? const Icon(Icons.check_circle_rounded,
+                                  color: AppTheme.primary, size: 20)
+                              : null,
+                          onTap: () {
+                            widget.onSelect(item.name);
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
             ),
           ],
         ),

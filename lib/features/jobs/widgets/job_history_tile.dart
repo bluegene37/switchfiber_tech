@@ -1,14 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 import 'status_badge.dart';
 
-/// One row of the technician's job history.
-///
-/// Leaner than [JobCard]: the history is a record of work done, not a queue
-/// of actions, so it shows when and where rather than what to do next.
+/// One row of the technician's job history with iOS Inset Grouped styling.
 class JobHistoryTile extends StatelessWidget {
   final JobOrderDto job;
   final VoidCallback? onTap;
@@ -30,106 +29,115 @@ class JobHistoryTile extends StatelessWidget {
     final date = dateLabel(job);
     final power = job.opticalPower;
 
-    return Card(
-      elevation: 0,
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _StatusDot(job: job, isDark: isDark),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            job.ticketNumber,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+          width: 0.5,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _StatusDot(job: job, isDark: isDark),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              job.ticketNumber,
+                              style: context.text.titleSmall,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        StatusBadge(
-                          status: job.jobStatus,
-                          rawStatus: job.status,
-                          siteException: job.siteException,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      job.customerName,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                          const SizedBox(width: 8),
+                          StatusBadge(
+                            status: job.jobStatus,
+                            rawStatus: job.status,
+                            siteException: job.siteException,
+                          ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      [
-                        job.address,
-                        if (job.barangay?.isNotEmpty == true) job.barangay!,
-                        if (job.city?.isNotEmpty == true) job.city!,
-                      ].join(', '),
-                      style: TextStyle(fontSize: 12, color: muted),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        _Meta(
-                          icon: Icons.event_rounded,
-                          text: date ?? 'No date recorded',
-                          color: muted,
-                        ),
-                        if (job.planName?.isNotEmpty == true)
+                      const SizedBox(height: 4),
+                      Text(
+                        job.customerName,
+                        style: context.text.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        [
+                          job.address,
+                          if (job.barangay?.isNotEmpty == true) job.barangay!,
+                          if (job.city?.isNotEmpty == true) job.city!,
+                        ].join(', '),
+                        style: context.text.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
                           _Meta(
-                            icon: Icons.wifi_rounded,
-                            text: job.planName!,
+                            icon: CupertinoIcons.calendar,
+                            text: date ?? 'No date recorded',
                             color: muted,
                           ),
-                        if (power != null)
-                          _Meta(
-                            icon: Icons.speed_rounded,
-                            text: '${power.toStringAsFixed(1)} dBm',
-                            color: _opticalColor(power),
-                            bold: true,
-                          ),
-                        if (!job.isSynced)
-                          const _Meta(
-                            icon: Icons.cloud_off_rounded,
-                            text: 'Awaiting sync',
-                            color: AppTheme.warning,
-                            bold: true,
-                          ),
-                      ],
-                    ),
-                  ],
+                          if (job.planName?.isNotEmpty == true)
+                            _Meta(
+                              icon: CupertinoIcons.wifi,
+                              text: job.planName!,
+                              color: muted,
+                            ),
+                          if (power != null)
+                            _Meta(
+                              icon: CupertinoIcons.speedometer,
+                              text: '${power.toStringAsFixed(1)} dBm',
+                              color: _opticalColor(power),
+                              bold: true,
+                            ),
+                          if (!job.isSynced)
+                            const _Meta(
+                              icon: CupertinoIcons.cloud_upload,
+                              text: 'Awaiting sync',
+                              color: AppTheme.warning,
+                              bold: true,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Icon(Icons.chevron_right_rounded, size: 20, color: muted),
-            ],
+                const SizedBox(width: 4),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Icon(
+                    CupertinoIcons.chevron_forward,
+                    size: 20,
+                    color: muted.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -159,21 +167,26 @@ class _StatusDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (Color color, IconData icon) = switch (job.siteException) {
-      SiteException.failed => (AppTheme.danger, Icons.error_rounded),
+      SiteException.failed => (
+          AppTheme.danger,
+          CupertinoIcons.exclamationmark_triangle_fill
+        ),
       SiteException.reschedule => (
           const Color(0xFF7C3AED),
-          Icons.event_repeat_rounded
+          CupertinoIcons.arrow_counterclockwise
         ),
       null => switch (job.jobStatus) {
           JobStatus.activated => (
               const Color(0xFF4F46E5),
-              Icons.verified_rounded
+              CupertinoIcons.checkmark_seal_fill
             ),
-          JobStatus.completed => (AppTheme.success, Icons.check_rounded),
-          JobStatus.inProgress => (AppTheme.warning, Icons.build_rounded),
+          JobStatus.completed => (
+              AppTheme.success,
+              CupertinoIcons.checkmark_circle_fill
+            ),
           JobStatus.scheduled || null => (
               AppTheme.info,
-              Icons.calendar_today_rounded
+              CupertinoIcons.calendar
             ),
         },
     };
@@ -183,10 +196,13 @@ class _StatusDot extends StatelessWidget {
       height: 34,
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.22 : 0.12),
-        shape: BoxShape.circle,
-        border: Border.all(color: color.withValues(alpha: 0.45)),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: color.withValues(alpha: 0.35),
+          width: 0.5,
+        ),
       ),
-      child: Icon(icon, size: 17, color: color),
+      child: Icon(icon, size: 20, color: color),
     );
   }
 }
@@ -209,17 +225,24 @@ class _Meta extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: color),
+        Icon(icon, size: 20, color: color),
         const SizedBox(width: 4),
         Text(
           text,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-            color: color,
-          ),
+          style: (bold ? context.text.labelMedium : context.text.labelSmall)!
+              .copyWith(color: _inkFor(context, color)),
         ),
       ],
     );
   }
+}
+
+/// Maps a `_Meta` fill colour (a bright status token or the neutral "muted"
+/// grey) to the ink safe for text.
+Color _inkFor(BuildContext context, Color fill) {
+  if (fill == AppTheme.success) return AppTheme.successInkOf(context);
+  if (fill == AppTheme.warning) return AppTheme.warningInkOf(context);
+  if (fill == AppTheme.danger) return AppTheme.dangerInkOf(context);
+  if (fill == AppTheme.info) return AppTheme.infoInkOf(context);
+  return AppTheme.secondaryInkOf(context);
 }

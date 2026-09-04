@@ -5,7 +5,7 @@ import 'package:http_cache_drift_store/http_cache_drift_store.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-/// Tile source and on-disk cache for the LCP NAP map.
+/// Tile source and on-disk cache for the plant and job maps.
 ///
 /// Tiles are fetched over the network and cached to disk, so areas a technician
 /// has already viewed keep rendering without a signal. Pin data itself comes
@@ -13,31 +13,39 @@ import 'package:path_provider/path_provider.dart';
 class MapTiles {
   MapTiles._();
 
-  /// Base layers, matching the Switch Fiber web console so both clients show
-  /// the same plant on the same cartography.
+  /// Base layers. Both come from Esri's public tile server, which needs no
+  /// API key and serves real tiles down to zoom 19 (verified 2026-09-03).
   ///
-  /// CARTO rather than raw OSM tiles: the OSM Foundation's usage policy does
-  /// not permit app traffic against their servers. Esri World Imagery backs the
-  /// satellite view, which technicians use to find an actual pole or wall.
-  static const String streetLightUrl =
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
-  static const String streetDarkUrl =
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+  /// Why not the alternatives:
+  ///
+  /// * CARTO, which the web console uses, began stamping "API KEY REQUIRED"
+  ///   across every free tile in September 2026, so it was dropped.
+  /// * Raw OpenStreetMap tiles are free but the OSM Foundation's usage
+  ///   policy does not permit distributed apps to use their servers.
+  /// * Esri's dark canvas basemap returns a "map data not yet available"
+  ///   placeholder past zoom 16, which is exactly where a technician zooms to
+  ///   find a pole. So there is no separate dark street layer: dark mode
+  ///   shows the same street map, as the satellite view already does.
+  ///
+  /// Esri World Imagery backs the satellite view, which technicians use to
+  /// spot an actual pole or wall.
+  static const String streetUrl =
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/'
+      'MapServer/tile/{z}/{y}/{x}';
   static const String satelliteUrl =
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/'
       'MapServer/tile/{z}/{y}/{x}';
 
-  static const List<String> cartoSubdomains = ['a', 'b', 'c', 'd'];
-
-  static const String streetAttribution = '© OpenStreetMap © CARTO';
+  static const String streetAttribution =
+      'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors';
   static const String satelliteAttribution =
       'Imagery © Esri — Source: Esri, Maxar, Earthstar Geographics';
 
-  /// Esri's imagery service does not serve tiles past zoom 19.
+  /// Neither Esri service serves tiles past zoom 19.
   static const double satelliteMaxZoom = 19;
-  static const double streetMaxZoom = 20;
+  static const double streetMaxZoom = 19;
 
-  /// Identifies this client to the tile providers.
+  /// Identifies this client to the tile provider.
   static const String userAgentPackageName = 'ph.switchfiber.tech';
 
   /// How long a cached tile stays usable offline before it is refetched.

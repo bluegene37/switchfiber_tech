@@ -7,15 +7,15 @@ class AuthService {
   final ApiClient _api = ApiClient.instance;
   final SecureStorageService _storage = SecureStorageService.instance;
 
-  /// Authenticate technician with username/email and password
+  /// Authenticate a technician with their account username and password.
   Future<UserModel> login({
-    required String usernameOrEmail,
+    required String username,
     required String password,
   }) async {
     final response = await _api.post(
       '/Users/login',
       data: {
-        'username': usernameOrEmail.trim(),
+        'username': username.trim(),
         'password': password,
       },
     );
@@ -85,11 +85,16 @@ class AuthService {
     return user;
   }
 
-  /// Request password reset link
-  Future<void> requestPasswordReset(String email) async {
+  /// Ask the server to email a reset link for [username].
+  ///
+  /// The endpoint keys off the account username, not the email address; it
+  /// rejects an `email` field with a 400 and answers an unknown account with a
+  /// 404. The reset link it sends carries a JWT that `/Auth/reset-password`
+  /// consumes.
+  Future<void> requestPasswordReset(String username) async {
     await _api.post(
       '/Auth/request-password-reset',
-      data: {'email': email.trim()},
+      data: {'username': username.trim()},
     );
   }
 

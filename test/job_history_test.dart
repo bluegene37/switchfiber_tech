@@ -10,8 +10,9 @@ import 'package:swithfiber_tech/features/jobs/signals/jobs_signals.dart';
 Map<String, dynamic> liveRecord({
   required int id,
   required String assignedEmail,
-  String status = 'Confirmed',
+  String status = 'Activated',
   String onsiteStatus = 'Done',
+  String? city,
   String? dateInstalled,
   String? modifiedDate,
 }) =>
@@ -21,6 +22,7 @@ Map<String, dynamic> liveRecord({
       'firstName': 'Sub',
       'lastName': '$id',
       'address': 'Lot $id',
+      'city': city,
       'status': status,
       'onsiteStatus': onsiteStatus,
       'assignedEmail': assignedEmail,
@@ -95,45 +97,55 @@ void main() {
     late JobRepository repository;
     late JobsSignals signals;
 
+    // A fixed "today": Wednesday 2 September 2026.
+    final now = DateTime(2026, 9, 2, 14, 30);
+
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
       repository = JobRepository(db.jobOrdersDao);
-      signals = JobsSignals(repository);
+      signals = JobsSignals(repository, clock: () => now);
 
       final rows = [
+        // Today.
         liveRecord(
           id: 1,
           assignedEmail: 'tech@switchfiber.ph',
-          status: 'Completed',
-          dateInstalled: '2026-08-10T10:00:00',
+          city: 'Antipolo',
+          dateInstalled: '2026-09-02T09:00:00',
         ),
+        // Earlier this week (Monday), case-insensitive email.
         liveRecord(
           id: 2,
           assignedEmail: 'TECH@switchfiber.ph',
-          status: 'Activated',
-          dateInstalled: '2026-08-20T10:00:00',
+          city: 'Pasig',
+          dateInstalled: '2026-08-31T10:00:00',
         ),
+        // Last month. Legacy 'Completed' counts as activated.
         liveRecord(
           id: 3,
           assignedEmail: 'tech@switchfiber.ph',
-          status: 'In Progress',
-          onsiteStatus: 'In Progress',
-          modifiedDate: '2026-08-30T10:00:00',
+          status: 'Completed',
+          city: 'Antipolo',
+          dateInstalled: '2026-08-20T10:00:00',
         ),
+        // Still scheduled: not history.
         liveRecord(
           id: 4,
           assignedEmail: 'tech@switchfiber.ph',
-          status: 'Confirmed',
-          onsiteStatus: 'Failed',
-          modifiedDate: '2026-08-05T10:00:00',
+          status: 'Scheduled',
+          onsiteStatus: '',
+          modifiedDate: '2026-09-01T10:00:00',
         ),
+        // Someone else's activated job.
         liveRecord(
           id: 5,
           assignedEmail: 'someone.else@switchfiber.ph',
-          status: 'Completed',
-          dateInstalled: '2026-08-29T10:00:00',
+          dateInstalled: '2026-09-01T10:00:00',
         ),
-        liveRecord(id: 6, assignedEmail: '', status: 'Completed'),
+        // Activated but unassigned, and no date at all.
+        liveRecord(id: 6, assignedEmail: ''),
+        // Mine, activated, no date known.
+        liveRecord(id: 7, assignedEmail: 'tech@switchfiber.ph'),
       ];
       await db.jobOrdersDao.insertAllJobs([
         for (final r in rows) JobOrderDto.fromJson(r).toCompanion(),
@@ -146,65 +158,112 @@ void main() {
       await db.close();
     });
 
-    test('is empty until the technician email is known', () {
-      expect(signals.allJobs.value.length, 6);
-      expect(signals.historyJobs.value, isEmpty);
-      expect(signals.historyTotalCount.value, 0);
+    test('contains all downloaded history jobs (Activated and Completed), excluding Scheduled', () {
+      expect(signals.allJobs.value.length, 7);
+      expect(signals.historyJobs.value.map((j) => j.id).toSet(),
+          {1, 2, 3, 5, 6, 7});
+      expect(signals.historyTotalCount.value, 6);
     });
 
-    test('lists only jobs assigned to the technician, newest first', () {
-      signals.setTechnicianEmail('tech@switchfiber.ph');
-      final ids = signals.historyJobs.value.map((j) => j.id).toList();
-      expect(ids, [3, 2, 1, 4]);
-      expect(signals.historyTotalCount.value, 4);
+    test('lists all history jobs (Activated and Completed), newest first, undated last', () {
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 5, 2, 3, 7, 6]);
+      expect(signals.historyTotalCount.value, 6);
+      expect(signals.historyActivatedCount.value, 5);
       expect(signals.historyCompletedCount.value, 1);
-      expect(signals.historyActivatedCount.value, 1);
-      expect(signals.historyInProgressCount.value, 1);
-      expect(signals.historyExceptionCount.value, 1);
+      // Wed 2 Sep: today (2 Sep), 1 Sep, and 31 Aug fall in this week
+      expect(signals.historyThisWeekCount.value, 3);
+      // Only today (2 Sep) and 1 Sep fall in this month (Sep 2026)
+      expect(signals.historyThisMonthCount.value, 2);
     });
 
-    test('status filter narrows the history', () {
-      signals.setTechnicianEmail('tech@switchfiber.ph');
+    test('status filter narrows history by Activated and Completed', () {
+      signals.setHistoryStatus(HistoryStatusFilter.activated);
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 5, 2, 7, 6]);
 
-      signals.setHistoryFilter(HistoryFilter.completed);
-      expect(signals.historyJobs.value.map((j) => j.id), [1]);
-
-      signals.setHistoryFilter(HistoryFilter.activated);
-      expect(signals.historyJobs.value.map((j) => j.id), [2]);
-
-      signals.setHistoryFilter(HistoryFilter.inProgress);
+      signals.setHistoryStatus(HistoryStatusFilter.completed);
       expect(signals.historyJobs.value.map((j) => j.id), [3]);
 
-      signals.setHistoryFilter(HistoryFilter.needsAttention);
-      expect(signals.historyJobs.value.map((j) => j.id), [4]);
+      signals.setHistoryStatus(HistoryStatusFilter.all);
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 5, 2, 3, 7, 6]);
+    });
 
-      signals.setHistoryFilter(HistoryFilter.all);
-      expect(signals.historyJobs.value.length, 4);
+    test('a scheduled job never appears in the history', () {
+      expect(signals.historyJobs.value.map((j) => j.id), isNot(contains(4)));
+    });
+
+    test('date window narrows the history', () {
+      signals.setHistoryRange(HistoryRange.today);
+      expect(signals.historyJobs.value.map((j) => j.id), [1]);
+
+      signals.setHistoryRange(HistoryRange.week);
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 5, 2]);
+
+      signals.setHistoryRange(HistoryRange.month);
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 5]);
+
+      signals.setHistoryRange(HistoryRange.custom,
+          start: DateTime(2026, 8, 15), end: DateTime(2026, 8, 31));
+      expect(signals.historyJobs.value.map((j) => j.id), [2, 3],
+          reason: 'the end date is inclusive');
+
+      signals.setHistoryRange(HistoryRange.all);
+      expect(signals.historyJobs.value.length, 6);
+    });
+
+    test('city filter is offered from the history and applied to it', () {
+      expect(signals.historyCities.value, ['Antipolo', 'Pasig']);
+
+      signals.setHistoryCity('Pasig');
+      expect(signals.historyJobs.value.map((j) => j.id), [2]);
+
+      signals.setHistoryCity('Antipolo');
+      expect(signals.historyJobs.value.map((j) => j.id), [1, 3]);
+
+      signals.setHistoryCity(null);
+      expect(signals.historyJobs.value.length, 6);
     });
 
     test('search matches ticket, customer and address within the history', () {
-      signals.setTechnicianEmail('tech@switchfiber.ph');
-
       signals.setHistorySearch('SF-2');
       expect(signals.historyJobs.value.map((j) => j.id), [2]);
 
-      signals.setHistorySearch('Sub 4');
-      expect(signals.historyJobs.value.map((j) => j.id), [4]);
+      signals.setHistorySearch('SF-3');
+      expect(signals.historyJobs.value.map((j) => j.id), [3]);
 
-      // Another technician's job never leaks in through search.
-      signals.setHistorySearch('SF-5');
-      expect(signals.historyJobs.value, isEmpty);
+      signals.setHistorySearch('');
+      expect(signals.historyJobs.value.length, 6);
     });
 
-    test('switching technician swaps the history', () {
-      signals.setTechnicianEmail('tech@switchfiber.ph');
-      expect(signals.historyJobs.value.length, 4);
+    test('search query matches ticket, customer, address and city', () {
+      signals.setHistorySearch('SF-3');
+      expect(signals.historyJobs.value.map((j) => j.id), [3]);
 
-      signals.setTechnicianEmail('someone.else@switchfiber.ph');
-      expect(signals.historyJobs.value.map((j) => j.id), [5]);
+      signals.setHistorySearch('Sub 2');
+      expect(signals.historyJobs.value.map((j) => j.id), [2]);
 
-      signals.setTechnicianEmail(null);
+      signals.setHistorySearch('Lot 1');
+      expect(signals.historyJobs.value.map((j) => j.id), [1]);
+
+      signals.setHistorySearch('pasig');
+      expect(signals.historyJobs.value.map((j) => j.id), [2]);
+
+      signals.setHistorySearch('');
+      expect(signals.historyJobs.value.length, 6);
+    });
+
+    test('clearHistoryFilters resets every filter to default', () {
+      signals.setHistoryStatus(HistoryStatusFilter.completed);
+      signals.setHistoryRange(HistoryRange.today);
+      signals.setHistoryCity('Antipolo');
+      signals.setHistorySearch('SF-1');
       expect(signals.historyJobs.value, isEmpty);
+
+      signals.clearHistoryFilters();
+      expect(signals.historyStatus.value, HistoryStatusFilter.all);
+      expect(signals.historyRange.value, HistoryRange.all);
+      expect(signals.historyCity.value, isNull);
+      expect(signals.historySearch.value, isEmpty);
+      expect(signals.historyJobs.value.length, 6);
     });
   });
 }

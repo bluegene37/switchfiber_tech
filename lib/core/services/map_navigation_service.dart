@@ -3,11 +3,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
 
 /// Service to handle launching external GPS navigation apps (Google Maps, Waze, Apple Maps).
 class MapNavigationService {
   MapNavigationService._();
+
+  /// Launch turn-by-turn navigation to a coordinates object (such as LatLng).
+  static Future<bool> navigateTo(
+    dynamic coordinates, {
+    String? label,
+  }) async {
+    final double lat = (coordinates.latitude as num).toDouble();
+    final double lng = (coordinates.longitude as num).toDouble();
+    return navigateToCoordinates(
+      latitude: lat,
+      longitude: lng,
+      destinationLabel: label,
+    );
+  }
 
   /// Launch turn-by-turn navigation from current location to destination [latitude, longitude].
   static Future<bool> navigateToCoordinates({
@@ -106,7 +121,10 @@ class MapNavigationService {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        // Clear the system navigation bar, which otherwise covers the last
+        // row of the sheet.
+        padding: EdgeInsets.fromLTRB(
+            20, 16, 20, 24 + MediaQuery.of(ctx).padding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,13 +149,11 @@ class MapNavigationService {
                       children: [
                         Text(
                           'Start Navigation',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w800),
+                          style: ctx.text.titleSmall,
                         ),
                         Text(
                           title,
-                          style: const TextStyle(
-                              fontSize: 12, color: AppTheme.textMuted),
+                          style: ctx.text.bodySmall,
                         ),
                       ],
                     ),
@@ -153,7 +169,7 @@ class MapNavigationService {
             if (subtitle != null && subtitle.isNotEmpty) ...[
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                style: ctx.text.bodySmall,
               ),
               const SizedBox(height: 14),
             ],
@@ -277,20 +293,18 @@ class MapNavigationService {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700),
+                    style: context.text.labelLarge,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppTheme.textMuted),
+                    style: context.text.labelSmall,
                   ),
                 ],
               ),
             ),
             const Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: AppTheme.textMuted),
+                size: 24, color: AppTheme.textMuted),
           ],
         ),
       ),

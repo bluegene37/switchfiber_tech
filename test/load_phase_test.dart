@@ -17,7 +17,7 @@ class _FakeJobRepository extends JobRepository {
   _FakeJobRepository(super.dao);
 
   @override
-  Future<void> fetchRemoteJobs({String? statusFilter}) => fetchGate.future;
+  Future<void> fetchRemoteJobs({String? technicianEmail}) => fetchGate.future;
 }
 
 class _FakeLcpNapRepository extends LcpNapRepository {

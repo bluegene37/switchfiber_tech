@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 
@@ -66,9 +67,8 @@ class StatusBadge extends StatelessWidget {
 
   static IconData _iconFor(JobStatus? s) => switch (s) {
         JobStatus.scheduled => Icons.calendar_today_rounded,
-        JobStatus.inProgress => Icons.access_time_filled_rounded,
-        JobStatus.completed => Icons.check_circle_rounded,
         JobStatus.activated => Icons.verified_rounded,
+        JobStatus.completed => Icons.check_circle_rounded,
         null => Icons.calendar_today_rounded,
       };
 
@@ -76,17 +76,15 @@ class StatusBadge extends StatelessWidget {
     if (isDark) {
       return switch (s) {
         JobStatus.scheduled => const Color(0xFF0369A1).withValues(alpha: 0.25),
-        JobStatus.inProgress => const Color(0xFFD97706).withValues(alpha: 0.25),
-        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.25),
         JobStatus.activated => const Color(0xFF4F46E5).withValues(alpha: 0.25),
+        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.25),
         null => const Color(0xFF0369A1).withValues(alpha: 0.25),
       };
     }
     return switch (s) {
       JobStatus.scheduled => const Color(0xFFF0F9FF),
-      JobStatus.inProgress => AppTheme.warningSubtle,
-      JobStatus.completed => AppTheme.successSubtle,
       JobStatus.activated => const Color(0xFFEFF6FF),
+      JobStatus.completed => AppTheme.successSubtle,
       null => const Color(0xFFF0F9FF),
     };
   }
@@ -95,17 +93,15 @@ class StatusBadge extends StatelessWidget {
     if (isDark) {
       return switch (s) {
         JobStatus.scheduled => const Color(0xFF38BDF8),
-        JobStatus.inProgress => const Color(0xFFFBBF24),
-        JobStatus.completed => const Color(0xFF4ADE80),
         JobStatus.activated => const Color(0xFF818CF8),
+        JobStatus.completed => const Color(0xFF4ADE80),
         null => const Color(0xFF38BDF8),
       };
     }
     return switch (s) {
       JobStatus.scheduled => const Color(0xFF0369A1),
-      JobStatus.inProgress => const Color(0xFF92400E),
-      JobStatus.completed => const Color(0xFF166534),
       JobStatus.activated => const Color(0xFF1E40AF),
+      JobStatus.completed => const Color(0xFF166534),
       null => const Color(0xFF0369A1),
     };
   }
@@ -114,17 +110,15 @@ class StatusBadge extends StatelessWidget {
     if (isDark) {
       return switch (s) {
         JobStatus.scheduled => const Color(0xFF0284C7).withValues(alpha: 0.4),
-        JobStatus.inProgress => const Color(0xFFD97706).withValues(alpha: 0.4),
-        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.4),
         JobStatus.activated => const Color(0xFF4F46E5).withValues(alpha: 0.4),
+        JobStatus.completed => const Color(0xFF059669).withValues(alpha: 0.4),
         null => const Color(0xFF0284C7).withValues(alpha: 0.4),
       };
     }
     return switch (s) {
       JobStatus.scheduled => const Color(0xFFBAE6FD),
-      JobStatus.inProgress => const Color(0xFFFDE68A),
-      JobStatus.completed => const Color(0xFF86EFAC),
       JobStatus.activated => const Color(0xFFBFDBFE),
+      JobStatus.completed => const Color(0xFF86EFAC),
       null => const Color(0xFFBAE6FD),
     };
   }
@@ -157,14 +151,14 @@ class _Pill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: fg),
+          Icon(icon, size: 20, color: fg),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: fg,
+          Flexible(
+            child: Text(
+              label,
+              style: context.text.labelMedium!.copyWith(color: fg),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

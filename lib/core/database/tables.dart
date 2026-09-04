@@ -20,12 +20,21 @@ class JobOrders extends Table {
   TextColumn get routerModel => text().nullable()();
   IntColumn get lcpId => integer().nullable()();
   IntColumn get napId => integer().nullable()();
+  TextColumn get nap => text().nullable()();
   TextColumn get portId => text().nullable()();
   IntColumn get vlanId => integer().nullable()();
   DateTimeColumn get dateInstalled => dateTime().nullable()();
+  // Photo proofs and the subscriber's signature, stored exactly as the API
+  // holds them: data URLs (`data:image/jpeg;base64,...`) captured on site,
+  // or whatever path the office uploaded from the web console.
   TextColumn get boxReadingImage => text().nullable()();
   TextColumn get routerReadingImage => text().nullable()();
   TextColumn get clientSignature => text().nullable()();
+  TextColumn get setupImage => text().nullable()();
+  TextColumn get speedtestImage => text().nullable()();
+  TextColumn get portLabelImage => text().nullable()();
+  TextColumn get signedContractImage => text().nullable()();
+  TextColumn get houseFront => text().nullable()();
 
   /// Email of the technician the office assigned this job to. This is the
   /// column the technician's job history is filtered on.

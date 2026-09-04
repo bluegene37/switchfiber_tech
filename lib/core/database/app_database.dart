@@ -14,7 +14,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -39,6 +39,19 @@ class AppDatabase extends _$AppDatabase {
             // the signed-in technician without a server round trip.
             await m.addColumn(jobOrders, jobOrders.assignedEmail);
             await m.addColumn(jobOrders, jobOrders.modifiedDate);
+          }
+          if (from < 5) {
+            // The remaining photo proof fields the completion report can
+            // capture on site.
+            await m.addColumn(jobOrders, jobOrders.setupImage);
+            await m.addColumn(jobOrders, jobOrders.speedtestImage);
+            await m.addColumn(jobOrders, jobOrders.portLabelImage);
+            await m.addColumn(jobOrders, jobOrders.signedContractImage);
+            await m.addColumn(jobOrders, jobOrders.houseFront);
+          }
+          if (from < 6) {
+            // Selected NAP from /api/Naps
+            await m.addColumn(jobOrders, jobOrders.nap);
           }
         },
       );

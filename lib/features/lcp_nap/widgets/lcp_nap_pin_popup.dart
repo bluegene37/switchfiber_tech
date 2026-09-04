@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/services/map_navigation_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/lcp_nap_model.dart';
 import '../services/map_clustering.dart';
@@ -88,8 +89,7 @@ class LcpNapPinPopup extends StatelessWidget {
                       const SizedBox(width: 5),
                       Text(
                         location.lcp,
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: context.text.labelSmall!.copyWith(
                           fontWeight: FontWeight.w800,
                           color: cabinetColor,
                         ),
@@ -101,16 +101,11 @@ class LcpNapPinPopup extends StatelessWidget {
                 Expanded(
                   child: Text(
                     location.lcpNap,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2,
-                    ),
+                    style: context.text.titleSmall,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, size: 20),
-                  visualDensity: VisualDensity.compact,
                   tooltip: 'Close',
                   onPressed: onClose,
                 ),
@@ -121,15 +116,12 @@ class LcpNapPinPopup extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(Icons.place_outlined,
-                    size: 15, color: AppTheme.textMuted),
+                    size: 20, color: AppTheme.textMuted),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _address,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppTheme.textMuted,
-                    ),
+                    style: context.text.bodySmall,
                   ),
                 ),
               ],
@@ -175,11 +167,8 @@ class LcpNapPinPopup extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 _provenance!,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textMuted,
-                  fontStyle: FontStyle.italic,
-                ),
+                style: context.text.labelSmall!
+                    .copyWith(fontStyle: FontStyle.italic),
               ),
             ],
             const SizedBox(height: 12),
@@ -196,9 +185,8 @@ class LcpNapPinPopup extends StatelessWidget {
                         subtitle: _address,
                       );
                     },
-                    icon: const Icon(Icons.navigation_rounded, size: 15),
-                    label:
-                        const Text('Navigate', style: TextStyle(fontSize: 12)),
+                    icon: const Icon(Icons.navigation_rounded, size: 24),
+                    label: const Text('Navigate'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
@@ -209,9 +197,8 @@ class LcpNapPinPopup extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onOpenDetails,
-                    icon: const Icon(Icons.open_in_new_rounded, size: 15),
-                    label: const Text('View details',
-                        style: TextStyle(fontSize: 12)),
+                    icon: const Icon(Icons.open_in_new_rounded, size: 24),
+                    label: const Text('View details'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
@@ -248,16 +235,15 @@ class _Stat extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 13,
+            size: 20,
             color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
           ),
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11,
+            style: context.text.labelSmall!.copyWith(
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive,
+              color: AppTheme.brandInkOf(context),
             ),
           ),
         ],

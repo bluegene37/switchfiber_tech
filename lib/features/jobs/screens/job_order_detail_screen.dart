@@ -1,28 +1,42 @@
+import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/location_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../toolkit/screens/fiber_color_code_tool.dart';
-import '../../toolkit/screens/optical_budget_tool.dart';
-import '../../toolkit/screens/drop_cable_tool.dart';
-import '../../toolkit/screens/network_diagnostic_tool.dart';
+import '../../diagnostics/widgets/radius_connection_card.dart';
+import '../../lcp_nap/models/lcp_nap_model.dart';
+import '../../lcp_nap/signals/lcp_nap_signals.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
+import '../widgets/job_photo_gallery.dart';
 import '../widgets/status_badge.dart';
 
-/// Comprehensive details screen for an assigned Job Order with full Dark Mode support and responsive flex layouts.
+/// Comprehensive details screen for a Job Order with full Dark Mode support
+/// and responsive flex layouts.
+///
+/// With [readOnly] set (the job history) every action that changes the record
+/// is hidden: no activation, no completion report. Navigation, calling and
+/// copying stay available since they do not touch the job.
 class JobOrderDetailScreen extends StatelessWidget {
   final int jobId;
   final JobsSignals jobsSignals;
+  final LcpNapSignals? lcpNapSignals;
   final void Function(JobOrderDto job)? onOpenReport;
+  final bool readOnly;
 
   const JobOrderDetailScreen({
     super.key,
     required this.jobId,
     required this.jobsSignals,
+    this.lcpNapSignals,
     this.onOpenReport,
+    this.readOnly = false,
   });
 
   @override
@@ -40,10 +54,7 @@ class JobOrderDetailScreen extends StatelessWidget {
             body: Center(
               child: Text(
                 'Job Order not found or removed.',
-                style: TextStyle(
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: TextStyle(color: AppTheme.secondaryInkOf(context)),
               ),
             ),
           );
@@ -56,17 +67,11 @@ class JobOrderDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   job.ticketNumber,
-                  style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w800),
+                  style: context.text.titleMedium,
                 ),
                 Text(
                   job.planName ?? 'Switch Fiber Service',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
-                  ),
+                  style: context.text.bodySmall,
                 ),
               ],
             ),
@@ -101,7 +106,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                       job.isSynced
                           ? Icons.cloud_done_rounded
                           : Icons.cloud_off_rounded,
-                      size: 13,
+                      size: 20,
                       color: job.isSynced
                           ? (isDark
                               ? const Color(0xFF4ADE80)
@@ -113,37 +118,36 @@ class JobOrderDetailScreen extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       job.isSynced ? 'Synced' : 'Local DB',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                      style: context.text.labelMedium!.copyWith(
                         color: job.isSynced
-                            ? (isDark
-                                ? const Color(0xFF4ADE80)
-                                : AppTheme.success)
-                            : (isDark
-                                ? const Color(0xFFFDE68A)
-                                : const Color(0xFF92400E)),
+                            ? AppTheme.successInkOf(context)
+                            : AppTheme.warningInkOf(context),
                       ),
                     ),
                   ],
                 ),
               ),
               // Completion Report Quick Access
-              IconButton(
-                icon: const Icon(Icons.assignment_turned_in_outlined, size: 20),
-                tooltip: 'Field Completion Report',
-                onPressed: () => _handleOpenReport(context, job),
-              ),
+              if (!readOnly)
+                IconButton(
+                  icon:
+                      const Icon(Icons.assignment_turned_in_outlined, size: 24),
+                  tooltip: 'Field Completion Report',
+                  onPressed: () => _handleOpenReport(context, job),
+                ),
               // Copy Ticket Summary Button
               IconButton(
-                icon: const Icon(Icons.share_outlined, size: 20),
+                icon: const Icon(Icons.share_outlined, size: 24),
                 tooltip: 'Copy Ticket Summary',
                 onPressed: () => _copyJobSummary(context, job, isDark),
               ),
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            // The activate button sits at the very bottom, so the scroll has
+            // to clear the phone's navigation bar.
+            padding: EdgeInsets.fromLTRB(
+                16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
             children: [
               // 1. Status & Workflow Pipeline Card
               _buildWorkflowCard(context, job, isDark),
@@ -151,7 +155,7 @@ class JobOrderDetailScreen extends StatelessWidget {
 
               // 2. Site Exception Alert (if applicable)
               if (job.siteException != null) ...[
-                _buildExceptionBanner(job, isDark),
+                _buildExceptionBanner(context, job, isDark),
                 const SizedBox(height: 14),
               ],
 
@@ -159,17 +163,24 @@ class JobOrderDetailScreen extends StatelessWidget {
               _buildCustomerCard(context, job, isDark),
               const SizedBox(height: 14),
 
+              // 3b. GPS Coordinates & Field Navigation
+              _buildLocationAndGpsCard(context, job, isDark),
+              const SizedBox(height: 14),
+
               // 4. Fiber Plant & Equipment Assignment
               _buildPlantAndHardwareCard(context, job, isDark),
               const SizedBox(height: 14),
 
-              // 5. Tech Toolkit & Field Utilities
-              _buildToolkitShortcutsCard(context, job, isDark),
+              // 4b. Live RADIUS PPPoE Connection & Reconnect Test
+              RadiusConnectionCard(
+                accountName: _radiusAccountOf(job),
+                subscriberName: job.customerName,
+              ),
               const SizedBox(height: 14),
 
-              // 6. Optical Reading & Calibration
+              // 5. Optical Reading & Calibration
               if (job.opticalPower != null) ...[
-                _buildOpticalPowerCard(job, isDark),
+                _buildOpticalPowerCard(context, job, isDark),
                 const SizedBox(height: 14),
               ],
 
@@ -186,8 +197,6 @@ class JobOrderDetailScreen extends StatelessWidget {
   Widget _buildWorkflowCard(
       BuildContext context, JobOrderDto job, bool isDark) {
     final currentStatus = job.jobStatus;
-    final nextStatus = job.nextStatus;
-    final isScheduled = job.isScheduled;
 
     return Card(
       child: Padding(
@@ -195,18 +204,19 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // A Wrap, not a Row: at 200% text the label and the badge no
+            // longer fit on one line, so the badge flows to its own line
+            // instead of overflowing.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 Text(
                   'Workflow Stage',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
-                  ),
+                  style: context.text.labelMedium!
+                      .copyWith(color: AppTheme.secondaryInkOf(context)),
                 ),
                 StatusBadge(
                   status: currentStatus,
@@ -218,33 +228,27 @@ class JobOrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Stepper Visualizer
-            _buildStepper(job, isDark),
+            _buildStepper(context, job, isDark),
             const SizedBox(height: 16),
 
             // Who Dispatch assigned this job to
-            _buildAssignmentRow(job, isDark),
+            _buildAssignmentRow(context, job, isDark),
             const SizedBox(height: 12),
 
-            // Grab or Status Advance Button
-            if (isScheduled)
+            // The one field action: Scheduled -> Completed.
+            if (readOnly)
+              _buildViewOnlyNote(context, isDark)
+            else if (job.canActivate) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await jobsSignals.grabJob(job);
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                            '⚡ Grabbed ${job.ticketNumber}! Moved to In-Progress.'),
-                        backgroundColor:
-                            isDark ? AppTheme.darkCard : AppTheme.darkSlate,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.flash_on_rounded, size: 18),
-                  label: const Text('⚡ Grab This Job Order (Start Dispatch)',
+                  // Completion is final, so it stays disabled until the
+                  // on-site report is filed.
+                  onPressed: job.hasCompletedReport
+                      ? () => _handleComplete(context, job, isDark)
+                      : null,
+                  icon: const Icon(Icons.check_circle_rounded, size: 24),
+                  label: const Text('Complete',
                       style: TextStyle(fontWeight: FontWeight.w800)),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -252,19 +256,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                   ),
                 ),
-              )
-            else if (nextStatus != null)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _handleAdvanceStatus(context, job, isDark),
-                  icon: const Icon(Icons.arrow_circle_right_outlined, size: 18),
-                  label: Text(_getAdvanceButtonLabel(nextStatus)),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
               ),
+              if (!job.hasCompletedReport) ...[
+                const SizedBox(height: 8),
+                _buildReportRequiredNote(context, isDark),
+              ],
+            ] else
+              _buildActivatedNote(context, job, isDark),
           ],
         ),
       ),
@@ -273,24 +271,23 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   /// The technician email Dispatch assigned this job to. Emails run long, so
   /// unlike [_buildSpecRow] the value wraps rather than overflowing.
-  Widget _buildAssignmentRow(JobOrderDto job, bool isDark) {
+  Widget _buildAssignmentRow(
+      BuildContext context, JobOrderDto job, bool isDark) {
     final email = job.assignedEmail?.trim() ?? '';
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.person_pin_rounded, size: 16, color: muted),
+        Icon(Icons.person_pin_rounded, size: 20, color: muted),
         const SizedBox(width: 8),
-        Text('Assigned To', style: TextStyle(fontSize: 13, color: muted)),
+        Text('Assigned To', style: context.text.bodySmall),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             email.isEmpty ? 'Unassigned' : email,
             textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: email.isEmpty ? muted : null,
+            style: context.text.titleSmall!.copyWith(
+              color: email.isEmpty ? AppTheme.secondaryInkOf(context) : null,
             ),
           ),
         ),
@@ -298,22 +295,15 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStepper(JobOrderDto job, bool isDark) {
+  Widget _buildStepper(BuildContext context, JobOrderDto job, bool isDark) {
     final status = job.jobStatus;
+    final isFinished =
+        status == JobStatus.activated || status == JobStatus.completed;
+    final terminalLabel =
+        status == JobStatus.activated ? 'Activated' : 'Completed';
     final steps = [
       {'label': 'Scheduled', 'active': true},
-      {
-        'label': 'In Progress',
-        'active': status == JobStatus.inProgress ||
-            status == JobStatus.completed ||
-            status == JobStatus.activated,
-      },
-      {
-        'label': 'Completed',
-        'active':
-            status == JobStatus.completed || status == JobStatus.activated,
-      },
-      {'label': 'Activated', 'active': status == JobStatus.activated},
+      {'label': terminalLabel, 'active': isFinished},
     ];
 
     return Row(
@@ -336,59 +326,53 @@ class JobOrderDetailScreen extends StatelessWidget {
         final step = steps[stepIndex];
         final isActive = step['active'] as bool;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: isActive
-                    ? AppTheme.primary
-                    : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-                shape: BoxShape.circle,
-                border: Border.all(
+        return Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
                   color: isActive
                       ? AppTheme.primary
-                      : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-                  width: 2,
+                      : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isActive
+                        ? AppTheme.primary
+                        : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: isActive
+                      ? const Icon(Icons.check, size: 20, color: Colors.white)
+                      : Text(
+                          '${stepIndex + 1}',
+                          style: context.text.labelMedium!.copyWith(
+                            color: AppTheme.secondaryInkOf(context),
+                          ),
+                        ),
                 ),
               ),
-              child: Center(
-                child: isActive
-                    ? const Icon(Icons.check, size: 14, color: Colors.white)
-                    : Text(
-                        '${stepIndex + 1}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
-                      ),
+              const SizedBox(height: 4),
+              Text(
+                step['label'] as String,
+                textAlign: TextAlign.center,
+                style: isActive
+                    ? context.text.labelMedium
+                    : context.text.bodySmall,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              step['label'] as String,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive
-                    ? (isDark ? Colors.white : AppTheme.darkSlate)
-                    : (isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted),
-              ),
-            ),
-          ],
+            ],
+          ),
         );
       }),
     );
   }
 
-  Widget _buildExceptionBanner(JobOrderDto job, bool isDark) {
+  Widget _buildExceptionBanner(
+      BuildContext context, JobOrderDto job, bool isDark) {
     final exception = job.siteException!;
     final isReschedule = exception == SiteException.reschedule;
 
@@ -428,9 +412,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   'Site Exception: ${exception.label}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                  style: context.text.titleSmall!.copyWith(
                     color: isDark
                         ? (isReschedule
                             ? const Color(0xFFFDE68A)
@@ -445,8 +427,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     job.onsiteRemarks!,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: context.text.bodySmall!.copyWith(
                       color: isDark
                           ? (isReschedule
                               ? const Color(0xFFFCD34D)
@@ -473,14 +454,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.person_pin_rounded,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.person_pin_rounded,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'Subscriber & Location',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
@@ -489,20 +470,13 @@ class JobOrderDetailScreen extends StatelessWidget {
             // Customer Name & Plan
             Text(
               job.customerName,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
-              ),
+              style: context.text.titleMedium,
             ),
             const SizedBox(height: 2),
             Text(
               job.planName ?? 'Fiber Plan',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.primary,
-              ),
+              style: context.text.labelMedium!
+                  .copyWith(color: AppTheme.brandInkOf(context)),
             ),
             const SizedBox(height: 12),
 
@@ -512,7 +486,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.location_on_outlined,
-                  size: 16,
+                  size: 20,
                   color:
                       isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
                 ),
@@ -520,7 +494,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${job.address}${job.barangay != null ? ', ${job.barangay}' : ''}${job.city != null ? ', ${job.city}' : ''}',
-                    style: const TextStyle(fontSize: 13, height: 1.4),
+                    style: context.text.bodyMedium,
                   ),
                 ),
               ],
@@ -531,7 +505,9 @@ class JobOrderDetailScreen extends StatelessWidget {
                 color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
             const SizedBox(height: 12),
 
-            // Contact Action Buttons (Call, SMS, Copy Address)
+            // Contact Action Buttons (Call, SMS, Copy Address). Navigation
+            // lives in the Service Location card below, so it is not repeated
+            // here.
             Row(
               children: [
                 if (job.contactNumber != null &&
@@ -541,11 +517,10 @@ class JobOrderDetailScreen extends StatelessWidget {
                       onPressed: () => _promptContact(
                           context, job.contactNumber!,
                           isCall: true, isDark: isDark),
-                      icon: const Icon(Icons.call_rounded, size: 16),
+                      icon: const Icon(Icons.call_rounded, size: 24),
                       label: const Text('Call'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        visualDensity: VisualDensity.compact,
                       ),
                     ),
                   ),
@@ -555,26 +530,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                       onPressed: () => _promptContact(
                           context, job.contactNumber!,
                           isCall: false, job: job, isDark: isDark),
-                      icon: const Icon(Icons.sms_outlined, size: 16),
+                      icon: const Icon(Icons.sms_outlined, size: 24),
                       label: const Text('SMS'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        visualDensity: VisualDensity.compact,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                 ],
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _copyAddress(context, job, isDark),
-                    icon: const Icon(Icons.map_outlined, size: 16),
-                    label: const Text('Address'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ),
+                IconButton(
+                  tooltip: 'Copy Address',
+                  icon: const Icon(CupertinoIcons.doc_on_clipboard, size: 24),
+                  onPressed: () => _copyAddress(context, job, isDark),
                 ),
               ],
             ),
@@ -582,6 +550,263 @@ class JobOrderDetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildLocationAndGpsCard(
+      BuildContext context, JobOrderDto job, bool isDark) {
+    final latLng = job.latLng;
+    final dms = latLng != null
+        ? LocationService.instance.formatDms(latLng.latitude, latLng.longitude)
+        : null;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(CupertinoIcons.location_circle_fill,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Service Location & GPS Coordinates',
+                  style: context.text.titleMedium,
+                ),
+                const Spacer(),
+                if (latLng != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'GPS Fixed',
+                      style: context.text.labelMedium!
+                          .copyWith(color: AppTheme.successInkOf(context)),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _buildSpecRow(
+              context,
+              'Coordinates',
+              dms ?? 'Derived from service area',
+              CupertinoIcons.location_solid,
+              isDark,
+            ),
+            if (latLng != null)
+              _buildSpecRow(
+                context,
+                'Decimal Lat/Lng',
+                '${latLng.latitude.toStringAsFixed(6)}, ${latLng.longitude.toStringAsFixed(6)}',
+                CupertinoIcons.map_pin_ellipse,
+                isDark,
+              ),
+            // The GPS fix is owned by a widget that asks for it once. Building
+            // the future inline here restarted a 4-second high-accuracy fix on
+            // every rebuild of this screen, and there is nothing to measure
+            // against when the job carries no coordinates.
+            if (latLng != null)
+              _DistanceFromTechnicianRow(target: latLng, isDark: isDark),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: CupertinoButton(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                onPressed: () => _openNavigation(job),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(CupertinoIcons.location_north_fill,
+                        size: 24, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Start Turn-by-Turn Navigation',
+                      style: context.text.labelLarge!
+                          .copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Nearest LCP NAP Pole Details & Navigation
+            () {
+              final nearestNapInfo = _findNearestNap(job);
+              if (nearestNapInfo == null) return const SizedBox.shrink();
+
+              return Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF064E3B).withValues(alpha: 0.35)
+                          : const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                            : const Color(0xFFA7F3D0),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.hub_rounded,
+                                size: 20, color: Color(0xFF10B981)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Nearest LCP NAP Pole',
+                              style: context.text.labelMedium!.copyWith(
+                                color: isDark
+                                    ? const Color(0xFF6EE7B7)
+                                    : const Color(0xFF047857),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (nearestNapInfo.distanceMeters > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '${LocationService.instance.formatDistance(nearestNapInfo.distanceMeters)} away',
+                                  style: context.text.labelMedium!
+                                      .copyWith(color: Colors.white),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          nearestNapInfo.nap.lcpNap,
+                          style: context.text.titleSmall,
+                        ),
+                        if (nearestNapInfo.nap.street?.isNotEmpty == true ||
+                            nearestNapInfo.nap.barangay?.isNotEmpty ==
+                                true) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            [
+                              if (nearestNapInfo.nap.street?.isNotEmpty == true)
+                                nearestNapInfo.nap.street,
+                              if (nearestNapInfo.nap.barangay?.isNotEmpty ==
+                                  true)
+                                nearestNapInfo.nap.barangay,
+                            ].join(', '),
+                            style: context.text.bodySmall,
+                          ),
+                        ],
+                        if (nearestNapInfo.nap.latLng != null) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: Color(0xFF10B981), width: 1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              icon: const Icon(
+                                  CupertinoIcons.arrow_turn_up_right,
+                                  size: 24,
+                                  color: Color(0xFF10B981)),
+                              label: Text(
+                                'Directions to NAP Pole',
+                                style: context.text.labelLarge!
+                                    .copyWith(color: const Color(0xFF10B981)),
+                              ),
+                              onPressed: () {
+                                final p = nearestNapInfo.nap.latLng!;
+                                final uri = Uri.parse(
+                                    'https://maps.apple.com/?q=${p.latitude},${p.longitude}');
+                                launchUrl(uri,
+                                    mode: LaunchMode.externalApplication);
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ({LcpNapDto nap, double distanceMeters})? _findNearestNap(JobOrderDto job) {
+    if (lcpNapSignals == null) return null;
+    final naps = lcpNapSignals!.allLocations.value;
+    if (naps.isEmpty) return null;
+
+    final targetPos = job.latLng;
+    if (targetPos != null) {
+      double minD = double.infinity;
+      LcpNapDto? nearest;
+      for (final n in naps) {
+        if (n.latLng == null) continue;
+        final d = LocationService.instance.distanceBetween(
+          startLat: targetPos.latitude,
+          startLng: targetPos.longitude,
+          endLat: n.latLng!.latitude,
+          endLng: n.latLng!.longitude,
+        );
+        if (d < minD) {
+          minD = d;
+          nearest = n;
+        }
+      }
+      if (nearest != null && minD.isFinite) {
+        return (nap: nearest, distanceMeters: minD);
+      }
+    }
+
+    if (job.napId != null) {
+      for (final n in naps) {
+        if (n.id == job.napId) {
+          return (nap: n, distanceMeters: 0.0);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> _openNavigation(JobOrderDto job) async {
+    final latLng = job.latLng;
+    final Uri uri;
+    if (latLng != null) {
+      uri = Uri.parse(
+          'https://maps.apple.com/?q=${latLng.latitude},${latLng.longitude}');
+    } else {
+      final fullAddr =
+          '${job.address}${job.barangay != null ? ", ${job.barangay}" : ""}${job.city != null ? ", ${job.city}" : ""}, Philippines';
+      uri = Uri.parse(
+          'https://maps.apple.com/?q=${Uri.encodeComponent(fullAddr)}');
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Widget _buildPlantAndHardwareCard(
@@ -592,125 +817,56 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.hub_outlined, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.hub_outlined,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'Plant & Hardware Allocation',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 14),
             _buildSpecRow(
+                context,
                 'LCP Cabinet',
                 job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned',
                 Icons.storage_rounded,
                 isDark),
             _buildSpecRow(
+                context,
                 'NAP Box',
-                job.napId != null ? 'NAP-${job.napId}' : 'Unassigned',
-                Icons.router_rounded,
+                job.nap?.isNotEmpty == true
+                    ? job.nap!
+                    : (job.napId != null && job.napId! > 0
+                        ? 'NAP-${job.napId}'
+                        : 'Unassigned'),
+                Icons.hub_rounded,
                 isDark),
-            _buildSpecRow('Port Assignment', job.portId ?? 'Port 1',
+            _buildSpecRow(context, 'Port Assignment', job.portId ?? 'Port 1',
                 Icons.electrical_services_rounded, isDark),
             if (job.vlanId != null)
-              _buildSpecRow(
-                  'VLAN Tag', 'VLAN ${job.vlanId}', Icons.tag_rounded, isDark),
+              _buildSpecRow(context, 'VLAN Tag', 'VLAN ${job.vlanId}',
+                  Icons.tag_rounded, isDark),
             _buildSpecRow(
+                context,
                 'Modem / ONT SN',
                 job.modemRouterSN ?? 'Pending Installation',
                 Icons.qr_code_rounded,
                 isDark),
             if (job.routerModel != null && job.routerModel!.isNotEmpty)
-              _buildSpecRow(
-                  'ONT Model', job.routerModel!, Icons.devices_rounded, isDark),
+              _buildSpecRow(context, 'ONT Model', job.routerModel!,
+                  Icons.devices_rounded, isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildToolkitShortcutsCard(
+  Widget _buildOpticalPowerCard(
       BuildContext context, JobOrderDto job, bool isDark) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.handyman_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
-                Text(
-                  'ISP Field Skills & Utilities',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ActionChip(
-                  avatar: const Icon(Icons.palette_rounded,
-                      size: 16, color: Color(0xFF0070BA)),
-                  label: const Text('Fiber Color Code',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const FiberColorCodeTool()),
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.speed_rounded,
-                      size: 16, color: AppTheme.primary),
-                  label: const Text('Link Budget Calc',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const OpticalBudgetTool()),
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.cable_rounded,
-                      size: 16, color: Color(0xFF10B981)),
-                  label: const Text('Drop Cable BOM',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DropCableTool()),
-                  ),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.network_ping_rounded,
-                      size: 16, color: Color(0xFF8B5CF6)),
-                  label: const Text('Ping / Diagnostics',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const NetworkDiagnosticTool()),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOpticalPowerCard(JobOrderDto job, bool isDark) {
     final dbm = job.opticalPower!;
     final isOptimal = dbm >= AppConstants.opticalMinOptimal &&
         dbm <= AppConstants.opticalMaxOptimal;
@@ -722,6 +878,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         : isMarginal
             ? AppTheme.warning
             : AppTheme.danger;
+
+    // The reading's own colour, but pulled from the ink palette since it
+    // sits on Text rather than a fill.
+    final badgeColorInk = isOptimal
+        ? AppTheme.successInkOf(context)
+        : isMarginal
+            ? AppTheme.warningInkOf(context)
+            : AppTheme.dangerInkOf(context);
 
     final badgeSubtle = isDark
         ? badgeColor.withValues(alpha: 0.2)
@@ -743,13 +907,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.speed_rounded, size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.speed_rounded,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'Optical Power Measurement',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
@@ -769,21 +934,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         '${dbm.toStringAsFixed(1)} dBm',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: badgeColor,
-                        ),
+                        style: context.text.headlineSmall!
+                            .copyWith(color: badgeColorInk),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Standard: -12.0 dBm to -24.0 dBm',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark
-                              ? AppTheme.textSecondaryDark
-                              : AppTheme.textMuted,
-                        ),
+                        style: context.text.bodySmall,
                       ),
                     ],
                   ),
@@ -796,11 +953,8 @@ class JobOrderDetailScreen extends StatelessWidget {
                     ),
                     child: Text(
                       badgeLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: context.text.labelMedium!
+                          .copyWith(color: Colors.white),
                     ),
                   ),
                 ],
@@ -820,14 +974,14 @@ class JobOrderDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.assignment_turned_in_outlined,
-                    size: 18, color: AppTheme.primary),
-                SizedBox(width: 8),
+                const Icon(Icons.assignment_turned_in_outlined,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'On-Site Records & Verification',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: context.text.titleMedium,
                 ),
               ],
             ),
@@ -836,12 +990,8 @@ class JobOrderDetailScreen extends StatelessWidget {
             if (job.onsiteRemarks != null && job.onsiteRemarks!.isNotEmpty) ...[
               Text(
                 'Technician Notes:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: context.text.labelMedium!
+                    .copyWith(color: AppTheme.secondaryInkOf(context)),
               ),
               const SizedBox(height: 4),
               Container(
@@ -853,175 +1003,213 @@ class JobOrderDetailScreen extends StatelessWidget {
                 ),
                 child: Text(
                   job.onsiteRemarks!,
-                  style: const TextStyle(fontSize: 13),
+                  style: context.text.bodyMedium,
                 ),
               ),
               const SizedBox(height: 12),
             ],
 
-            // Photo attachments row (Safe non-overflow flex items)
-            Row(
-              children: [
-                Expanded(
-                  child: _buildProofChip(
-                    label: 'Box Reading Photo',
-                    attached: job.boxReadingImage != null &&
-                        job.boxReadingImage!.isNotEmpty,
-                    isDark: isDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildProofChip(
-                    label: 'ONT Rx Photo',
-                    attached: job.routerReadingImage != null &&
-                        job.routerReadingImage!.isNotEmpty,
-                    isDark: isDark,
-                  ),
-                ),
-              ],
+            // Photo proofs and signature, tap to zoom
+            Text(
+              'Photo Proofs:',
+              style: context.text.labelMedium!
+                  .copyWith(color: AppTheme.secondaryInkOf(context)),
             ),
-            const SizedBox(height: 8),
-            _buildProofChip(
-              label: 'Subscriber Digital Sign-Off',
-              attached: job.clientSignature != null &&
-                  job.clientSignature!.isNotEmpty,
-              isDark: isDark,
-            ),
+            const SizedBox(height: 6),
+            JobPhotoGallery(job: job),
             const SizedBox(height: 14),
 
             // Inline action to fill/update the completion report
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _handleOpenReport(context, job),
-                icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
-                label: const Text(
-                  'Fill / Update Completion Report',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            if (!readOnly)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _handleOpenReport(context, job),
+                  icon:
+                      const Icon(Icons.assignment_turned_in_rounded, size: 24),
+                  label: Text(
+                    'Fill / Update Completion Report',
+                    style:
+                        context.text.labelLarge!.copyWith(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProofChip({
-    required String label,
-    required bool attached,
-    required bool isDark,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: attached
-            ? (isDark
-                ? const Color(0xFF059669).withValues(alpha: 0.25)
-                : AppTheme.successSubtle)
-            : (isDark ? AppTheme.darkInput : AppTheme.lightBg),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: attached
-              ? (isDark
-                  ? const Color(0xFF059669).withValues(alpha: 0.4)
-                  : const Color(0xFFBBF7D0))
-              : (isDark ? AppTheme.borderDark : AppTheme.borderLight),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            attached
-                ? Icons.check_circle_rounded
-                : Icons.radio_button_unchecked_rounded,
-            size: 14,
-            color: attached
-                ? (isDark ? const Color(0xFF4ADE80) : AppTheme.success)
-                : (isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: attached
-                    ? (isDark
-                        ? const Color(0xFF4ADE80)
-                        : const Color(0xFF166534))
-                    : (isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpecRow(String label, String value, IconData icon, bool isDark) {
+  static Widget _buildSpecRow(BuildContext context, String label, String value,
+      IconData icon, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
           Icon(icon,
-              size: 16,
+              size: 20,
               color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.bodySmall,
           ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            style: context.text.titleSmall,
           ),
         ],
       ),
     );
   }
 
+  /// Opens the report on top of this screen.
+  ///
+  /// This used to pop the detail screen first, which left the report sitting
+  /// directly on the job list: backing out of it landed the technician on the
+  /// main screen instead of the job they were working.
   void _handleOpenReport(BuildContext context, JobOrderDto job) {
-    if (onOpenReport != null) {
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      onOpenReport!(job);
-    }
+    onOpenReport?.call(job);
   }
 
-  String _getAdvanceButtonLabel(JobStatus next) {
-    return switch (next) {
-      JobStatus.scheduled => 'Schedule Work',
-      JobStatus.inProgress => 'Start Work (Mark In Progress)',
-      JobStatus.completed => 'Mark Job Completed',
-      JobStatus.activated => 'Mark Subscriber Activated',
-    };
+  /// Says why activation is unavailable, so the button does not just look
+  /// broken.
+  Widget _buildReportRequiredNote(BuildContext context, bool isDark) {
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, size: 20, color: muted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Complete the on-site report first. It needs the modem serial '
+              'and the subscriber signature.',
+              style: context.text.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _handleAdvanceStatus(
+  /// A read-only banner for the history: the record can be inspected but not
+  /// changed from here.
+  Widget _buildViewOnlyNote(BuildContext context, bool isDark) {
+    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline_rounded, size: 20, color: muted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'View only. This job is in your history and cannot be changed.',
+              style: context.text.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivatedNote(
+      BuildContext context, JobOrderDto job, bool isDark) {
+    final when = job.dateInstalled;
+    final prefix = job.isCompleted ? 'Completed' : 'Activated';
+    final label = when == null
+        ? prefix
+        : '$prefix on ${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF059669).withValues(alpha: 0.2)
+            : AppTheme.successSubtle,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xFF059669).withValues(alpha: 0.4)
+              : const Color(0xFFBBF7D0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.verified_rounded,
+              size: 20,
+              color: isDark ? const Color(0xFF4ADE80) : AppTheme.success),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: context.text.labelMedium!
+                  .copyWith(color: AppTheme.successInkOf(context)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Confirm, then complete. Completion is terminal and moves the job into
+  /// history, so it deserves a second look.
+  Future<void> _handleComplete(
       BuildContext context, JobOrderDto job, bool isDark) async {
-    await jobsSignals.advanceJobStatus(job);
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Mark as Completed?'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(
+            '${job.ticketNumber} for ${job.customerName} will be marked '
+            'Completed and moved to your job history. This cannot be undone '
+            'from the app.',
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            isDefaultAction: true,
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Complete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await jobsSignals.completeJob(job);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            'Updated ${job.ticketNumber} to ${job.nextStatus?.label ?? "next stage"}'),
+            '${job.ticketNumber} marked as completed. It now appears in History.'),
         backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
         behavior: SnackBarBehavior.floating,
       ),
@@ -1057,7 +1245,10 @@ class JobOrderDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        // Clear the system navigation bar, which otherwise covers the last
+        // row of the sheet.
+        padding: EdgeInsets.fromLTRB(
+            20, 16, 20, 24 + MediaQuery.of(ctx).padding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1065,20 +1256,20 @@ class JobOrderDetailScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.location_on_rounded,
+                    const Icon(Icons.location_on_rounded,
                         color: AppTheme.primary, size: 22),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Customer Location & Navigation',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      style: ctx.text.titleMedium,
                     ),
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20),
+                  icon: const Icon(Icons.close_rounded, size: 24),
+                  tooltip: 'Close',
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ],
@@ -1086,7 +1277,7 @@ class JobOrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               addr,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              style: ctx.text.titleSmall,
             ),
             const SizedBox(height: 16),
 
@@ -1099,17 +1290,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.navigation_rounded,
-                    color: Color(0xFF1A73E8), size: 20),
+                    color: Color(0xFF1A73E8), size: 24),
               ),
-              title: const Text('Start Navigation in Google Maps',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              title: Text('Start Navigation in Google Maps',
+                  style: ctx.text.titleSmall),
               subtitle: Text(
                 'Turn-by-turn driving directions from your location',
-                style: TextStyle(
-                  fontSize: 11,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: ctx.text.bodySmall,
               ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1135,17 +1322,13 @@ class JobOrderDetailScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.copy_rounded,
-                    color: AppTheme.primary, size: 20),
+                    color: AppTheme.primary, size: 24),
               ),
-              title: const Text('Copy Address to Clipboard',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              title:
+                  Text('Copy Address to Clipboard', style: ctx.text.titleSmall),
               subtitle: Text(
                 'Copy complete subscriber address text',
-                style: TextStyle(
-                  fontSize: 11,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
+                style: ctx.text.bodySmall,
               ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1175,31 +1358,33 @@ class JobOrderDetailScreen extends StatelessWidget {
     JobOrderDto? job,
     required bool isDark,
   }) {
-    showDialog(
+    showCupertinoModalPopup(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isCall ? 'Call Customer' : 'Send SMS'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Number: $phone',
-                style:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            const SizedBox(height: 8),
-            if (!isCall && job != null)
-              Text(
-                'Pre-filled SMS:\n"Good day ${job.customerName}, Switch Fiber Technician is arriving shortly for ticket ${job.ticketNumber}."',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
-              ),
-          ],
+      builder: (ctx) => CupertinoActionSheet(
+        title: Text(isCall ? 'Call Subscriber' : 'Send SMS'),
+        message: Text(
+          !isCall && job != null
+              ? '$phone\n\n"Good day ${job.customerName}, Switch Fiber Technician is arriving shortly for ticket ${job.ticketNumber}."'
+              : phone,
         ),
         actions: [
-          TextButton(
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isCall
+                      ? 'Calling $phone...'
+                      : 'Opening SMS to $phone...'),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: AppTheme.primary,
+                ),
+              );
+            },
+            isDefaultAction: true,
+            child: Text(isCall ? 'Dial Now' : 'Send Message'),
+          ),
+          CupertinoActionSheetAction(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: phone));
               Navigator.pop(ctx);
@@ -1214,23 +1399,83 @@ class JobOrderDetailScreen extends StatelessWidget {
             },
             child: const Text('Copy Number'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(isCall
-                      ? 'Calling $phone...'
-                      : 'Opening SMS to $phone...'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppTheme.primary,
-                ),
-              );
-            },
-            child: Text(isCall ? 'Dial Now' : 'Send Message'),
-          ),
         ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
       ),
+    );
+  }
+
+  String _radiusAccountOf(JobOrderDto job) {
+    if (job.rawJson != null) {
+      try {
+        final map = jsonDecode(job.rawJson!);
+        if (map is Map<String, dynamic>) {
+          final u = map['username']?.toString().trim();
+          if (u != null && u.isNotEmpty && u.toLowerCase() != 'switch') {
+            return u;
+          }
+          final acc = map['accountNumber']?.toString().trim();
+          if (acc != null && acc.isNotEmpty) return acc;
+        }
+      } catch (_) {}
+    }
+    return job.ticketNumber;
+  }
+}
+
+/// The straight-line distance between the technician and the job's coordinates.
+///
+/// The position request is made once, in [initState], rather than in `build`:
+/// a future created during build is re-issued on every rebuild, which turned
+/// each repaint of the details screen into a fresh high-accuracy GPS fix.
+class _DistanceFromTechnicianRow extends StatefulWidget {
+  final LatLng target;
+  final bool isDark;
+
+  const _DistanceFromTechnicianRow({
+    required this.target,
+    required this.isDark,
+  });
+
+  @override
+  State<_DistanceFromTechnicianRow> createState() =>
+      _DistanceFromTechnicianRowState();
+}
+
+class _DistanceFromTechnicianRowState
+    extends State<_DistanceFromTechnicianRow> {
+  late final Future<String?> _distance = _measure();
+
+  Future<String?> _measure() async {
+    final here = await LocationService.instance.getCurrentPosition();
+    if (here == null) return null;
+    final meters = LocationService.instance.distanceBetween(
+      startLat: here.latitude,
+      startLng: here.longitude,
+      endLat: widget.target.latitude,
+      endLng: widget.target.longitude,
+    );
+    return LocationService.instance.formatDistance(meters);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _distance,
+      builder: (context, snapshot) {
+        final distance = snapshot.data;
+        if (distance == null) return const SizedBox.shrink();
+        return JobOrderDetailScreen._buildSpecRow(
+          context,
+          'Distance from You',
+          distance,
+          CupertinoIcons.arrow_up_right_diamond_fill,
+          widget.isDark,
+        );
+      },
     );
   }
 }

@@ -36,14 +36,14 @@ class AuthSignals {
 
   /// Perform technician login
   Future<bool> login({
-    required String usernameOrEmail,
+    required String username,
     required String password,
   }) async {
     authLoading.value = true;
     authError.value = null;
     try {
       final user = await _authService.login(
-        usernameOrEmail: usernameOrEmail,
+        username: username,
         password: password,
       );
       currentUser.value = user;

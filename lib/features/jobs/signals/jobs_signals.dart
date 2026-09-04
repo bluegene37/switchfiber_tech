@@ -4,15 +4,26 @@ import '../../../core/widgets/loading_states.dart';
 import '../models/job_order_model.dart';
 import '../repositories/job_repository.dart';
 
-/// Which slice of the technician's own job history is shown.
-enum HistoryFilter {
+/// Which terminal status of the technician's job history is shown.
+enum HistoryStatusFilter {
   all('All'),
-  inProgress('In Progress'),
-  completed('Completed'),
   activated('Activated'),
-  needsAttention('Needs Attention');
+  completed('Completed');
 
-  const HistoryFilter(this.label);
+  const HistoryStatusFilter(this.label);
+
+  final String label;
+}
+
+/// The date window applied to the technician's job history.
+enum HistoryRange {
+  all('All time'),
+  today('Today'),
+  week('This week'),
+  month('This month'),
+  custom('Pick dates');
+
+  const HistoryRange(this.label);
 
   final String label;
 }
@@ -21,9 +32,14 @@ enum HistoryFilter {
 /// Pipes the Drift SQLite reactive stream into Signals and provides instant UI computations.
 class JobsSignals {
   final JobRepository repository;
+
+  /// Source of "now" for the history date windows; injectable for tests.
+  final DateTime Function() clock;
+
   StreamSubscription<List<JobOrderDto>>? _driftSubscription;
 
-  JobsSignals(this.repository) {
+  JobsSignals(this.repository, {DateTime Function()? clock})
+      : clock = clock ?? DateTime.now {
     _initDriftStream();
   }
 
@@ -38,11 +54,15 @@ class JobsSignals {
   // pull-to-refresh and manual syncs so existing data is never hidden.
   final loadPhase = signal<DataLoadPhase>(DataLoadPhase.ready);
 
-  // Technician history: the signed-in technician's email, matched against
-  // each job's assignedEmail column, plus its own filter and search so the
+  // Technician history: activated jobs whose assignedEmail matches the
+  // signed-in technician, with their own date, area and search filters so the
   // history and the scheduled queue never fight over one query box.
   final technicianEmail = signal<String?>(null);
-  final historyFilter = signal<HistoryFilter>(HistoryFilter.all);
+  final historyStatus = signal<HistoryStatusFilter>(HistoryStatusFilter.all);
+  final historyRange = signal<HistoryRange>(HistoryRange.all);
+  final historyRangeStart = signal<DateTime?>(null);
+  final historyRangeEnd = signal<DateTime?>(null);
+  final historyCity = signal<String?>(null);
   final historySearch = signal<String>('');
 
   // Computeds
@@ -82,12 +102,6 @@ class JobsSignals {
   late final ReadonlySignal<int> scheduledCount =
       computed(() => _countOf(JobStatus.scheduled));
 
-  late final ReadonlySignal<int> inProgressCount =
-      computed(() => _countOf(JobStatus.inProgress));
-
-  late final ReadonlySignal<int> completedCount =
-      computed(() => _countOf(JobStatus.completed));
-
   late final ReadonlySignal<int> activatedCount =
       computed(() => _countOf(JobStatus.activated));
 
@@ -101,14 +115,14 @@ class JobsSignals {
     () => allJobs.value.where((j) => !j.isSynced).length,
   );
 
-  /// Every job assigned to the signed-in technician, newest first. Empty
-  /// until the technician's email is known.
+  /// Every finished job (Activated or Completed) assigned to the signed-in
+  /// technician, newest first. Empty until the technician's email is known.
   late final ReadonlySignal<List<JobOrderDto>> assignedJobs = computed(() {
-    final email = technicianEmail.value;
-    if (email == null || email.trim().isEmpty) return const <JobOrderDto>[];
+    final history = allJobs.value
+        .where((j) => j.isActivated || j.isCompleted)
+        .toList();
 
-    final mine = allJobs.value.where((j) => j.isAssignedTo(email)).toList();
-    mine.sort((a, b) {
+    history.sort((a, b) {
       final ad = a.historyDate;
       final bd = b.historyDate;
       if (ad == null && bd == null) return b.id.compareTo(a.id);
@@ -117,24 +131,71 @@ class JobsSignals {
       final byDate = bd.compareTo(ad);
       return byDate != 0 ? byDate : b.id.compareTo(a.id);
     });
-    return mine;
+    return history;
   });
 
-  /// [assignedJobs] narrowed by the history filter chip and search box.
+  /// Distinct cities across the technician's history, for the area filter.
+  late final ReadonlySignal<List<String>> historyCities = computed(() {
+    final cities = <String>{
+      for (final j in assignedJobs.value)
+        if (j.city?.trim().isNotEmpty == true) j.city!.trim(),
+    }.toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return cities;
+  });
+
+  /// Half-open [start, end) window for [range], or nulls for all time.
+  (DateTime?, DateTime?) _windowFor(HistoryRange range) {
+    final now = clock();
+    final today = DateTime(now.year, now.month, now.day);
+    return switch (range) {
+      HistoryRange.all => (null, null),
+      HistoryRange.today => (today, today.add(const Duration(days: 1))),
+      HistoryRange.week => (
+          today.subtract(Duration(days: today.weekday - DateTime.monday)),
+          today.add(const Duration(days: 1)),
+        ),
+      HistoryRange.month => (
+          DateTime(today.year, today.month),
+          today.add(const Duration(days: 1)),
+        ),
+      HistoryRange.custom => (
+          historyRangeStart.value,
+          historyRangeEnd.value?.add(const Duration(days: 1)),
+        ),
+    };
+  }
+
+  bool _inWindow(JobOrderDto job, (DateTime?, DateTime?) window) {
+    final (start, end) = window;
+    if (start == null && end == null) return true;
+    final d = job.historyDate;
+    if (d == null) return false;
+    if (start != null && d.isBefore(start)) return false;
+    if (end != null && !d.isBefore(end)) return false;
+    return true;
+  }
+
+  /// [assignedJobs] narrowed by the status filter, date window, city and search box.
   late final ReadonlySignal<List<JobOrderDto>> historyJobs = computed(() {
-    final filter = historyFilter.value;
+    final status = historyStatus.value;
+    final window = _windowFor(historyRange.value);
+    final city = historyCity.value?.trim().toLowerCase();
     final query = historySearch.value.trim().toLowerCase();
 
     return assignedJobs.value.where((job) {
-      final matchesFilter = switch (filter) {
-        HistoryFilter.all => true,
-        HistoryFilter.inProgress => job.isInProgress,
-        HistoryFilter.completed => job.isCompleted,
-        HistoryFilter.activated => job.isActivated,
-        HistoryFilter.needsAttention => job.siteException != null,
-      };
-      if (!matchesFilter) return false;
-
+      if (status == HistoryStatusFilter.activated && !job.isActivated) {
+        return false;
+      }
+      if (status == HistoryStatusFilter.completed && !job.isCompleted) {
+        return false;
+      }
+      if (!_inWindow(job, window)) return false;
+      if (city != null &&
+          city.isNotEmpty &&
+          (job.city ?? '').trim().toLowerCase() != city) {
+        return false;
+      }
       if (query.isEmpty) return true;
       return job.ticketNumber.toLowerCase().contains(query) ||
           job.customerName.toLowerCase().contains(query) ||
@@ -147,21 +208,24 @@ class JobsSignals {
   late final ReadonlySignal<int> historyTotalCount =
       computed(() => assignedJobs.value.length);
 
-  int _historyCountOf(JobStatus s) =>
-      assignedJobs.value.where((j) => j.jobStatus == s).length;
-
-  late final ReadonlySignal<int> historyInProgressCount =
-      computed(() => _historyCountOf(JobStatus.inProgress));
-
-  late final ReadonlySignal<int> historyCompletedCount =
-      computed(() => _historyCountOf(JobStatus.completed));
-
-  late final ReadonlySignal<int> historyActivatedCount =
-      computed(() => _historyCountOf(JobStatus.activated));
-
-  late final ReadonlySignal<int> historyExceptionCount = computed(
-    () => assignedJobs.value.where((j) => j.siteException != null).length,
+  late final ReadonlySignal<int> historyActivatedCount = computed(
+    () => assignedJobs.value.where((j) => j.isActivated).length,
   );
+
+  late final ReadonlySignal<int> historyCompletedCount = computed(
+    () => assignedJobs.value.where((j) => j.isCompleted).length,
+  );
+
+  int _historyCountIn(HistoryRange range) {
+    final window = _windowFor(range);
+    return assignedJobs.value.where((j) => _inWindow(j, window)).length;
+  }
+
+  late final ReadonlySignal<int> historyThisWeekCount =
+      computed(() => _historyCountIn(HistoryRange.week));
+
+  late final ReadonlySignal<int> historyThisMonthCount =
+      computed(() => _historyCountIn(HistoryRange.month));
 
   /// Pipe Drift SQLite reactive stream into allJobs signal
   void _initDriftStream() {
@@ -171,17 +235,18 @@ class JobsSignals {
     });
   }
 
-  /// Initial load and remote fetch (optionally filtered by status).
+  /// Pull scheduled jobs and the technician's activated history from the
+  /// server and refresh the cache.
   ///
   /// With [initial] set, and only when Drift holds nothing yet, the screen is
   /// walked through the download indicator and a brief skeleton pass before
   /// the hydrated Drift rows are revealed.
-  Future<void> fetchRemote({String? statusFilter, bool initial = false}) async {
+  Future<void> fetchRemote({bool initial = false}) async {
     final showPhases = initial && allJobs.value.isEmpty;
     if (showPhases) loadPhase.value = DataLoadPhase.downloading;
     isRefreshing.value = true;
     try {
-      await repository.fetchRemoteJobs(statusFilter: statusFilter);
+      await repository.fetchRemoteJobs(technicianEmail: technicianEmail.value);
     } finally {
       isRefreshing.value = false;
       if (showPhases) {
@@ -192,9 +257,20 @@ class JobsSignals {
     }
   }
 
-  /// Grab / Accept a scheduled job and immediately put it In Progress
-  Future<void> grabJob(JobOrderDto job) async {
-    await repository.grabScheduledJob(job.id);
+  /// Mark a job Completed, stamping it with the signed-in technician so it
+  /// appears in history. Already-completed jobs are left alone.
+  Future<void> completeJob(JobOrderDto job) async {
+    if (job.isCompleted) return;
+    await repository.completeJob(job.id,
+        technicianEmail: technicianEmail.value);
+  }
+
+  /// Mark a job Activated, stamping it with the signed-in technician so it
+  /// appears in their history. Already-activated jobs are left alone.
+  Future<void> activateJob(JobOrderDto job) async {
+    if (job.isActivated) return;
+    await repository.activateJob(job.id,
+        technicianEmail: technicianEmail.value);
   }
 
   /// Update tab filter
@@ -212,22 +288,39 @@ class JobsSignals {
     technicianEmail.value = email;
   }
 
-  void setHistoryFilter(HistoryFilter filter) {
-    historyFilter.value = filter;
+  /// Apply a date window. [start] and [end] (inclusive dates) are only used
+  /// for [HistoryRange.custom].
+  void setHistoryRange(HistoryRange range, {DateTime? start, DateTime? end}) {
+    if (range == HistoryRange.custom) {
+      historyRangeStart.value =
+          start == null ? null : DateTime(start.year, start.month, start.day);
+      historyRangeEnd.value =
+          end == null ? null : DateTime(end.year, end.month, end.day);
+    }
+    historyRange.value = range;
+  }
+
+  /// Restrict the history to one city, or null for every area.
+  void setHistoryCity(String? city) {
+    historyCity.value = (city == null || city.trim().isEmpty) ? null : city;
+  }
+
+  /// Restrict the history to one status, or all history.
+  void setHistoryStatus(HistoryStatusFilter status) {
+    historyStatus.value = status;
+  }
+
+  void clearHistoryFilters() {
+    historyStatus.value = HistoryStatusFilter.all;
+    historyRange.value = HistoryRange.all;
+    historyRangeStart.value = null;
+    historyRangeEnd.value = null;
+    historyCity.value = null;
+    historySearch.value = '';
   }
 
   void setHistorySearch(String query) {
     historySearch.value = query;
-  }
-
-  /// Advance a job: In Progress -> Completed -> Activated.
-  ///
-  /// A job already Activated does not advance; rolling it around a cycle would
-  /// overwrite a finished record on the server.
-  Future<void> advanceJobStatus(JobOrderDto job) async {
-    final next = job.nextStatus;
-    if (next == null) return;
-    await repository.updateJobStatus(job.id, next.wireValue);
   }
 
   /// Must be awaited: the Drift stream subscription has to be fully torn down

@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/server_display.dart';
 import '../../auth/signals/auth_signals.dart';
 import '../signals/settings_signals.dart';
 import '../../jobs/signals/jobs_signals.dart';
@@ -78,36 +81,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
+        // Clear the system navigation bar, which otherwise covers the last
+        // row of the sheet.
+        padding: EdgeInsets.fromLTRB(
+            20, 10, 20, 28 + MediaQuery.of(ctx).padding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // iOS Grabber Pill
+            Center(
+              child: Container(
+                width: 36,
+                height: 4.5,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF38383A)
+                      : const Color(0xFFD1D1D6),
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.speed_rounded,
+                    const Icon(CupertinoIcons.speedometer,
                         color: AppTheme.primary, size: 22),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'GPON Optical Power Standards',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      style: ctx.text.titleSmall,
                     ),
                   ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20),
-                  onPressed: () => Navigator.pop(ctx),
+                GestureDetector(
+                  onTap: () => Navigator.pop(ctx),
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      CupertinoIcons.xmark,
+                      size: 24,
+                      color: isDark ? Colors.white : AppTheme.darkSlate,
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             _buildStandardRow(
               title: 'Optimal / Pass (-12.0 to -24.0 dBm)',
               description:
@@ -144,28 +174,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color subtle,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // The three call sites only ever pass one of these three brand/status
+    // fills; route the text to the ink that matches so it never renders in
+    // the bright colour itself.
+    final Color textInk = color == AppTheme.success
+        ? AppTheme.successInkOf(context)
+        : color == AppTheme.warning
+            ? AppTheme.warningInkOf(context)
+            : AppTheme.dangerInkOf(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? color.withValues(alpha: 0.2) : subtle,
+        color: isDark ? color.withValues(alpha: 0.18) : subtle,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        border: Border.all(
+          color: color.withValues(alpha: 0.35),
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.circle, color: color, size: 10),
+              Icon(CupertinoIcons.circle_fill, color: color, size: 20),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                  ),
+                  style: context.text.labelLarge!.copyWith(color: textInk),
                 ),
               ),
             ],
@@ -173,10 +210,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 4),
           Text(
             description,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
+            style: context.text.bodyMedium!
+                .copyWith(color: AppTheme.secondaryInkOf(context)),
           ),
         ],
       ),
@@ -186,23 +221,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _tag(String label, {bool success = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
       decoration: BoxDecoration(
         color: success
             ? (isDark
-                ? const Color(0xFF059669).withValues(alpha: 0.25)
+                ? const Color(0xFF34C759).withValues(alpha: 0.2)
                 : AppTheme.successSubtle)
             : (isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg),
         borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: success
+              ? (isDark
+                  ? const Color(0xFF34C759).withValues(alpha: 0.3)
+                  : const Color(0xFFBBF7D0))
+              : (isDark
+                  ? AppTheme.primary.withValues(alpha: 0.3)
+                  : AppTheme.primarySubtleBorder),
+          width: 0.5,
+        ),
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+        style: context.text.labelMedium!.copyWith(
           color: success
-              ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534))
-              : (isDark ? const Color(0xFFFF8591) : AppTheme.primaryActive),
+              ? AppTheme.successInkOf(context)
+              : AppTheme.brandInkOf(context),
         ),
       ),
     );
@@ -213,12 +256,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 15, color: AppTheme.textMuted),
+            Icon(icon, size: 20, color: AppTheme.textMuted),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(fontSize: 13),
+                style: context.text.bodySmall,
               ),
             ),
           ],
@@ -226,21 +269,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
 
   Future<void> _handleLogout() async {
-    final confirm = await showDialog<bool>(
+    final confirm = await showCupertinoDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: const Text('Sign Out'),
-        content: const Text(
-          'Are you sure you want to end your field terminal session?',
+        content: const Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text(
+            'Are you sure you want to end your field terminal session?',
+          ),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context, false),
+            isDefaultAction: true,
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
+            isDestructiveAction: true,
             child: const Text('Sign Out'),
           ),
         ],
@@ -252,6 +299,103 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Widget _buildIosSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 6),
+      child: Text(
+        title.toUpperCase(),
+        style: context.text.labelSmall,
+      ),
+    );
+  }
+
+  Widget _buildIosGroupedCard({
+    required List<Widget> children,
+    required bool isDark,
+    EdgeInsetsGeometry? padding,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+          width: 0.5,
+        ),
+      ),
+      padding: padding ?? EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildIosSettingRow({
+    required IconData icon,
+    required Color iconBg,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    required bool isDark,
+    bool showDivider = true,
+  }) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            child: Row(
+              children: [
+                // iOS Squircle Icon Badge
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, color: Colors.white, size: 17),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: context.text.titleMedium,
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: context.text.bodySmall,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null) trailing,
+              ],
+            ),
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 0.5,
+            thickness: 0.5,
+            indent: 56,
+            color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = widget.authSignals;
@@ -261,440 +405,368 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Terminal Settings',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            Text(
-              'Technician profile & offline sync management',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
-            ),
-          ],
+        title: Text(
+          'Settings',
+          style: context.text.titleMedium,
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
-          // 1. Technician Profile Card
+          // Section 1: Technician Profile Header
+          _buildIosSectionHeader('Technician Profile'),
           SignalBuilder(
             builder: (context) {
               final user = auth.currentUser.value;
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              return _buildIosGroupedCard(
+                isDark: isDark,
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          // Avatar with technician initials
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: isDark
-                                ? const Color(0xFF3F2327)
-                                : AppTheme.primarySubtleBg,
-                            child: Text(
-                              user?.initials ?? 'T',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.primary,
-                              ),
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: isDark
+                            ? const Color(0xFF3F2327)
+                            : AppTheme.primarySubtleBg,
+                        child: Text(
+                          user?.initials ?? 'T',
+                          style: context.text.titleLarge!
+                              .copyWith(color: AppTheme.brandInkOf(context)),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.fullName ?? 'Technician User',
+                              style: context.text.titleSmall,
                             ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 2),
+                            Text(
+                              '@${user?.username ?? "technician"}',
+                              style: context.text.bodySmall,
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
                               children: [
-                                Text(
-                                  user?.fullName ?? 'Technician User',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '@${user?.username ?? "technician"}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppTheme.textMuted,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 4,
-                                  children: [
-                                    _tag(
-                                        'Access level ${user?.accessLevelId ?? "-"}'),
-                                    if (user?.active == true)
-                                      _tag('Active', success: true),
-                                    if (user != null && user.menus.isNotEmpty)
-                                      _tag('${user.menus.length} modules'),
-                                  ],
-                                ),
+                                _tag(
+                                    'Access level ${user?.accessLevelId ?? "-"}'),
+                                if (user?.active == true)
+                                  _tag('Active', success: true),
+                                if (user != null && user.menus.isNotEmpty)
+                                  _tag('${user.menus.length} modules'),
                               ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      if (user != null &&
-                          (user.email.isNotEmpty ||
-                              user.contactNumber.isNotEmpty ||
-                              user.address.isNotEmpty)) ...[
-                        const Divider(height: 24),
-                        if (user.email.isNotEmpty)
-                          _detailRow(Icons.mail_outline_rounded, user.email),
-                        if (user.contactNumber.isNotEmpty)
-                          _detailRow(Icons.phone_outlined, user.contactNumber),
-                        if (user.address.isNotEmpty)
-                          _detailRow(Icons.place_outlined, user.address),
-                      ],
                     ],
                   ),
-                ),
+                  if (user != null &&
+                      (user.email.isNotEmpty ||
+                          user.contactNumber.isNotEmpty ||
+                          user.address.isNotEmpty)) ...[
+                    Divider(
+                      height: 24,
+                      thickness: 0.5,
+                      color:
+                          isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                    ),
+                    if (user.email.isNotEmpty)
+                      _detailRow(CupertinoIcons.mail, user.email),
+                    if (user.contactNumber.isNotEmpty)
+                      _detailRow(CupertinoIcons.phone, user.contactNumber),
+                    if (user.address.isNotEmpty)
+                      _detailRow(CupertinoIcons.location_solid, user.address),
+                  ],
+                ],
               );
             },
           ),
 
-          const SizedBox(height: 16),
+          // Section 2: Appearance & Display Preferences
+          _buildIosSectionHeader('Appearance & Display'),
+          SignalBuilder(
+            builder: (context) {
+              final dark = SettingsSignals.instance.isDarkMode;
+              return _buildIosGroupedCard(
+                isDark: isDark,
+                children: [
+                  _buildIosSettingRow(
+                    icon: dark
+                        ? CupertinoIcons.moon_fill
+                        : CupertinoIcons.sun_max_fill,
+                    iconBg: const Color(0xFF5856D6), // iOS Indigo
+                    title: 'Dark Mode',
+                    subtitle: dark
+                        ? 'Easier on the eyes in low light'
+                        : 'Optimized for high outdoor sunlight',
+                    isDark: isDark,
+                    showDivider: false,
+                    trailing: CupertinoSwitch(
+                      value: dark,
+                      activeTrackColor: AppTheme.primary,
+                      onChanged: (v) => SettingsSignals.instance.setDarkMode(v),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
 
-          // 2. Display preferences
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: SignalBuilder(
+          // Section 3: Field Reference Tools
+          _buildIosSectionHeader('Field Reference Tools'),
+          _buildIosGroupedCard(
+            isDark: isDark,
+            children: [
+              _buildIosSettingRow(
+                icon: CupertinoIcons.speedometer,
+                iconBg: AppTheme.primary,
+                title: 'GPON Optical Power Standards',
+                subtitle: 'Thresholds & attenuation loss specs',
+                isDark: isDark,
+                showDivider: false,
+                onTap: _showOpticalPowerStandards,
+                trailing: const Icon(
+                  CupertinoIcons.chevron_forward,
+                  size: 24,
+                  color: AppTheme.textMuted,
+                ),
+              ),
+            ],
+          ),
+
+          // Section 4: Offline Storage & Drift Database Cache
+          _buildIosSectionHeader('Offline Storage (Drift SQLite)'),
+          _buildIosGroupedCard(
+            isDark: isDark,
+            padding: const EdgeInsets.all(14),
+            children: [
+              SignalBuilder(
                 builder: (context) {
-                  final dark = SettingsSignals.instance.isDarkMode;
-                  return SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    secondary: Icon(
-                      dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                      color: AppTheme.primary,
-                    ),
-                    title: const Text(
-                      'Dark mode',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                    ),
-                    subtitle: Text(
-                      dark
-                          ? 'Easier on the eyes in low light'
-                          : 'Optimized for high outdoor sunlight',
-                      style: const TextStyle(
-                          fontSize: 12, color: AppTheme.textMuted),
-                    ),
-                    value: dark,
-                    activeThumbColor: AppTheme.primary,
-                    onChanged: (v) => SettingsSignals.instance.setDarkMode(v),
+                  final total = jobs.totalCount.value;
+                  final pending = syncWorker.pendingCount.value;
+                  final isSyncing = syncWorker.isSyncing.value;
+
+                  return Column(
+                    children: [
+                      _buildMetricRow(
+                        'Total Cached Job Orders',
+                        '$total records',
+                        CupertinoIcons.folder,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildMetricRow(
+                        'Pending Sync Queue',
+                        '$pending offline updates',
+                        CupertinoIcons.cloud_upload,
+                        badgeColor:
+                            pending > 0 ? AppTheme.warning : AppTheme.success,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildMetricRow(
+                        'Drift Engine Status',
+                        isSyncing
+                            ? 'Synchronizing...'
+                            : 'Reactive Stream Active',
+                        CupertinoIcons.layers_alt,
+                        badgeColor:
+                            isSyncing ? AppTheme.primary : AppTheme.success,
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Force Sync Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: isSyncing
+                              ? null
+                              : () async {
+                                  final res =
+                                      await syncWorker.syncPendingJobs();
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res.message),
+                                      backgroundColor: res.success
+                                          ? AppTheme.success
+                                          : AppTheme.warning,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                          icon: isSyncing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(CupertinoIcons.arrow_2_circlepath,
+                                  size: 24),
+                          label: Text(
+                            isSyncing
+                                ? 'Synchronizing...'
+                                : 'Force Full Sync (Drift ↔ API)',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Re-seed sample data
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            await jobs.repository.seedSampleJobs();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                    'Reset & populated sample field tech jobs in Drift DB.'),
+                                backgroundColor: isDark
+                                    ? AppTheme.darkCard
+                                    : AppTheme.darkSlate,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                              CupertinoIcons.arrow_counterclockwise,
+                              size: 24),
+                          label: const Text('Re-seed Sample Field Data'),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
-            ),
+            ],
           ),
 
-          const SizedBox(height: 16),
-
-          // 3. Field Reference Tools: Optical Power Guide
-          Card(
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF3F2327)
-                      : AppTheme.primarySubtleBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.speed_rounded,
-                    color: AppTheme.primary, size: 20),
-              ),
-              title: const Text(
-                'GPON Optical Power Standards',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-              ),
-              subtitle: Text(
-                'View dBm reference thresholds & loss guidelines',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                ),
-              ),
-              trailing: Icon(
-                Icons.chevron_right_rounded,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-              ),
-              onTap: _showOpticalPowerStandards,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 4. Offline Sync & Drift Database Status
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          // Section 5: Backend Connection & SSL Pinning
+          _buildIosSectionHeader('Backend Connection & Diagnostics'),
+          _buildIosGroupedCard(
+            isDark: isDark,
+            padding: const EdgeInsets.all(14),
+            children: [
+              Row(
                 children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.sync_rounded,
-                          size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        'Drift SQLite & Offline Cache',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                    ],
+                  const Icon(CupertinoIcons.shield_lefthalf_fill,
+                      size: 17, color: AppTheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SSL Pinned Channel',
+                    style: context.text.titleSmall,
                   ),
-                  const SizedBox(height: 14),
-
-                  // Cache metrics
-                  SignalBuilder(
-                    builder: (context) {
-                      final total = jobs.totalCount.value;
-                      final pending = syncWorker.pendingCount.value;
-                      final isSyncing = syncWorker.isSyncing.value;
-
-                      return Column(
-                        children: [
-                          _buildMetricRow(
-                            'Total Cached Job Orders',
-                            '$total records',
-                            Icons.folder_outlined,
-                          ),
-                          const SizedBox(height: 8),
-                          _buildMetricRow(
-                            'Pending Sync Queue',
-                            '$pending offline updates',
-                            Icons.cloud_upload_outlined,
-                            badgeColor: pending > 0
-                                ? AppTheme.warning
-                                : AppTheme.success,
-                          ),
-                          const SizedBox(height: 8),
-                          _buildMetricRow(
-                            'Drift Engine Status',
-                            isSyncing
-                                ? 'Synchronizing...'
-                                : 'Reactive Stream Active',
-                            Icons.storage_rounded,
-                            badgeColor:
-                                isSyncing ? AppTheme.primary : AppTheme.success,
-                          ),
-                          const SizedBox(height: 14),
-
-                          // Sync now button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: isSyncing
-                                  ? null
-                                  : () async {
-                                      final res =
-                                          await syncWorker.syncPendingJobs();
-                                      if (!context.mounted) return;
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(res.message),
-                                          backgroundColor: res.success
-                                              ? AppTheme.success
-                                              : AppTheme.warning,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    },
-                              icon: isSyncing
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.sync_rounded, size: 16),
-                              label: Text(
-                                isSyncing
-                                    ? 'Synchronizing...'
-                                    : 'Force Full Sync (Drift ↔ API)',
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          // Seed demo button
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () async {
-                                await jobs.repository.seedSampleJobs();
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text(
-                                        'Reset & populated sample field tech jobs in Drift DB.'),
-                                    backgroundColor: isDark
-                                        ? AppTheme.darkCard
-                                        : AppTheme.darkSlate,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.restart_alt_rounded,
-                                  size: 16),
-                              label: const Text('Re-seed Sample Field Data'),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                  const Spacer(),
+                  _buildPinningBadge(isDark),
                 ],
               ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 5. API Connection & Live Diagnostics
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.dns_rounded,
-                          size: 18, color: AppTheme.primary),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Backend Diagnostics',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
+              const SizedBox(height: 8),
+              Text(
+                'Direct communication channel with Switch Fiber dispatch server.',
+                style: context.text.bodyMedium!
+                    .copyWith(color: AppTheme.secondaryInkOf(context)),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                    width: 0.5,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ServerDisplay.mask(_baseUrl),
+                        style: context.text.bodyMedium!.copyWith(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w600),
                       ),
-                      const Spacer(),
-                      _buildPinningBadge(isDark),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Direct communication channel with Switch Fiber dispatch server.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? AppTheme.textSecondaryDark
-                          : AppTheme.textMuted,
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkInput : AppTheme.lightBg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: isDark
-                              ? AppTheme.borderDark
-                              : AppTheme.borderLight),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: SelectableText(
-                            _baseUrl,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'monospace',
-                              fontWeight: FontWeight.w600,
-                            ),
+                    if (_lastPingMs != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _pingSuccess == true
+                              ? (isDark
+                                  ? const Color(0xFF34C759)
+                                      .withValues(alpha: 0.2)
+                                  : AppTheme.successSubtle)
+                              : (isDark
+                                  ? const Color(0xFFFF3B30)
+                                      .withValues(alpha: 0.2)
+                                  : AppTheme.dangerSubtle),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${_lastPingMs}ms',
+                          style: context.text.labelMedium!.copyWith(
+                            color: _pingSuccess == true
+                                ? AppTheme.successInkOf(context)
+                                : AppTheme.dangerInkOf(context),
                           ),
                         ),
-                        if (_lastPingMs != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: _pingSuccess == true
-                                  ? (isDark
-                                      ? const Color(0xFF059669)
-                                          .withValues(alpha: 0.25)
-                                      : AppTheme.successSubtle)
-                                  : (isDark
-                                      ? const Color(0xFFDC2626)
-                                          .withValues(alpha: 0.25)
-                                      : AppTheme.dangerSubtle),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${_lastPingMs}ms',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: _pingSuccess == true
-                                    ? (isDark
-                                        ? const Color(0xFF4ADE80)
-                                        : AppTheme.success)
-                                    : (isDark
-                                        ? const Color(0xFFF87171)
-                                        : AppTheme.danger),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _isTestingPing ? null : _testConnection,
-                      icon: _isTestingPing
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.network_ping_rounded, size: 16),
-                      label: Text(_isTestingPing
-                          ? 'Testing latency...'
-                          : 'Test Connection Latency'),
-                    ),
-                  ),
-                ],
+                      ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _isTestingPing ? null : _testConnection,
+                  icon: _isTestingPing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(CupertinoIcons.waveform_path_ecg, size: 24),
+                  label: Text(_isTestingPing
+                      ? 'Testing latency...'
+                      : 'Test Connection Latency'),
+                ),
+              ),
+            ],
           ),
 
-          const SizedBox(height: 20),
-
-          // 6. Logout Action
-          OutlinedButton.icon(
-            onPressed: _handleLogout,
-            icon: const Icon(Icons.logout_rounded, color: AppTheme.danger),
-            label: const Text(
-              'Sign Out of Terminal',
-              style: TextStyle(
-                  color: AppTheme.danger, fontWeight: FontWeight.w700),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppTheme.danger, width: 1.5),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
+          // Section 6: Session & Logout Action
+          _buildIosSectionHeader('Account Session'),
+          _buildIosGroupedCard(
+            isDark: isDark,
+            children: [
+              _buildIosSettingRow(
+                icon: CupertinoIcons.square_arrow_left,
+                iconBg: AppTheme.danger,
+                title: 'Sign Out of Terminal',
+                isDark: isDark,
+                showDivider: false,
+                onTap: _handleLogout,
+                trailing: const Icon(
+                  CupertinoIcons.chevron_forward,
+                  size: 24,
+                  color: AppTheme.danger,
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),
@@ -704,11 +776,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               '${AppConstants.appName} v${AppConstants.appVersion}\nSwitch Fiber Philippines • Dispatch Ops',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-                height: 1.5,
-              ),
+              style: context.text.labelSmall,
             ),
           ),
         ],
@@ -721,31 +789,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF059669).withValues(alpha: 0.25)
+            ? const Color(0xFF34C759).withValues(alpha: 0.2)
             : AppTheme.successSubtle,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: isDark
-              ? const Color(0xFF059669).withValues(alpha: 0.4)
+              ? const Color(0xFF34C759).withValues(alpha: 0.35)
               : const Color(0xFFBBF7D0),
+          width: 0.5,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.verified_user_rounded,
-            size: 12,
+            CupertinoIcons.checkmark_shield_fill,
+            size: 20,
             color: isDark ? const Color(0xFF4ADE80) : AppTheme.success,
           ),
           const SizedBox(width: 4),
           Text(
             'SSL Pinned (SHA-256)',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534),
-            ),
+            style: context.text.labelMedium!
+                .copyWith(color: AppTheme.successInkOf(context)),
           ),
         ],
       ),
@@ -758,22 +824,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     IconData icon, {
     Color? badgeColor,
   }) {
+    // Call sites only ever pass one of these three brand/status fills (or
+    // leave it null for the default ink); route whichever was passed to the
+    // ink that matches so the value never renders in the bright colour.
+    final Color? valueInk = badgeColor == null
+        ? null
+        : badgeColor == AppTheme.success
+            ? AppTheme.successInkOf(context)
+            : badgeColor == AppTheme.warning
+                ? AppTheme.warningInkOf(context)
+                : AppTheme.brandInkOf(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.textMuted),
+        Icon(icon, size: 20, color: AppTheme.textMuted),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            style: context.text.bodySmall,
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: badgeColor ??
+          style: context.text.labelMedium!.copyWith(
+            color: valueInk ??
                 (Theme.of(context).brightness == Brightness.dark
                     ? Colors.white
                     : AppTheme.darkSlate),

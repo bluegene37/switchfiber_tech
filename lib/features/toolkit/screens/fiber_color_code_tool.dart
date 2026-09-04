@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/fiber_color_code.dart';
 
@@ -41,13 +42,12 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Fiber Color Code',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Fiber Color Code', style: context.text.titleMedium),
             Text('TIA-598-C Standard loose tube & core lookup',
-                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                style: context.text.bodySmall),
           ],
         ),
       ),
@@ -61,15 +61,16 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.colorize_rounded,
+                      const Icon(Icons.colorize_rounded,
                           size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        'Core Number to Color Lookup',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Core Number to Color Lookup',
+                          style: context.text.titleMedium,
+                        ),
                       ),
                     ],
                   ),
@@ -101,6 +102,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                         flex: 2,
                         child: DropdownButtonFormField<int>(
                           initialValue: _fibersPerTube,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Fibers/Tube',
                           ),
@@ -125,18 +127,21 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
+                      _buildQuickChip(context, '-12',
+                          () => _updateCore(_selectedCore - 12)),
                       _buildQuickChip(
-                          '-12', () => _updateCore(_selectedCore - 12)),
+                          context, '-1', () => _updateCore(_selectedCore - 1)),
                       _buildQuickChip(
-                          '-1', () => _updateCore(_selectedCore - 1)),
+                          context, '+1', () => _updateCore(_selectedCore + 1)),
+                      _buildQuickChip(context, '+12',
+                          () => _updateCore(_selectedCore + 12)),
+                      _buildQuickChip(context, 'Core 1', () => _updateCore(1)),
                       _buildQuickChip(
-                          '+1', () => _updateCore(_selectedCore + 1)),
+                          context, 'Core 24', () => _updateCore(24)),
                       _buildQuickChip(
-                          '+12', () => _updateCore(_selectedCore + 12)),
-                      _buildQuickChip('Core 1', () => _updateCore(1)),
-                      _buildQuickChip('Core 24', () => _updateCore(24)),
-                      _buildQuickChip('Core 48', () => _updateCore(48)),
-                      _buildQuickChip('Core 96', () => _updateCore(96)),
+                          context, 'Core 48', () => _updateCore(48)),
+                      _buildQuickChip(
+                          context, 'Core 96', () => _updateCore(96)),
                     ],
                   ),
                 ],
@@ -167,14 +172,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
               children: [
                 Text(
                   'FIBER CORE #$_selectedCore IDENTIFICATION',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
-                  ),
+                  style: context.text.labelSmall,
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -182,6 +180,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                     // Tube Result Block
                     Expanded(
                       child: _buildResultBlock(
+                        context: context,
                         title: 'TUBE #${result.tubeNumber}',
                         colorName: result.tubeColor.name,
                         color: result.tubeColor.color,
@@ -195,6 +194,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                     // Fiber Result Block
                     Expanded(
                       child: _buildResultBlock(
+                        context: context,
                         title: 'FIBER #${result.fiberIndexInTube}',
                         colorName: result.fiberColor.name,
                         color: result.fiberColor.color,
@@ -217,28 +217,22 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.palette_rounded,
+                      const Icon(Icons.palette_rounded,
                           size: 18, color: AppTheme.primary),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'TIA-598 Standard 12-Color Sequence',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
+                        style: context.text.titleMedium,
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Memory Mnemonic: "BL-OR-GR-BR-SL-WH-RD-BK-YE-VI-RO-AQ"',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                      color: isDark
-                          ? AppTheme.textSecondaryDark
-                          : AppTheme.textMuted,
-                    ),
+                    style: context.text.labelSmall!
+                        .copyWith(fontStyle: FontStyle.italic),
                   ),
                   const SizedBox(height: 14),
 
@@ -296,11 +290,8 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                                 child: Center(
                                   child: Text(
                                     '${item.position}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: item.textColor,
-                                    ),
+                                    style: context.text.labelSmall!
+                                        .copyWith(color: item.textColor),
                                   ),
                                 ),
                               ),
@@ -312,13 +303,12 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
                                   children: [
                                     Text(
                                       '#${item.position} ${item.name}',
-                                      style: TextStyle(
-                                        fontSize: 12,
+                                      style: context.text.labelMedium!.copyWith(
                                         fontWeight: isCurrentFiber
                                             ? FontWeight.w800
                                             : FontWeight.w600,
                                         color: isCurrentFiber
-                                            ? AppTheme.primary
+                                            ? AppTheme.brandInkOf(context)
                                             : null,
                                       ),
                                     ),
@@ -341,6 +331,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
   }
 
   Widget _buildResultBlock({
+    required BuildContext context,
     required String title,
     required String colorName,
     required Color color,
@@ -359,14 +350,7 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
       ),
       child: Column(
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
-          ),
+          Text(title, style: context.text.labelSmall),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -388,33 +372,21 @@ class _FiberColorCodeToolState extends State<FiberColorCodeTool> {
             ),
             child: Text(
               colorName,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: textColor,
-              ),
+              style: context.text.titleSmall!.copyWith(color: textColor),
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            extraInfo,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
-            ),
-          ),
+          Text(extraInfo, style: context.text.labelSmall),
         ],
       ),
     );
   }
 
-  Widget _buildQuickChip(String label, VoidCallback onTap) {
+  Widget _buildQuickChip(
+      BuildContext context, String label, VoidCallback onTap) {
     return ActionChip(
-      label: Text(label,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+      label: Text(label, style: context.text.labelMedium),
       onPressed: onTap,
-      visualDensity: VisualDensity.compact,
       padding: const EdgeInsets.symmetric(horizontal: 4),
     );
   }

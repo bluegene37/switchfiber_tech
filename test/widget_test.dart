@@ -26,8 +26,6 @@ void main() {
           body: Column(
             children: [
               StatusBadge(status: JobStatus.scheduled),
-              StatusBadge(status: JobStatus.inProgress),
-              StatusBadge(status: JobStatus.completed),
               StatusBadge(status: JobStatus.activated),
               // An unrecognised backend status shows verbatim rather than
               // being mislabelled: a technician seeing 'Cancelled' is better
@@ -48,8 +46,6 @@ void main() {
 
     // One from JobStatus.scheduled, one from the empty-rawStatus fallback.
     expect(find.text('Scheduled'), findsNWidgets(2));
-    expect(find.text('In Progress'), findsOneWidget);
-    expect(find.text('Completed'), findsOneWidget);
     expect(find.text('Activated'), findsOneWidget);
     expect(find.text('Failed'), findsOneWidget);
     // Twice: the plain badge, and the one that also carries the Failed chip.
@@ -109,7 +105,11 @@ void main() {
     expect(find.text(sampleJob.customerName), findsOneWidget);
     expect(find.text('Workflow Stage'), findsOneWidget);
     expect(find.text('Subscriber & Location'), findsOneWidget);
-    expect(find.text('Plant & Hardware Allocation'), findsOneWidget);
+
+    final plantSection = find.text('Plant & Hardware Allocation');
+    await tester.scrollUntilVisible(plantSection, 300,
+        scrollable: find.byType(Scrollable).first);
+    expect(plantSection, findsOneWidget);
 
     // The report button sits in the last section of a ListView, which only
     // mounts children near the viewport - so reach it the way a technician
@@ -129,7 +129,13 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    // Not pumpAndSettle: the scroll above mounted the RADIUS connection card,
+    // whose CupertinoActivityIndicator spins for as long as its live lookup is
+    // in flight. An indeterminate indicator schedules a frame forever, so
+    // settling is not something this screen can ever do once that card is on
+    // screen - pump the theme transition out by hand instead.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
     // The list keeps the offset it was scrolled to above, so come back to the
     // top before asserting on the header.
