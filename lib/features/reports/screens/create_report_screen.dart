@@ -38,6 +38,8 @@ class CreateReportScreen extends StatefulWidget {
 
 class _CreateReportScreenState extends State<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _hardwareSectionKey = GlobalKey();
+  final _signOffSectionKey = GlobalKey();
   final _signatureController = SignatureController();
   late final TextEditingController _serialController;
   late final TextEditingController _remarksController;
@@ -97,10 +99,88 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+    final rep = widget.reportSignals;
+
+    // Check 1: Modem / Router Serial Number
+    if (_serialController.text.trim().isEmpty) {
+      if (_hardwareSectionKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _hardwareSectionKey.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      _formKey.currentState?.validate();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Modem / Router Serial Number is required.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check 2: Form validation
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Please correct the highlighted form errors.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check 3: Customer Signature
+    if (_signatureController.isEmpty && !rep.hasSignature.value) {
+      if (_signOffSectionKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _signOffSectionKey.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Customer signature is required before saving report.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     FocusScope.of(context).unfocus();
 
-    final rep = widget.reportSignals;
     if (!_signatureController.isEmpty) {
       rep.setSignature(await _signatureController.toDataUrl());
       if (!mounted) return;
@@ -181,7 +261,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               const SizedBox(height: 16),
 
               // 3. Hardware & Port Details
-              _buildHardwareSection(rep),
+              KeyedSubtree(
+                key: _hardwareSectionKey,
+                child: _buildHardwareSection(rep),
+              ),
               const SizedBox(height: 16),
 
               // 4. Photo Proof Attachments
@@ -215,19 +298,22 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               const SizedBox(height: 16),
 
               // 6. Customer Electronic Sign-Off
-              _buildCustomerSignOffSection(rep),
+              KeyedSubtree(
+                key: _signOffSectionKey,
+                child: _buildCustomerSignOffSection(rep),
+              ),
               const SizedBox(height: 24),
 
               // Submit Button
               SignalBuilder(
                 builder: (context) {
                   final submitting = rep.isSubmitting.value;
-                  final valid = rep.isFormValid.value;
 
                   return ElevatedButton(
-                    onPressed: submitting || !valid ? null : _handleSubmit,
+                    onPressed: submitting ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size.fromHeight(52),
                     ),
                     child: submitting
                         ? const SizedBox(

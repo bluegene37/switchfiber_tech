@@ -7,7 +7,7 @@ import '../../jobs/repositories/job_repository.dart';
 class ReportSignals {
   final selectedJobOrder = signal<JobOrderDto?>(null);
   final opticalPower = signal<double>(-19.5);
-  final routerSerial = signal<String>('HWTC8829104');
+  final routerSerial = signal<String>('');
   final routerModel = signal<String>('Huawei 5v5');
   final napPort = signal<String>('Port 1');
   final nap = signal<String?>(null);
@@ -58,9 +58,7 @@ class ReportSignals {
   void setJobOrder(JobOrderDto job) {
     selectedJobOrder.value = job;
     opticalPower.value = job.opticalPower ?? -19.5;
-    if (job.modemRouterSN != null && job.modemRouterSN!.isNotEmpty) {
-      routerSerial.value = job.modemRouterSN!;
-    }
+    routerSerial.value = job.modemRouterSN ?? '';
     if (job.routerModel != null && job.routerModel!.isNotEmpty) {
       routerModel.value = job.routerModel!;
     }
