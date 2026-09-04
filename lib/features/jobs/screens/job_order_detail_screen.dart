@@ -178,8 +178,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                         job.hasCompletedReport
                             ? 'Mark as Completed'
                             : 'Fill Completion Report',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 16),
+                        style: context.text.titleSmall,
                       ),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
@@ -408,9 +407,7 @@ class JobOrderDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark
-            ? (isReschedule
-                ? const Color(0xFF3B2506)
-                : const Color(0xFF3B1215))
+            ? (isReschedule ? const Color(0xFF3B2506) : const Color(0xFF3B1215))
             : (isReschedule ? AppTheme.warningSubtle : AppTheme.dangerSubtle),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -895,9 +892,8 @@ class JobOrderDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: borderColor, width: 0.5),
-                color: isDark
-                    ? const Color(0xFF14171F)
-                    : const Color(0xFFF8FAFC),
+                color:
+                    isDark ? const Color(0xFF14171F) : const Color(0xFFF8FAFC),
               ),
               child: Column(
                 children: [
@@ -915,15 +911,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(Icons.storage_rounded,
-                                        size: 16, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'LCP CABINET',
-                                      style: context.text.bodySmall!.copyWith(
-                                        fontSize: 11,
-                                        letterSpacing: 0.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: muted,
+                                    Flexible(
+                                      child: Text(
+                                        'LCP CABINET',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -956,15 +956,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(Icons.hub_rounded,
-                                        size: 16, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'NAP BOX',
-                                      style: context.text.bodySmall!.copyWith(
-                                        fontSize: 11,
-                                        letterSpacing: 0.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: muted,
+                                    Flexible(
+                                      child: Text(
+                                        'NAP BOX',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1003,15 +1007,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(Icons.electrical_services_rounded,
-                                        size: 16, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'PORT',
-                                      style: context.text.bodySmall!.copyWith(
-                                        fontSize: 11,
-                                        letterSpacing: 0.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: muted,
+                                    Flexible(
+                                      child: Text(
+                                        'PORT',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1044,15 +1052,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(Icons.devices_rounded,
-                                        size: 16, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'ONT / MODEM',
-                                      style: context.text.bodySmall!.copyWith(
-                                        fontSize: 11,
-                                        letterSpacing: 0.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: muted,
+                                    Flexible(
+                                      child: Text(
+                                        'ONT / MODEM',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1073,7 +1085,6 @@ class JobOrderDetailScreen extends StatelessWidget {
                                     'SN: ${job.modemRouterSN!}',
                                     style: context.text.bodySmall!.copyWith(
                                       fontFamily: 'JetBrains Mono',
-                                      fontSize: 12,
                                       color: muted,
                                     ),
                                     maxLines: 1,
@@ -1287,9 +1298,7 @@ class JobOrderDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(icon,
-              size: 20,
-              color: AppTheme.secondaryInkOf(context)),
+          Icon(icon, size: 20, color: AppTheme.secondaryInkOf(context)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

@@ -327,7 +327,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                         order.concern.toLowerCase().contains('pullout')
                             ? CupertinoIcons.arrow_right_arrow_left
                             : CupertinoIcons.wrench_fill,
-                        size: 16,
+                        size: 20,
                         color: AppTheme.primary,
                       ),
                       const SizedBox(width: 6),
@@ -518,7 +518,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                                 Row(
                                   children: [
                                     Icon(Icons.storage_rounded,
-                                        size: 14, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
                                     Text(
                                       'LCP CABINET',
@@ -553,7 +553,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                                 Row(
                                   children: [
                                     Icon(Icons.alt_route_rounded,
-                                        size: 14, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
                                     Text(
                                       'NAP BOX',
@@ -595,7 +595,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                                 Row(
                                   children: [
                                     Icon(Icons.settings_ethernet_rounded,
-                                        size: 14, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
                                     Text(
                                       'NAP PORT',
@@ -630,7 +630,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                                 Row(
                                   children: [
                                     Icon(Icons.router_rounded,
-                                        size: 14, color: muted),
+                                        size: 20, color: muted),
                                     const SizedBox(width: 4),
                                     Text(
                                       'ONT / MODEM',

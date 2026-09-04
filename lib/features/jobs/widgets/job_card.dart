@@ -64,7 +64,8 @@ class JobCard extends StatelessWidget {
             // Upper Card Content (Tappable for details)
             InkWell(
               onTap: onTap,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
@@ -110,16 +111,16 @@ class JobCard extends StatelessWidget {
                                     children: [
                                       Icon(
                                         CupertinoIcons.location_circle,
-                                        size: 13,
+                                        size: 20,
                                         color: AppTheme.secondaryInkOf(context),
                                       ),
                                       const SizedBox(width: 3),
                                       Text(
                                         '$distanceStr away',
                                         style: context.text.bodySmall?.copyWith(
-                                          fontSize: 12,
                                           fontWeight: FontWeight.w600,
-                                          color: AppTheme.secondaryInkOf(context),
+                                          color:
+                                              AppTheme.secondaryInkOf(context),
                                         ),
                                       ),
                                     ],
@@ -149,8 +150,9 @@ class JobCard extends StatelessWidget {
                     ),
 
                     // Plan & NAP Badges Row
-                    if (job.planName?.isNotEmpty == true || napText != null) ...[
-                       const SizedBox(height: 6),
+                    if (job.planName?.isNotEmpty == true ||
+                        napText != null) ...[
+                      const SizedBox(height: 6),
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
@@ -185,12 +187,14 @@ class JobCard extends StatelessWidget {
                                   horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0369A1).withValues(alpha: 0.18)
+                                    ? const Color(0xFF0369A1)
+                                        .withValues(alpha: 0.18)
                                     : const Color(0xFFE0F2FE),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
                                   color: isDark
-                                      ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                      ? const Color(0xFF0284C7)
+                                          .withValues(alpha: 0.35)
                                       : const Color(0xFFBAE6FD),
                                   width: 0.5,
                                 ),
@@ -200,7 +204,7 @@ class JobCard extends StatelessWidget {
                                 children: [
                                   const Icon(
                                     Icons.hub_outlined,
-                                    size: 14,
+                                    size: 20,
                                     color: Color(0xFF0284C7),
                                   ),
                                   const SizedBox(width: 4),
@@ -226,7 +230,7 @@ class JobCard extends StatelessWidget {
                       children: [
                         const Icon(
                           CupertinoIcons.location_solid,
-                          size: 16,
+                          size: 20,
                           color: AppTheme.primary,
                         ),
                         const SizedBox(width: 6),
@@ -300,7 +304,8 @@ class JobCard extends StatelessWidget {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(minHeight: 48),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 2),
                         child: Center(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
@@ -352,7 +357,8 @@ class JobCard extends StatelessWidget {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(minHeight: 48),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 2),
                         child: Center(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,

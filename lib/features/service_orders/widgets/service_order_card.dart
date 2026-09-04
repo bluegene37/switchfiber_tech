@@ -112,10 +112,13 @@ class ServiceOrderCard extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      order.concern.toLowerCase().contains('pullout')
-                                          ? CupertinoIcons.arrow_right_arrow_left
+                                      order.concern
+                                              .toLowerCase()
+                                              .contains('pullout')
+                                          ? CupertinoIcons
+                                              .arrow_right_arrow_left
                                           : CupertinoIcons.wrench_fill,
-                                      size: 14,
+                                      size: 20,
                                       color: AppTheme.primary,
                                     ),
                                     const SizedBox(width: 4),
@@ -124,7 +127,8 @@ class ServiceOrderCard extends StatelessWidget {
                                         order.concern,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: context.text.labelSmall!.copyWith(
+                                        style:
+                                            context.text.labelSmall!.copyWith(
                                           fontWeight: FontWeight.w600,
                                           color: AppTheme.brandInkOf(context),
                                         ),
@@ -139,7 +143,7 @@ class ServiceOrderCard extends StatelessWidget {
                                   children: [
                                     Icon(
                                       CupertinoIcons.location_solid,
-                                      size: 14,
+                                      size: 20,
                                       color: AppTheme.secondaryInkOf(context),
                                     ),
                                     const SizedBox(width: 3),
@@ -217,7 +221,7 @@ class ServiceOrderCard extends StatelessWidget {
                       children: [
                         const Icon(
                           CupertinoIcons.location_solid,
-                          size: 16,
+                          size: 20,
                           color: AppTheme.primary,
                         ),
                         const SizedBox(width: 6),
