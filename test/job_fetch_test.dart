@@ -12,7 +12,9 @@ import 'package:swithfiber_tech/features/jobs/signals/jobs_signals.dart';
 class FakeJobOrdersApi implements JobOrdersApi {
   final Map<String, List<Map<String, dynamic>>> byStatus;
   final List<String> requestedStatuses = [];
+  final List<(String, String?)> requestedAssigned = [];
   final List<(int, Map<String, dynamic>)> updates = [];
+  bool filterByAssignedEmail = false;
   Object? failWith;
 
   /// Ids the server answers 404 for.
@@ -29,6 +31,26 @@ class FakeJobOrdersApi implements JobOrdersApi {
     requestedStatuses.add(status);
     if (failWith != null) throw failWith!;
     return byStatus[status] ?? const [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchByStatusAssigned({
+    required String status,
+    String? assignedEmail,
+  }) async {
+    requestedStatuses.add(status);
+    requestedAssigned.add((status, assignedEmail));
+    if (failWith != null) throw failWith!;
+    final list = byStatus[status] ?? const [];
+    if (filterByAssignedEmail &&
+        assignedEmail != null &&
+        assignedEmail.isNotEmpty) {
+      return list.where((item) {
+        final email = item['assignedEmail']?.toString() ?? '';
+        return email.toLowerCase() == assignedEmail.toLowerCase();
+      }).toList();
+    }
+    return list;
   }
 
   @override
@@ -117,6 +139,47 @@ void main() {
   test('pulls through the status endpoint, never the whole table', () async {
     await repository.fetchRemoteJobs(technicianEmail: 'me@switchfiber.ph');
     expect(api.requestedStatuses, ['Scheduled', 'Activated', 'Completed']);
+  });
+
+  test('pulls through status-assigned passing assigned technician email',
+      () async {
+    await repository.fetchRemoteJobs(technicianEmail: 'me@switchfiber.ph');
+    expect(api.requestedAssigned, [
+      ('Scheduled', 'me@switchfiber.ph'),
+      ('Activated', 'me@switchfiber.ph'),
+      ('Completed', 'me@switchfiber.ph'),
+    ]);
+  });
+
+  test('omits assignedEmail when technician email is not set or empty',
+      () async {
+    await repository.fetchRemoteJobs(technicianEmail: null);
+    expect(api.requestedAssigned, [
+      ('Scheduled', null),
+      ('Activated', null),
+      ('Completed', null),
+    ]);
+
+    api.requestedAssigned.clear();
+    await repository.fetchRemoteJobs(technicianEmail: '  ');
+    expect(api.requestedAssigned, [
+      ('Scheduled', null),
+      ('Activated', null),
+      ('Completed', null),
+    ]);
+  });
+
+  test('server filtering by assigned email caches only technician assigned jobs',
+      () async {
+    api.filterByAssignedEmail = true;
+    signals.setTechnicianEmail('me@switchfiber.ph');
+    await signals.fetchRemote();
+    await settle();
+
+    // 1 (Scheduled), 10 (Activated), 20 (Completed) are assigned to me@switchfiber.ph
+    expect(signals.allJobs.value.map((j) => j.id).toSet(), {1, 10, 20});
+    expect(signals.scheduledCount.value, 1);
+    expect(signals.historyJobs.value.map((j) => j.id).toSet(), {10, 20});
   });
 
   test('caches every scheduled, activated, and completed job from status endpoints', () async {

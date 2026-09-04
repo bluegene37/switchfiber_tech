@@ -127,3 +127,46 @@ class NapDto {
           'createdDate': createdDate!.toIso8601String(),
       };
 }
+
+/// Model for Port items from `/api/Ports`.
+class PortDto {
+  final int id;
+  final String name; // e.g. "PORT 001", "PORT 002"
+  final String description; // e.g. "PORT 001 Description"
+  final int? createdByUserId;
+  final DateTime? createdDate;
+
+  const PortDto({
+    required this.id,
+    required this.name,
+    this.description = '',
+    this.createdByUserId,
+    this.createdDate,
+  });
+
+  factory PortDto.fromJson(Map<String, dynamic> json) {
+    return PortDto(
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      name: json['name']?.toString().trim() ?? '',
+      description: json['description']?.toString().trim() ?? '',
+      createdByUserId: json['createdByUserId'] is int
+          ? json['createdByUserId'] as int
+          : int.tryParse(json['createdByUserId']?.toString() ?? ''),
+      createdDate: json['createdDate'] != null
+          ? DateTime.tryParse(json['createdDate'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        if (createdByUserId != null) 'createdByUserId': createdByUserId,
+        if (createdDate != null)
+          'createdDate': createdDate!.toIso8601String(),
+      };
+}
+

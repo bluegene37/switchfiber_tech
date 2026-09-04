@@ -19,6 +19,13 @@ class _QuietApi implements JobOrdersApi {
   Future<List<Map<String, dynamic>>> fetchByStatus(String status) async => [];
 
   @override
+  Future<List<Map<String, dynamic>>> fetchByStatusAssigned({
+    required String status,
+    String? assignedEmail,
+  }) async =>
+      [];
+
+  @override
   Future<List<Map<String, dynamic>>> fetchByStatusDate({
     String? status,
     DateTime? dateFrom,

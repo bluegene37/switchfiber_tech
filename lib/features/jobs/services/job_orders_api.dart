@@ -8,6 +8,14 @@ abstract class JobOrdersApi {
   /// The server matches the status case-insensitively.
   Future<List<Map<String, dynamic>>> fetchByStatus(String status);
 
+  /// `GET /api/JobOrders/status-assigned`: filter by status and optional
+  /// assigned technician email.
+  Future<List<Map<String, dynamic>>> fetchByStatusAssigned({
+    required String status,
+    String? assignedEmail,
+  }) =>
+      fetchByStatus(status);
+
   /// `GET /api/JobOrders/status-date`: filter by status, date range, or both.
   /// [dateFrom] and [dateTo] filter on `dateInstalled` (format yyyy-MM-dd).
   Future<List<Map<String, dynamic>>> fetchByStatusDate({
@@ -36,6 +44,28 @@ class DioJobOrdersApi implements JobOrdersApi {
   Future<List<Map<String, dynamic>>> fetchByStatus(String status) async {
     final cleanStatus = Uri.encodeComponent(status.trim());
     final response = await _api.get('/JobOrders/status/$cleanStatus');
+    final data = response.data;
+    if (data is! List) return const [];
+    return [
+      for (final item in data)
+        if (item is Map<String, dynamic>) item,
+    ];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchByStatusAssigned({
+    required String status,
+    String? assignedEmail,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'status': status.trim(),
+      if (assignedEmail != null && assignedEmail.trim().isNotEmpty)
+        'assignedEmail': assignedEmail.trim(),
+    };
+    final response = await _api.get(
+      '/JobOrders/status-assigned',
+      queryParameters: queryParams,
+    );
     final data = response.data;
     if (data is! List) return const [];
     return [

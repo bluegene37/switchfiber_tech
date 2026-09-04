@@ -49,6 +49,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   late final TextEditingController _dbmController;
   List<RouterDto> _availableRouters = CatalogService.fallbackRouters;
   List<NapDto> _availableNaps = CatalogService.fallbackNaps;
+  List<PortDto> _availablePorts = CatalogService.fallbackPorts;
 
   @override
   void initState() {
@@ -73,11 +74,13 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   Future<void> _loadCatalog() async {
     final routersFuture = CatalogService.instance.getRouters();
     final napsFuture = CatalogService.instance.getNaps();
-    final results = await Future.wait([routersFuture, napsFuture]);
+    final portsFuture = CatalogService.instance.getPorts();
+    final results = await Future.wait([routersFuture, napsFuture, portsFuture]);
     if (!mounted) return;
     setState(() {
       _availableRouters = results[0] as List<RouterDto>;
       _availableNaps = results[1] as List<NapDto>;
+      _availablePorts = results[2] as List<PortDto>;
     });
   }
 
@@ -597,27 +600,30 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 Expanded(
                   child: SignalBuilder(
                     builder: (context) {
-                      final ports = [
-                        'Port 1',
-                        'Port 2',
-                        'Port 3',
-                        'Port 4',
-                        'Port 5',
-                        'Port 6',
-                        'Port 7',
-                        'Port 8',
-                      ];
+                      final portNames =
+                          _availablePorts.map((p) => p.name).toList();
+                      final currentVal = rep.napPort.value;
+                      final selectedPort = portNames.contains(currentVal)
+                          ? currentVal
+                          : portNames.firstWhere(
+                              (p) =>
+                                  p.toLowerCase().replaceAll(' ', '') ==
+                                  currentVal
+                                      .toLowerCase()
+                                      .replaceAll(' ', ''),
+                              orElse: () => portNames.isNotEmpty
+                                  ? portNames.first
+                                  : currentVal,
+                            );
                       return DropdownButtonFormField<String>(
                         isExpanded: true,
-                        initialValue: ports.contains(rep.napPort.value)
-                            ? rep.napPort.value
-                            : ports.first,
+                        initialValue: selectedPort,
                         decoration: const InputDecoration(
                           labelText: 'NAP Port',
                           contentPadding: EdgeInsets.symmetric(
                               horizontal: 12, vertical: 10),
                         ),
-                        items: ports.map((p) {
+                        items: portNames.map((p) {
                           return DropdownMenuItem(
                               value: p,
                               child: Text(p, style: context.text.bodySmall));

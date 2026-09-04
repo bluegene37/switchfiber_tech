@@ -27,17 +27,11 @@ class JobRepository {
   /// Pull the job orders the technician can act on or look back at, and
   /// bring the cache in line with them.
   ///
-  /// Uses `GET /JobOrders/status/{status}` rather than the unfiltered
-  /// endpoint: the whole table is thousands of rows and every one of them is
-  /// either Scheduled or Activated, so two status calls cover it.
-  ///
-  /// * Every **Scheduled** job is cached: the queue is not scoped to a
-  ///   technician on the server.
-  /// * **Activated** jobs are the technician's history, so only the rows
-  ///   assigned to [technicianEmail] are kept. Thousands of other people's
-  ///   finished jobs would otherwise sit in SQLite for nothing. When the
-  ///   email is not known yet, none are kept; the shell refetches as soon as
-  ///   the profile arrives.
+  /// Uses `GET /JobOrders/status-assigned` with `assignedEmail` when
+  /// [technicianEmail] is provided so the server returns only the assigned
+  /// jobs across `Scheduled`, `Activated`, and `Completed`.
+  /// When [technicianEmail] is null or empty, `assignedEmail` is omitted
+  /// to fetch all jobs in those statuses.
   ///
   /// After a successful pull, synced rows the server no longer returned (a job
   /// cancelled or reassigned by the office) are dropped. Rows with local edits
@@ -49,9 +43,21 @@ class JobRepository {
     await _dao.deleteSampleJobs();
 
     try {
-      final scheduled = await _api.fetchByStatus(JobStatus.scheduled.wireValue);
-      final activated = await _api.fetchByStatus(JobStatus.activated.wireValue);
-      final completed = await _api.fetchByStatus(JobStatus.completed.wireValue);
+      final email = technicianEmail?.trim();
+      final assignedEmail = (email != null && email.isNotEmpty) ? email : null;
+
+      final scheduled = await _api.fetchByStatusAssigned(
+        status: JobStatus.scheduled.wireValue,
+        assignedEmail: assignedEmail,
+      );
+      final activated = await _api.fetchByStatusAssigned(
+        status: JobStatus.activated.wireValue,
+        assignedEmail: assignedEmail,
+      );
+      final completed = await _api.fetchByStatusAssigned(
+        status: JobStatus.completed.wireValue,
+        assignedEmail: assignedEmail,
+      );
 
       final pending = await _dao.getUnsyncedIds();
       final companions = <JobOrdersCompanion>[];

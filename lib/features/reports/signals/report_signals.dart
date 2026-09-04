@@ -9,7 +9,7 @@ class ReportSignals {
   final opticalPower = signal<double>(-19.5);
   final routerSerial = signal<String>('');
   final routerModel = signal<String>('Huawei 5v5');
-  final napPort = signal<String>('Port 1');
+  final napPort = signal<String>('PORT 001');
   final nap = signal<String?>(null);
   final remarks = signal<String>(
       'Fiber drop cable installed. Power verified. Client speedtest 100Mbps symmetrical.');
@@ -67,7 +67,7 @@ class ReportSignals {
     if (job.portId != null && job.portId!.isNotEmpty) {
       napPort.value = job.portId!;
     } else {
-      napPort.value = 'Port 1';
+      napPort.value = 'PORT 001';
     }
     if (job.nap != null && job.nap!.isNotEmpty) {
       nap.value = job.nap;
@@ -138,7 +138,7 @@ class ReportSignals {
     opticalPower.value = -19.5;
     routerSerial.value = '';
     routerModel.value = 'Huawei 5v5';
-    napPort.value = 'Port 1';
+    napPort.value = 'PORT 001';
     remarks.value = '';
     nap.value = null;
     signature.value = null;

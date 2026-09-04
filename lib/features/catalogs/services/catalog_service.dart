@@ -136,4 +136,45 @@ class CatalogService {
     } catch (_) {}
     return _cachedNaps ?? fallbackNaps;
   }
+
+  List<PortDto>? _cachedPorts;
+
+  /// Bundled fallback Ports matching the live Switch Fiber database (PORT 001..PORT 016)
+  static const List<PortDto> fallbackPorts = [
+    PortDto(id: 1, name: 'PORT 001', description: 'PORT 001 Description'),
+    PortDto(id: 2, name: 'PORT 002', description: 'PORT 002 Description'),
+    PortDto(id: 3, name: 'PORT 003', description: 'PORT 003 Description'),
+    PortDto(id: 4, name: 'PORT 004', description: 'PORT 004 Description'),
+    PortDto(id: 5, name: 'PORT 005', description: 'PORT 005 Description'),
+    PortDto(id: 6, name: 'PORT 006', description: 'PORT 006 Description'),
+    PortDto(id: 7, name: 'PORT 007', description: 'PORT 007 Description'),
+    PortDto(id: 8, name: 'PORT 008', description: 'PORT 008 Description'),
+    PortDto(id: 9, name: 'PORT 009', description: 'PORT 009 Description'),
+    PortDto(id: 10, name: 'PORT 010', description: 'PORT 010 Description'),
+    PortDto(id: 11, name: 'PORT 011', description: 'PORT 011 Description'),
+    PortDto(id: 12, name: 'PORT 012', description: 'PORT 012 Description'),
+    PortDto(id: 13, name: 'PORT 013', description: 'PORT 013 Description'),
+    PortDto(id: 14, name: 'PORT 014', description: 'PORT 014 Description'),
+    PortDto(id: 15, name: 'PORT 015', description: 'PORT 015 Description'),
+    PortDto(id: 16, name: 'PORT 016', description: 'PORT 016 Description'),
+  ];
+
+  /// Fetch active Ports from `/api/Ports` with cache & fallback
+  Future<List<PortDto>> getPorts({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedPorts != null) {
+      return _cachedPorts!;
+    }
+    try {
+      final response = await _api.get('/Ports');
+      final data = response.data;
+      if (data is List) {
+        _cachedPorts = [
+          for (final item in data)
+            if (item is Map<String, dynamic>) PortDto.fromJson(item),
+        ];
+        return _cachedPorts!;
+      }
+    } catch (_) {}
+    return _cachedPorts ?? fallbackPorts;
+  }
 }
