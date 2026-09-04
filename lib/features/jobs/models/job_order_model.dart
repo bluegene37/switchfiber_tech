@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/photo_storage_service.dart';
 
 /// The two stages a job order moves through in the field.
 ///
@@ -391,14 +392,22 @@ class JobOrderDto {
       portId: row.portId,
       vlanId: row.vlanId,
       dateInstalled: row.dateInstalled,
-      boxReadingImage: row.boxReadingImage,
-      routerReadingImage: row.routerReadingImage,
-      clientSignature: row.clientSignature,
-      setupImage: row.setupImage,
-      speedtestImage: row.speedtestImage,
-      portLabelImage: row.portLabelImage,
-      signedContractImage: row.signedContractImage,
-      houseFront: row.houseFront,
+      boxReadingImage: PhotoStorageService.instance
+          .resolveToDataUrlSync(row.boxReadingImage),
+      routerReadingImage: PhotoStorageService.instance
+          .resolveToDataUrlSync(row.routerReadingImage),
+      clientSignature: PhotoStorageService.instance
+          .resolveToDataUrlSync(row.clientSignature),
+      setupImage:
+          PhotoStorageService.instance.resolveToDataUrlSync(row.setupImage),
+      speedtestImage: PhotoStorageService.instance
+          .resolveToDataUrlSync(row.speedtestImage),
+      portLabelImage: PhotoStorageService.instance
+          .resolveToDataUrlSync(row.portLabelImage),
+      signedContractImage: PhotoStorageService.instance
+          .resolveToDataUrlSync(row.signedContractImage),
+      houseFront:
+          PhotoStorageService.instance.resolveToDataUrlSync(row.houseFront),
       assignedEmail: row.assignedEmail,
       modifiedDate: row.modifiedDate,
       isSynced: row.isSynced,
@@ -515,5 +524,28 @@ class JobOrderDto {
         'dateInstalled': dateInstalled!.toIso8601String(),
       if (opticalPower != null) 'opticalPower': opticalPower,
     };
+  }
+
+  /// Converts fields to API JSON map, resolving local photo and signature file
+  /// paths back into Base64 data URLs as expected by `PUT /api/JobOrders/{id}`.
+  Future<Map<String, dynamic>> toApiJsonAsync() async {
+    final map = toApiJson();
+    final storage = PhotoStorageService.instance;
+    const keys = [
+      'boxReadingImage',
+      'routerReadingImage',
+      'clientSignature',
+      'setupImage',
+      'speedtestImage',
+      'portLabelImage',
+      'signedContractImage',
+      'houseFront',
+    ];
+    for (final key in keys) {
+      if (map.containsKey(key) && map[key] is String) {
+        map[key] = await storage.resolveToDataUrl(map[key] as String);
+      }
+    }
+    return map;
   }
 }

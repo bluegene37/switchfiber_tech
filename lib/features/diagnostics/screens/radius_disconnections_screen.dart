@@ -69,10 +69,14 @@ class _RadiusDisconnectionsScreenState
       // Optimistic in-memory update
       final idx = _allUsers.indexWhere((u) => u.name == name);
       if (idx != -1) {
+        final previousGroup =
+            user.group.isNotEmpty && user.group != 'Disconnected'
+                ? user.group
+                : 'SwitchLite';
         _allUsers[idx] = RadiusUserDto(
           id: user.id,
           name: user.name,
-          group: desired ? 'SwitchLite' : 'Disconnected',
+          group: desired ? previousGroup : 'Disconnected',
           disabled: !desired,
           password: user.password,
           sharedUsers: user.sharedUsers,

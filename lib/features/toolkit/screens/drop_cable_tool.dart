@@ -79,18 +79,12 @@ class _DropCableToolState extends State<DropCableTool> {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF2B3035), const Color(0xFF25292E)]
-                    : [Colors.white, AppTheme.primarySubtleBg],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
+              color: isDark ? AppTheme.darkCard : Colors.white,
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color:
-                    isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
-                width: 1.5,
+                    isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                width: 0.5,
               ),
             ),
             child: Column(

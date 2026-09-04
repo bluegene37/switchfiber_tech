@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/services/image_capture_service.dart';
+import '../../../core/services/photo_storage_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
@@ -38,12 +41,15 @@ class CreateReportScreen extends StatefulWidget {
 
 class _CreateReportScreenState extends State<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _hardwareSectionKey = GlobalKey();
+  final _signOffSectionKey = GlobalKey();
   final _signatureController = SignatureController();
   late final TextEditingController _serialController;
   late final TextEditingController _remarksController;
   late final TextEditingController _dbmController;
   List<RouterDto> _availableRouters = CatalogService.fallbackRouters;
   List<NapDto> _availableNaps = CatalogService.fallbackNaps;
+  List<PortDto> _availablePorts = CatalogService.fallbackPorts;
 
   @override
   void initState() {
@@ -68,16 +74,21 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   Future<void> _loadCatalog() async {
     final routersFuture = CatalogService.instance.getRouters();
     final napsFuture = CatalogService.instance.getNaps();
-    final results = await Future.wait([routersFuture, napsFuture]);
+    final portsFuture = CatalogService.instance.getPorts();
+    final results = await Future.wait([routersFuture, napsFuture, portsFuture]);
     if (!mounted) return;
     setState(() {
       _availableRouters = results[0] as List<RouterDto>;
       _availableNaps = results[1] as List<NapDto>;
+      _availablePorts = results[2] as List<PortDto>;
     });
   }
 
+  Timer? _signatureDebounce;
+
   @override
   void dispose() {
+    _signatureDebounce?.cancel();
     _signatureController.dispose();
     _serialController.dispose();
     _remarksController.dispose();
@@ -88,8 +99,15 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   Future<String?> _pick(ImageSource source) =>
       (widget.pickImage ?? ImageCaptureService.instance.pickAsDataUrl)(source);
 
-  /// Export the pad after every stroke so the signature is ready to submit
-  /// the moment the subscriber lifts their finger.
+  /// Debounced export after a stroke so fast consecutive strokes don't
+  /// repeatedly encode PNGs on the UI thread, while ensuring signature is ready.
+  void _onStrokeEnd() {
+    _signatureDebounce?.cancel();
+    _signatureDebounce = Timer(const Duration(milliseconds: 300), () {
+      _captureSignature();
+    });
+  }
+
   Future<void> _captureSignature() async {
     final dataUrl = await _signatureController.toDataUrl();
     if (!mounted) return;
@@ -97,10 +115,89 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
-    FocusScope.of(context).unfocus();
-
     final rep = widget.reportSignals;
+
+    // Check 1: Modem / Router Serial Number
+    if (_serialController.text.trim().isEmpty) {
+      if (_hardwareSectionKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _hardwareSectionKey.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      _formKey.currentState?.validate();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Modem / Router Serial Number is required.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check 2: Form validation
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Please correct the highlighted form errors.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check 3: Customer Signature
+    if (_signatureController.isEmpty && !rep.hasSignature.value) {
+      if (_signOffSectionKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _signOffSectionKey.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Customer signature is required before saving report.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    _signatureDebounce?.cancel();
+
     if (!_signatureController.isEmpty) {
       rep.setSignature(await _signatureController.toDataUrl());
       if (!mounted) return;
@@ -181,7 +278,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               const SizedBox(height: 16),
 
               // 3. Hardware & Port Details
-              _buildHardwareSection(rep),
+              KeyedSubtree(
+                key: _hardwareSectionKey,
+                child: _buildHardwareSection(rep),
+              ),
               const SizedBox(height: 16),
 
               // 4. Photo Proof Attachments
@@ -215,19 +315,22 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               const SizedBox(height: 16),
 
               // 6. Customer Electronic Sign-Off
-              _buildCustomerSignOffSection(rep),
+              KeyedSubtree(
+                key: _signOffSectionKey,
+                child: _buildCustomerSignOffSection(rep),
+              ),
               const SizedBox(height: 24),
 
               // Submit Button
               SignalBuilder(
                 builder: (context) {
                   final submitting = rep.isSubmitting.value;
-                  final valid = rep.isFormValid.value;
 
                   return ElevatedButton(
-                    onPressed: submitting || !valid ? null : _handleSubmit,
+                    onPressed: submitting ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size.fromHeight(52),
                     ),
                     child: submitting
                         ? const SizedBox(
@@ -497,27 +600,30 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 Expanded(
                   child: SignalBuilder(
                     builder: (context) {
-                      final ports = [
-                        'Port 1',
-                        'Port 2',
-                        'Port 3',
-                        'Port 4',
-                        'Port 5',
-                        'Port 6',
-                        'Port 7',
-                        'Port 8',
-                      ];
+                      final portNames =
+                          _availablePorts.map((p) => p.name).toList();
+                      final currentVal = rep.napPort.value;
+                      final selectedPort = portNames.contains(currentVal)
+                          ? currentVal
+                          : portNames.firstWhere(
+                              (p) =>
+                                  p.toLowerCase().replaceAll(' ', '') ==
+                                  currentVal
+                                      .toLowerCase()
+                                      .replaceAll(' ', ''),
+                              orElse: () => portNames.isNotEmpty
+                                  ? portNames.first
+                                  : currentVal,
+                            );
                       return DropdownButtonFormField<String>(
                         isExpanded: true,
-                        initialValue: ports.contains(rep.napPort.value)
-                            ? rep.napPort.value
-                            : ports.first,
+                        initialValue: selectedPort,
                         decoration: const InputDecoration(
                           labelText: 'NAP Port',
                           contentPadding: EdgeInsets.symmetric(
                               horizontal: 12, vertical: 10),
                         ),
-                        items: ports.map((p) {
+                        items: portNames.map((p) {
                           return DropdownMenuItem(
                               value: p,
                               child: Text(p, style: context.text.bodySmall));
@@ -708,7 +814,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             SignalBuilder(
               builder: (context) {
                 final existing = rep.signature.value;
-                final existingBytes = DataUrl.decode(existing);
+                final existingBytes =
+                    PhotoStorageService.instance.resolveBytes(existing) ??
+                        DataUrl.decode(existing);
                 final padHasInk = !_signatureController.isEmpty;
 
                 // A signature already on the job is shown as-is until the
@@ -728,7 +836,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           ),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Image.memory(existingBytes, fit: BoxFit.contain),
+                        child: Image.memory(existingBytes,
+                            cacheWidth: 600, fit: BoxFit.contain),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -764,7 +873,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   children: [
                     SignaturePad(
                       controller: _signatureController,
-                      onStrokeEnd: _captureSignature,
+                      onStrokeEnd: _onStrokeEnd,
                     ),
                     const SizedBox(height: 8),
                     Row(

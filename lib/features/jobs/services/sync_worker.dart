@@ -51,7 +51,7 @@ class SyncWorker {
         final dto = JobOrderDto.fromDrift(rawJob);
         try {
           // Replay the full record with the technician's edits applied.
-          await _api.update(dto.id, dto.toApiJson());
+          await _api.update(dto.id, await dto.toApiJsonAsync());
           await _replaceWithServerCopy(dto.id);
           syncedSuccess++;
         } on ApiException catch (err) {

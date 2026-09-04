@@ -258,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      icon: const Icon(Icons.copy_rounded, size: 20),
                       tooltip: 'Copy Hotline',
                       onPressed: () {
                         Clipboard.setData(
@@ -368,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 decoration: const InputDecoration(
                                   labelText: 'Username',
                                   prefixIcon:
-                                      Icon(CupertinoIcons.person, size: 18),
+                                      Icon(CupertinoIcons.person, size: 20),
                                 ),
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
@@ -392,13 +392,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       labelText: 'Password',
                                       prefixIcon: const Icon(
                                           CupertinoIcons.lock,
-                                          size: 18),
+                                          size: 20),
                                       suffixIcon: IconButton(
+                                        tooltip: obscure
+                                            ? 'Show password'
+                                            : 'Hide password',
                                         icon: Icon(
                                           obscure
                                               ? CupertinoIcons.eye_slash
                                               : CupertinoIcons.eye,
-                                          size: 18,
+                                          size: 20,
                                           color: AppTheme.textMuted,
                                         ),
                                         onPressed: () {

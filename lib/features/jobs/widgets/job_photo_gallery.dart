@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../core/services/photo_storage_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
@@ -62,7 +63,8 @@ class JobPhotoGallery extends StatelessWidget {
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final (label, value) = entries[index];
-        final bytes = DataUrl.decode(value);
+        final bytes = PhotoStorageService.instance.resolveBytes(value) ??
+            DataUrl.decode(value);
         return _PhotoThumb(
           label: label,
           bytes: bytes,
@@ -115,6 +117,7 @@ class _PhotoThumb extends StatelessWidget {
                       children: [
                         Image.memory(
                           data,
+                          cacheWidth: 300,
                           fit: BoxFit.cover,
                           gaplessPlayback: true,
                         ),

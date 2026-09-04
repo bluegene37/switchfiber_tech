@@ -47,6 +47,7 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
   final TextEditingController _searchController = TextEditingController();
   _JobsCategory _category = _JobsCategory.scheduled;
   _ScheduledViewMode _viewMode = _ScheduledViewMode.list;
+  int? _selectedJobId;
 
   @override
   void dispose() {
@@ -57,6 +58,12 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
   void _openDetails(JobOrderDto job) {
     if (widget.onSelectJobForDetails != null) {
       widget.onSelectJobForDetails!(job);
+      return;
+    }
+
+    final isTablet = MediaQuery.sizeOf(context).width >= 768;
+    if (isTablet) {
+      setState(() => _selectedJobId = job.id);
       return;
     }
 
@@ -78,6 +85,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
   Widget build(BuildContext context) {
     final signals = widget.jobsSignals;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = MediaQuery.sizeOf(context).width >= 768;
+    final masterColumn = _buildMasterColumn(context, signals, isDark);
 
     return Scaffold(
       appBar: AppBar(
@@ -168,9 +177,39 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // 1. Top Category Segmented Control & Search (when Scheduled)
+      body: isTablet
+          ? Row(
+              children: [
+                SizedBox(width: 380, child: masterColumn),
+                VerticalDivider(
+                  width: 1,
+                  thickness: 0.5,
+                  color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                ),
+                Expanded(
+                  child: _selectedJobId != null
+                      ? JobOrderDetailScreen(
+                          key: ValueKey(_selectedJobId),
+                          jobId: _selectedJobId!,
+                          jobsSignals: widget.jobsSignals,
+                          lcpNapSignals: widget.lcpNapSignals,
+                          onOpenReport: widget.onSelectJobForReport,
+                          readOnly: _category == _JobsCategory.history,
+                          automaticallyImplyLeading: false,
+                        )
+                      : _buildNoJobSelectedPlaceholder(context, isDark),
+                ),
+              ],
+            )
+          : masterColumn,
+    );
+  }
+
+  Widget _buildMasterColumn(
+      BuildContext context, JobsSignals signals, bool isDark) {
+    return Column(
+      children: [
+        // 1. Top Category Segmented Control & Search (when Scheduled)
           Container(
             color: isDark ? AppTheme.darkCard : Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -208,7 +247,12 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                           ),
                         },
                         onValueChanged: (val) {
-                          if (val != null) setState(() => _category = val);
+                          if (val != null) {
+                            setState(() {
+                              _category = val;
+                              _selectedJobId = null;
+                            });
+                          }
                         },
                       ),
                     );
@@ -233,7 +277,8 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       const SizedBox(width: 8),
                       // Prominent Segmented Toggle for List vs Map
                       Container(
-                        height: AppSearchField.minHeight,
+                        constraints: const BoxConstraints(
+                            minHeight: AppSearchField.minHeight),
                         decoration: BoxDecoration(
                           color:
                               isDark ? AppTheme.darkInput : AppTheme.fillLight,
@@ -489,6 +534,10 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                       }
 
                       if (jobs.isEmpty) {
+                        final query = _searchController.text.trim();
+                        if (query.isNotEmpty) {
+                          return _buildSearchEmptyState(signals, query, isDark);
+                        }
                         return _buildEmptyState(signals, isDark);
                       }
 
@@ -511,19 +560,120 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
                   ),
           ),
         ],
+      );
+  }
+
+  Widget _buildNoJobSelectedPlaceholder(BuildContext context, bool isDark) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                  width: 0.5,
+                ),
+              ),
+              child: Icon(
+                CupertinoIcons.doc_text_search,
+                size: 36,
+                color: AppTheme.secondaryInkOf(context),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Select a Job Order',
+              style: context.text.titleMedium,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Choose a job from the list to view its details and workflow actions.',
+              style: context.text.bodySmall!.copyWith(
+                color: AppTheme.secondaryInkOf(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchEmptyState(
+      JobsSignals signals, String query, bool isDark) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                  width: 0.5,
+                ),
+              ),
+              child: Icon(
+                CupertinoIcons.search,
+                size: 32,
+                color: AppTheme.secondaryInkOf(context),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'No jobs matching "$query"',
+              style: context.text.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Check for typos or clear your search to see all scheduled jobs.',
+              textAlign: TextAlign.center,
+              style: context.text.bodySmall!.copyWith(
+                color: AppTheme.secondaryInkOf(context),
+              ),
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () {
+                _searchController.clear();
+                signals.setSearch('');
+                setState(() {});
+              },
+              icon: const Icon(CupertinoIcons.clear_circled, size: 20),
+              label: const Text('Clear Search'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(140, 48),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildEmptyState(JobsSignals signals, bool isDark) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color:
                     isDark ? const Color(0xFF3F2327) : AppTheme.primarySubtleBg,
@@ -537,22 +687,22 @@ class _JobOrdersScreenState extends State<JobOrdersScreen> {
               ),
               child: const Icon(
                 CupertinoIcons.calendar_badge_plus,
-                size: 38,
+                size: 32,
                 color: AppTheme.primary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             Text(
               'No Scheduled Jobs Pending',
               style: context.text.titleMedium,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               'Every scheduled job has been activated. Pull down to refresh from the server.',
               textAlign: TextAlign.center,
               style: context.text.bodySmall,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             ElevatedButton.icon(
               onPressed: () {
                 signals.fetchRemote();

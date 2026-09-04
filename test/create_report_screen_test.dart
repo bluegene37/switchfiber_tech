@@ -19,6 +19,13 @@ class _QuietApi implements JobOrdersApi {
   Future<List<Map<String, dynamic>>> fetchByStatus(String status) async => [];
 
   @override
+  Future<List<Map<String, dynamic>>> fetchByStatusAssigned({
+    required String status,
+    String? assignedEmail,
+  }) async =>
+      [];
+
+  @override
   Future<List<Map<String, dynamic>>> fetchByStatusDate({
     String? status,
     DateTime? dateFrom,
@@ -164,4 +171,109 @@ void main() {
         reason: 'the ONT model dropdown sized itself to its widest menu item '
             'and burst the row it shares with the NAP port field');
   });
+
+  testWidgets('tapping submit with missing fields displays guidance snackbar',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.runAsync(() async {
+      db = AppDatabase(NativeDatabase.memory());
+      jobsSignals =
+          JobsSignals(JobRepository(db.jobOrdersDao, api: _QuietApi()));
+      await db.jobOrdersDao.insertAllJobs([
+        JobOrderDto(
+          id: 1,
+          ticketNumber: 'SF-1',
+          customerName: 'Subscriber 1',
+          address: 'Lot 1',
+          status: 'Scheduled',
+          modemRouterSN: '', // blank serial
+        ).toCompanion()
+      ]);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+
+    reportSignals = ReportSignals()
+      ..setJobOrder(jobsSignals.allJobs.value.first);
+
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.lightTheme,
+      home: CreateReportScreen(
+        jobsSignals: jobsSignals,
+        reportSignals: reportSignals,
+        pickImage: (_) async => null,
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final submitFinder = find.text('Save Completion Report');
+    expect(submitFinder, findsOneWidget);
+
+    // Scroll to submit button and tap when serial is empty
+    await tester.ensureVisible(submitFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(submitFinder);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(
+        find.text('Modem / Router Serial Number is required.'), findsOneWidget);
+
+    // Clear the first snackbar so it does not block the viewport
+    ScaffoldMessenger.of(tester.element(find.byType(CreateReportScreen)))
+        .clearSnackBars();
+    await tester.pumpAndSettle();
+
+    // Now enter a serial number, but leave signature empty
+    final serialFinder =
+        find.widgetWithText(TextFormField, 'Modem / ONT Serial Number (SN)');
+    await tester.ensureVisible(serialFinder);
+    await tester.pumpAndSettle();
+    await tester.enterText(serialFinder, 'HWTC9999');
+    await tester.pump();
+
+    // Scroll back to submit and tap when signature is empty
+    await tester.ensureVisible(submitFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(submitFinder);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Customer signature is required before saving report.'),
+        findsOneWidget);
+  });
+
+  test('T2: ReportSignals resets routerSerial to empty string on job change',
+      () {
+    final signals = ReportSignals();
+    expect(signals.routerSerial.value, '',
+        reason: 'default routerSerial must not leak mock serial numbers');
+
+    final jobWithSerial = JobOrderDto(
+      id: 10,
+      ticketNumber: 'SF-10',
+      customerName: 'Customer 10',
+      address: 'Lot 10',
+      status: 'Scheduled',
+      modemRouterSN: 'ZTE12345',
+    );
+    signals.setJobOrder(jobWithSerial);
+    expect(signals.routerSerial.value, 'ZTE12345');
+
+    final jobWithoutSerial = JobOrderDto(
+      id: 11,
+      ticketNumber: 'SF-11',
+      customerName: 'Customer 11',
+      address: 'Lot 11',
+      status: 'Scheduled',
+      modemRouterSN: null,
+    );
+    signals.setJobOrder(jobWithoutSerial);
+    expect(signals.routerSerial.value, '',
+        reason:
+            'routerSerial must be reset to empty string when job has no serial');
+  });
 }
+

@@ -11,6 +11,7 @@ import 'features/jobs/repositories/job_repository.dart';
 import 'features/jobs/signals/jobs_signals.dart';
 import 'features/lcp_nap/repositories/lcp_nap_repository.dart';
 import 'features/lcp_nap/signals/lcp_nap_signals.dart';
+import 'features/service_orders/signals/service_orders_signals.dart';
 import 'features/settings/signals/settings_signals.dart';
 import 'features/shell/technician_shell.dart';
 import 'features/splash/screens/splash_screen.dart';
@@ -23,6 +24,8 @@ void main() async {
   await database.jobOrdersDao.deleteSampleJobs();
   final jobRepository = JobRepository(database.jobOrdersDao);
   final lcpNapRepository = LcpNapRepository(LcpNapLocationsDao(database));
+  final serviceOrdersSignals =
+      ServiceOrdersSignals(dao: database.serviceOrdersDao);
 
   // 2. Initialize Signals State Layer
   final authSignals = AuthSignals.instance;
@@ -49,6 +52,7 @@ void main() async {
       authSignals: authSignals,
       jobsSignals: jobsSignals,
       lcpNapSignals: lcpNapSignals,
+      serviceOrdersSignals: serviceOrdersSignals,
       showSplash: true,
     ),
   );
@@ -58,6 +62,7 @@ class SwitchFiberTechApp extends StatelessWidget {
   final AuthSignals authSignals;
   final JobsSignals jobsSignals;
   final LcpNapSignals lcpNapSignals;
+  final ServiceOrdersSignals? serviceOrdersSignals;
   final bool showSplash;
 
   const SwitchFiberTechApp({
@@ -65,6 +70,7 @@ class SwitchFiberTechApp extends StatelessWidget {
     required this.authSignals,
     required this.jobsSignals,
     required this.lcpNapSignals,
+    this.serviceOrdersSignals,
     this.showSplash = true,
   });
 
@@ -82,6 +88,7 @@ class SwitchFiberTechApp extends StatelessWidget {
             authSignals: authSignals,
             jobsSignals: jobsSignals,
             lcpNapSignals: lcpNapSignals,
+            serviceOrdersSignals: serviceOrdersSignals,
             showSplash: showSplash,
           ),
         );
@@ -100,12 +107,14 @@ class _RootView extends StatefulWidget {
   final AuthSignals authSignals;
   final JobsSignals jobsSignals;
   final LcpNapSignals lcpNapSignals;
+  final ServiceOrdersSignals? serviceOrdersSignals;
   final bool showSplash;
 
   const _RootView({
     required this.authSignals,
     required this.jobsSignals,
     required this.lcpNapSignals,
+    this.serviceOrdersSignals,
     required this.showSplash,
   });
 
@@ -136,6 +145,7 @@ class _RootViewState extends State<_RootView> {
                   authSignals: widget.authSignals,
                   jobsSignals: widget.jobsSignals,
                   lcpNapSignals: widget.lcpNapSignals,
+                  serviceOrdersSignals: widget.serviceOrdersSignals,
                 );
               },
             ),

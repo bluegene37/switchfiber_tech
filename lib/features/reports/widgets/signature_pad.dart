@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
@@ -88,11 +89,21 @@ class SignaturePad extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         controller.canvasSize = Size(constraints.maxWidth, height);
-        return GestureDetector(
+        return RawGestureDetector(
           behavior: HitTestBehavior.opaque,
-          onPanStart: (d) => controller.beginStroke(d.localPosition),
-          onPanUpdate: (d) => controller.extendStroke(d.localPosition),
-          onPanEnd: (_) => onStrokeEnd?.call(),
+          gestures: <Type, GestureRecognizerFactory>{
+            EagerPanGestureRecognizer:
+                GestureRecognizerFactoryWithHandlers<EagerPanGestureRecognizer>(
+              () => EagerPanGestureRecognizer(),
+              (EagerPanGestureRecognizer instance) {
+                instance.onStart =
+                    (d) => controller.beginStroke(d.localPosition);
+                instance.onUpdate =
+                    (d) => controller.extendStroke(d.localPosition);
+                instance.onEnd = (_) => onStrokeEnd?.call();
+              },
+            ),
+          },
           child: Container(
             height: height,
             decoration: BoxDecoration(
@@ -131,6 +142,20 @@ class SignaturePad extends StatelessWidget {
       },
     );
   }
+}
+
+/// A [PanGestureRecognizer] that immediately claims victory in the gesture arena
+/// on pointer down, ensuring drawing strokes are never stolen or delayed by parent
+/// scrollable containers like [SingleChildScrollView].
+class EagerPanGestureRecognizer extends PanGestureRecognizer {
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    super.addAllowedPointer(event);
+    resolve(GestureDisposition.accepted);
+  }
+
+  @override
+  String get debugDescription => 'eager pan';
 }
 
 class SignaturePainter extends CustomPainter {

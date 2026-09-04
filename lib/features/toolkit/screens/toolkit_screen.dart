@@ -31,17 +31,12 @@ class ToolkitScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF3F2327), const Color(0xFF2B3035)]
-                    : [AppTheme.primarySubtleBg, Colors.white],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
+              color: isDark ? AppTheme.darkCard : Colors.white,
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color:
-                    isDark ? AppTheme.borderDark : AppTheme.primarySubtleBorder,
+                    isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                width: 0.5,
               ),
             ),
             child: Row(

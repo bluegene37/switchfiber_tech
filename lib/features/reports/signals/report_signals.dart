@@ -7,9 +7,9 @@ import '../../jobs/repositories/job_repository.dart';
 class ReportSignals {
   final selectedJobOrder = signal<JobOrderDto?>(null);
   final opticalPower = signal<double>(-19.5);
-  final routerSerial = signal<String>('HWTC8829104');
+  final routerSerial = signal<String>('');
   final routerModel = signal<String>('Huawei 5v5');
-  final napPort = signal<String>('Port 1');
+  final napPort = signal<String>('PORT 001');
   final nap = signal<String?>(null);
   final remarks = signal<String>(
       'Fiber drop cable installed. Power verified. Client speedtest 100Mbps symmetrical.');
@@ -58,14 +58,16 @@ class ReportSignals {
   void setJobOrder(JobOrderDto job) {
     selectedJobOrder.value = job;
     opticalPower.value = job.opticalPower ?? -19.5;
-    if (job.modemRouterSN != null && job.modemRouterSN!.isNotEmpty) {
-      routerSerial.value = job.modemRouterSN!;
-    }
+    routerSerial.value = job.modemRouterSN ?? '';
     if (job.routerModel != null && job.routerModel!.isNotEmpty) {
       routerModel.value = job.routerModel!;
+    } else {
+      routerModel.value = 'Huawei 5v5';
     }
     if (job.portId != null && job.portId!.isNotEmpty) {
       napPort.value = job.portId!;
+    } else {
+      napPort.value = 'PORT 001';
     }
     if (job.nap != null && job.nap!.isNotEmpty) {
       nap.value = job.nap;
@@ -135,6 +137,8 @@ class ReportSignals {
     selectedJobOrder.value = null;
     opticalPower.value = -19.5;
     routerSerial.value = '';
+    routerModel.value = 'Huawei 5v5';
+    napPort.value = 'PORT 001';
     remarks.value = '';
     nap.value = null;
     signature.value = null;

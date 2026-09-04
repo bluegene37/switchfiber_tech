@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/exif_service.dart';
+import '../../../core/services/photo_storage_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
@@ -59,7 +60,8 @@ class PhotoCaptureTile extends StatelessWidget {
   }
 
   Future<void> _showActions(BuildContext context) async {
-    final bytes = DataUrl.decode(value);
+    final bytes =
+        PhotoStorageService.instance.resolveBytes(value) ?? DataUrl.decode(value);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final action = await showModalBottomSheet<_PhotoAction>(
@@ -144,7 +146,8 @@ class PhotoCaptureTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
-    final bytes = DataUrl.decode(value);
+    final bytes =
+        PhotoStorageService.instance.resolveBytes(value) ?? DataUrl.decode(value);
     final onServer = _hasValue && bytes == null;
 
     return InkWell(
@@ -178,32 +181,48 @@ class PhotoCaptureTile extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Image.memory(bytes,
-                            fit: BoxFit.cover, gaplessPlayback: true),
+                            cacheWidth: 400,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true),
                         // GPS Badge
                         Positioned(
                           top: 6,
                           left: 6,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppTheme.success.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(CupertinoIcons.location_fill,
-                                    color: Colors.white, size: 20),
-                                const SizedBox(width: 3),
-                                Text(
-                                  'GPS',
-                                  style: context.text.labelSmall!.copyWith(
-                                    color: Colors.white,
-                                  ),
+                          child: FutureBuilder<ExifMetadata>(
+                            future: ExifService.instance.extractExif(bytes),
+                            builder: (context, snapshot) {
+                              final hasGps = snapshot.data?.hasGps == true;
+                              final color = hasGps
+                                  ? AppTheme.success.withValues(alpha: 0.85)
+                                  : AppTheme.darkSlate.withValues(alpha: 0.75);
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(5),
                                 ),
-                              ],
-                            ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      hasGps
+                                          ? CupertinoIcons.location_fill
+                                          : CupertinoIcons.location_slash,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      hasGps ? 'GPS' : 'No GPS',
+                                      style: context.text.labelSmall!.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                         ),
                         // Size Badge
@@ -218,30 +237,34 @@ class PhotoCaptureTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(5),
                             ),
                             child: Text(
-                              DataUrl.formatBytes(DataUrl.approxBytes(value!)),
+                              DataUrl.formatBytes(bytes.length),
                               style: context.text.labelSmall!.copyWith(
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                        // Retake / remove. It sits apart from the image so a
-                        // plain tap can open the photo instead.
                         Positioned(
-                          bottom: 6,
-                          right: 6,
+                          bottom: 0,
+                          right: 0,
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () => _showActions(context),
                             child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.65),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.more_horiz_rounded,
-                                color: Colors.white,
-                                size: 24,
+                              width: 48,
+                              height: 48,
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.more_horiz_rounded,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),
@@ -593,7 +616,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
         child: InteractiveViewer(
           minScale: 0.5,
           maxScale: 5,
-          child: Image.memory(widget.bytes, fit: BoxFit.contain),
+          child: Image.memory(widget.bytes,
+              cacheWidth: 1200, fit: BoxFit.contain),
         ),
       ),
     );
