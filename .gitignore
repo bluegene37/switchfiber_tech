@@ -88,3 +88,4 @@ AuthKey_*.p8
 # Widget Preview related
 .widget_preview/
 
+/.windsurf/rules/claude-mem-context.md
