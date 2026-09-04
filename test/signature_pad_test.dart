@@ -54,4 +54,46 @@ void main() {
     expect(c.canvasSize.width, greaterThan(0));
     expect(c.strokes.single.first.dx, lessThan(center.dx + 1));
   });
+
+  testWidgets(
+      'drawing on SignaturePad inside SingleChildScrollView claims gestures and prevents scrolling',
+      (tester) async {
+    final c = SignatureController();
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          controller: scrollController,
+          child: Column(
+            children: [
+              const SizedBox(height: 200),
+              SignaturePad(controller: c),
+              const SizedBox(height: 800),
+            ],
+          ),
+        ),
+      ),
+    ));
+
+    expect(scrollController.offset, 0.0);
+
+    // Perform a vertical drag on the SignaturePad.
+    // Without EagerPanGestureRecognizer, the vertical drag would be claimed
+    // by SingleChildScrollView, scrolling the view and leaving the pad untouched.
+    final center = tester.getCenter(find.byType(SignaturePad));
+    await tester.timedDrag(
+      find.byType(SignaturePad),
+      const Offset(0, 50),
+      const Duration(milliseconds: 200),
+    );
+    await tester.pump();
+
+    // The signature pad claimed the gesture:
+    expect(c.isEmpty, isFalse);
+    expect(c.strokes.isNotEmpty, isTrue);
+    // The parent scroll view was not scrolled:
+    expect(scrollController.offset, 0.0);
+  });
 }
