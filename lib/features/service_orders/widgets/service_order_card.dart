@@ -82,39 +82,49 @@ class ServiceOrderCard extends StatelessWidget {
                 // Top Row: Concern Pill & Priority Badge
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppTheme.primarySubtleBgDark
-                            : AppTheme.primarySubtleBg,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
+                    // The concern is free text from the ticket and can be long
+                    // ("No Internet Connection"); at a doubled text scale it
+                    // overflowed this row by 506 px. Flexible plus an ellipsis
+                    // lets the pill give way to the priority badge beside it.
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
                           color: isDark
-                              ? AppTheme.primarySubtleBorderDark
-                              : AppTheme.primarySubtleBorder,
-                          width: 0.5,
+                              ? AppTheme.primarySubtleBgDark
+                              : AppTheme.primarySubtleBg,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark
+                                ? AppTheme.primarySubtleBorderDark
+                                : AppTheme.primarySubtleBorder,
+                            width: 0.5,
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            order.concern.toLowerCase().contains('pullout')
-                                ? CupertinoIcons.arrow_right_arrow_left
-                                : CupertinoIcons.wrench_fill,
-                            size: 20,
-                            color: AppTheme.primary,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            order.concern,
-                            style: context.text.labelLarge!.copyWith(
-                              color: AppTheme.brandInkOf(context),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              order.concern.toLowerCase().contains('pullout')
+                                  ? CupertinoIcons.arrow_right_arrow_left
+                                  : CupertinoIcons.wrench_fill,
+                              size: 20,
+                              color: AppTheme.primary,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                order.concern,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.text.labelLarge!.copyWith(
+                                  color: AppTheme.brandInkOf(context),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const Spacer(),
@@ -192,37 +202,52 @@ class ServiceOrderCard extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Action Bar: Quick Call & Direct Navigation
+                // Both actions are Flexible so the row survives a long
+                // contact number, a 24 px icon and a doubled text scale
+                // together: the labels ellipsize rather than overflowing,
+                // and the chevron always keeps its place on the right.
                 Row(
                   children: [
                     if (order.contactNumber.isNotEmpty)
-                      OutlinedButton.icon(
-                        onPressed: () =>
-                            launchUrl(Uri.parse('tel:${order.contactNumber}')),
-                        icon: const Icon(CupertinoIcons.phone_fill, size: 24),
-                        label: Text(
-                          order.contactNumber,
-                          style: context.text.labelLarge,
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                      Flexible(
+                        child: OutlinedButton.icon(
+                          onPressed: () => launchUrl(
+                              Uri.parse('tel:${order.contactNumber}')),
+                          icon: const Icon(CupertinoIcons.phone_fill, size: 24),
+                          label: Text(
+                            order.contactNumber,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.text.labelLarge,
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
                         ),
                       ),
                     const Spacer(),
                     if (order.latLng != null)
-                      TextButton.icon(
-                        onPressed: () => MapNavigationService.navigateTo(
-                          order.latLng!,
-                          label: order.fullName,
-                        ),
-                        icon: const Icon(
-                            CupertinoIcons.arrow_up_right_diamond_fill,
-                            size: 24),
-                        label: Text('Navigate', style: context.text.labelLarge),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.brandInkOf(context),
+                      Flexible(
+                        child: TextButton.icon(
+                          onPressed: () => MapNavigationService.navigateTo(
+                            order.latLng!,
+                            label: order.fullName,
+                          ),
+                          icon: const Icon(
+                              CupertinoIcons.arrow_up_right_diamond_fill,
+                              size: 24),
+                          label: Text(
+                            'Navigate',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.text.labelLarge,
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.brandInkOf(context),
+                          ),
                         ),
                       ),
                     const Icon(CupertinoIcons.chevron_right,

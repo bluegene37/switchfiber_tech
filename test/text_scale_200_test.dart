@@ -12,6 +12,7 @@ import 'package:swithfiber_tech/features/jobs/signals/jobs_signals.dart';
 import 'package:swithfiber_tech/features/lcp_nap/repositories/lcp_nap_repository.dart';
 import 'package:swithfiber_tech/features/lcp_nap/screens/lcp_nap_list_screen.dart';
 import 'package:swithfiber_tech/features/lcp_nap/signals/lcp_nap_signals.dart';
+import 'package:swithfiber_tech/features/service_orders/models/service_order_model.dart';
 import 'package:swithfiber_tech/features/service_orders/screens/service_orders_screen.dart';
 import 'package:swithfiber_tech/features/service_orders/signals/service_orders_signals.dart';
 import 'package:swithfiber_tech/features/toolkit/screens/drop_cable_tool.dart';
@@ -88,6 +89,27 @@ void main() {
       await LcpNapRepository(LcpNapLocationsDao(db)).seedSampleLocations();
       await Future<void>.delayed(const Duration(milliseconds: 150));
     });
+    // The service orders screen renders nothing at all with an empty list, so
+    // without this its test passed vacuously and missed a real 33 px overflow
+    // in the card's action row. Coordinates and a contact number are both
+    // required: they are what put the Call and Navigate buttons on the card.
+    serviceOrders.allOrders.value = [
+      const ServiceOrderDto(
+        id: 1,
+        accountNumber: 'SF-ACCT-0001',
+        fullName: 'Scale Santos',
+        contactNumber: '09171234567',
+        emailAddress: 'scale.santos@example.com',
+        address: 'Lot 1, Fiber Street, San Roque, Binangonan',
+        barangay: 'San Roque',
+        city: 'Binangonan',
+        concern: 'No Internet Connection',
+        priorityLevel: 'Urgent',
+        lcp: 'LCP-001',
+        nap: 'NAP-014',
+        addressCoordinates: '14.469586, 121.195615',
+      ),
+    ];
   }
 
   for (final entry in <String,
