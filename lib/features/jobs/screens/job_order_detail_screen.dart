@@ -31,6 +31,7 @@ class JobOrderDetailScreen extends StatelessWidget {
   final LcpNapSignals? lcpNapSignals;
   final void Function(JobOrderDto job)? onOpenReport;
   final bool readOnly;
+  final bool automaticallyImplyLeading;
 
   const JobOrderDetailScreen({
     super.key,
@@ -39,6 +40,7 @@ class JobOrderDetailScreen extends StatelessWidget {
     this.lcpNapSignals,
     this.onOpenReport,
     this.readOnly = false,
+    this.automaticallyImplyLeading = true,
   });
 
   @override
@@ -52,7 +54,10 @@ class JobOrderDetailScreen extends StatelessWidget {
 
         if (job == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Work Order Details')),
+            appBar: AppBar(
+              automaticallyImplyLeading: automaticallyImplyLeading,
+              title: const Text('Work Order Details'),
+            ),
             body: Center(
               child: Text(
                 'Job Order not found or removed.',
@@ -64,6 +69,7 @@ class JobOrderDetailScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
+            automaticallyImplyLeading: automaticallyImplyLeading,
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -485,9 +491,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                 const Icon(Icons.person_pin_rounded,
                     size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'Subscriber & Location',
-                  style: context.text.titleMedium,
+                Expanded(
+                  child: Text(
+                    'Subscriber & Location',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -596,11 +604,12 @@ class JobOrderDetailScreen extends StatelessWidget {
                 const Icon(CupertinoIcons.location_circle_fill,
                     size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'Service Location & GPS Coordinates',
-                  style: context.text.titleMedium,
+                Expanded(
+                  child: Text(
+                    'Service Location & GPS Coordinates',
+                    style: context.text.titleMedium,
+                  ),
                 ),
-                const Spacer(),
                 if (latLng != null)
                   Container(
                     padding:
@@ -649,14 +658,18 @@ class JobOrderDetailScreen extends StatelessWidget {
                 onPressed: () => _openNavigation(job),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(CupertinoIcons.location_north_fill,
                         size: 24, color: Colors.white),
                     const SizedBox(width: 8),
-                    Text(
-                      'Start Turn-by-Turn Navigation',
-                      style: context.text.labelLarge!
-                          .copyWith(color: Colors.white),
+                    Flexible(
+                      child: Text(
+                        'Start Turn-by-Turn Navigation',
+                        style: context.text.labelLarge!
+                            .copyWith(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
@@ -848,9 +861,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                 const Icon(Icons.hub_outlined,
                     size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'Plant & Hardware Allocation',
-                  style: context.text.titleMedium,
+                Expanded(
+                  child: Text(
+                    'Plant & Hardware Allocation',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -938,9 +953,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                 const Icon(Icons.speed_rounded,
                     size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'Optical Power Measurement',
-                  style: context.text.titleMedium,
+                Expanded(
+                  child: Text(
+                    'Optical Power Measurement',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -1005,9 +1022,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                 const Icon(Icons.assignment_turned_in_outlined,
                     size: 20, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'On-Site Records & Verification',
-                  style: context.text.titleMedium,
+                Expanded(
+                  child: Text(
+                    'On-Site Records & Verification',
+                    style: context.text.titleMedium,
+                  ),
                 ),
               ],
             ),
@@ -1079,14 +1098,19 @@ class JobOrderDetailScreen extends StatelessWidget {
               size: 20,
               color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: context.text.bodySmall,
+          Expanded(
+            child: Text(
+              label,
+              style: context.text.bodySmall,
+            ),
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: context.text.titleSmall,
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              style: context.text.titleSmall,
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),

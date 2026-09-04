@@ -135,11 +135,12 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
                 const Icon(CupertinoIcons.wifi,
                     size: 18, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text(
-                  'RADIUS PPPoE Connection',
-                  style: context.text.titleMedium,
+                Expanded(
+                  child: Text(
+                    'RADIUS PPPoE Connection',
+                    style: context.text.titleMedium,
+                  ),
                 ),
-                const Spacer(),
                 if (_isLoading)
                   const CupertinoActivityIndicator(radius: 8)
                 else

@@ -5,6 +5,7 @@ import 'package:swithfiber_tech/core/database/app_database.dart';
 import 'package:swithfiber_tech/core/theme/app_theme.dart';
 import 'package:swithfiber_tech/features/jobs/models/job_order_model.dart';
 import 'package:swithfiber_tech/features/jobs/repositories/job_repository.dart';
+import 'package:swithfiber_tech/features/jobs/screens/job_order_detail_screen.dart';
 import 'package:swithfiber_tech/features/jobs/screens/job_orders_screen.dart';
 import 'package:swithfiber_tech/features/jobs/signals/jobs_signals.dart';
 import 'package:swithfiber_tech/features/jobs/widgets/job_card.dart';
@@ -150,6 +151,74 @@ void main() {
 
     expect(find.byType(JobCard), findsOneWidget);
     expect(find.text('No jobs matching "NonexistentSubscriber"'), findsNothing);
+
+    await tester.runAsync(() async {
+      await jobsSignals.dispose();
+      await db.close();
+    });
+  });
+
+  testWidgets(
+      'JobOrdersScreen renders adaptive master-detail layout on tablet >= 768dp',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    late final AppDatabase db;
+    late final JobsSignals jobsSignals;
+
+    await tester.runAsync(() async {
+      db = AppDatabase(NativeDatabase.memory());
+      jobsSignals = JobsSignals(JobRepository(db.jobOrdersDao));
+      await db.jobOrdersDao.insertOrUpdateJob(
+        JobOrderDto(
+          id: 101,
+          ticketNumber: 'SF-2026-101',
+          customerName: 'Juan Dela Cruz',
+          address: '123 Rizal St',
+          barangay: 'San Isidro',
+          city: 'Antipolo',
+          status: 'Scheduled',
+          onsiteStatus: 'Scheduled',
+          contactNumber: '09171234567',
+          nap: 'NAP-01',
+          napId: 1,
+          isSynced: true,
+          updatedAt: DateTime.now(),
+        ).toCompanion(),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: JobOrdersScreen(
+          jobsSignals: jobsSignals,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    // Master pane shows job list
+    expect(find.byType(JobCard), findsOneWidget);
+
+    // Detail pane initially shows placeholder
+    expect(find.text('Select a Job Order'), findsOneWidget);
+    expect(find.byType(JobOrderDetailScreen), findsNothing);
+
+    // Tap job card to select it in tablet detail pane
+    await tester.tap(find.text('Juan Dela Cruz'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    // Both master and detail panes are visible simultaneously
+    expect(find.byType(JobCard), findsOneWidget);
+    expect(find.byType(JobOrderDetailScreen), findsOneWidget);
+    expect(find.text('Select a Job Order'), findsNothing);
 
     await tester.runAsync(() async {
       await jobsSignals.dispose();
