@@ -74,7 +74,9 @@ class FakeJobOrdersApi implements JobOrdersApi {
     final last = updates.lastWhere((u) => u.$1 == id,
         orElse: () => (id, <String, dynamic>{}));
     if (last.$2.isEmpty) return null;
-    return {...last.$2, 'modifiedDate': '2026-09-02T12:00:00'};
+    // A real GET carries the record's id. The PUT body does not, since the
+    // contract puts the id in the URL, so the echo has to add it back.
+    return {'id': id, ...last.$2, 'modifiedDate': '2026-09-02T12:00:00'};
   }
 
   @override

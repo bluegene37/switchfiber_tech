@@ -156,9 +156,11 @@ void main() {
       final companion = job.toCompanion();
       expect(companion.nap.value, 'NAP 004');
 
+      // The PUT contract carries the selection as napId only; `nap` is a
+      // read-side echo the request type does not declare, so it is not sent.
       final edits = job.toApiJson();
-      expect(edits['nap'], 'NAP 004');
       expect(edits['napId'], 'NAP 004');
+      expect(edits.containsKey('nap'), isFalse);
     });
 
     test('JobOrderDto parses nap and napId from API response', () {

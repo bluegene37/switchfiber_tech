@@ -332,6 +332,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Force Full Sync: pushes pending edits, then replaces the local cache
+  /// with the server's copy.
+  ///
+  /// That second step discards any edit the server refused, so the
+  /// technician proves who they are first. The password is checked against
+  /// the API, not a cached copy.
+  Future<void> _forceFullSync(BuildContext context, int pending) async {
+    final auth = widget.authSignals;
+    final user = auth.currentUser.value;
+    if (user == null) return;
+
+    final password = await _askPassword(context, pending);
+    if (password == null || !context.mounted) return;
+
+    final ok = await auth.login(username: user.username, password: password);
+    if (!context.mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.authError.value ?? 'Password not accepted.'),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final res = await widget.jobsSignals.forceRefresh();
+    if (!context.mounted) return;
+    final lost = res.failedCount;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(lost == 0
+            ? 'Synced and refreshed from the server.'
+            : '$lost pending update(s) were refused by the server and have '
+                'been replaced by the server copy. See Sync Error Log.'),
+        backgroundColor: lost == 0 ? AppTheme.success : AppTheme.warning,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: lost == 0 ? 4 : 10),
+      ),
+    );
+  }
+
+  Future<String?> _askPassword(BuildContext context, int pending) {
+    final controller = TextEditingController();
+    return showCupertinoDialog<String>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Force Full Sync'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pending == 0
+                    ? 'The local cache will be replaced with the server copy. '
+                        'Enter your password to continue.'
+                    : '$pending pending update(s) will be pushed first. Any '
+                        'the server refuses will be lost and replaced by the '
+                        'server copy. Enter your password to continue.',
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: controller,
+                obscureText: true,
+                autofocus: true,
+                placeholder: 'Password',
+                onSubmitted: (v) => Navigator.of(ctx).pop(v),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('Sync'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildIosSettingRow({
     required IconData icon,
     required Color iconBg,
@@ -619,20 +707,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: ElevatedButton.icon(
                           onPressed: isSyncing
                               ? null
-                              : () async {
-                                  final res =
-                                      await syncWorker.syncPendingJobs();
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(res.message),
-                                      backgroundColor: res.success
-                                          ? AppTheme.success
-                                          : AppTheme.warning,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
+                              : () => _forceFullSync(context, pending),
                           icon: isSyncing
                               ? const SizedBox(
                                   width: 16,

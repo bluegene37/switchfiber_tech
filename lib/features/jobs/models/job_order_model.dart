@@ -456,6 +456,104 @@ class JobOrderDto {
     );
   }
 
+  /// Every field of `UpdateJobOrderRequest`, exactly as the owner's working
+  /// curl sends it. The PUT body is built from this list and nothing else.
+  ///
+  /// The GET returns 99 keys, a dozen of which (`id`, `timestamp`, `nap`,
+  /// `lcp`, `vlan`, `choose_Plan`, …) are read-side echoes the request type
+  /// does not declare. Replaying them was one more way for the update to
+  /// fail without saying which field it disliked.
+  static const List<String> apiRequestFields = [
+    'emailAddress',
+    'referredBy',
+    'firstName',
+    'middleInitial',
+    'lastName',
+    'contactNumber',
+    'applicantEmailAddress',
+    'address',
+    'location',
+    'barangay',
+    'city',
+    'region',
+    'planId',
+    'remarks',
+    'installationFee',
+    'contractTemplate',
+    'billingDay',
+    'preferredDay',
+    'joRemarks',
+    'status',
+    'verifiedBy',
+    'modemRouterSN',
+    'provider',
+    'lcpId',
+    'napId',
+    'portId',
+    'vlanId',
+    'username',
+    'visitBy',
+    'visitWith',
+    'visitWithOther',
+    'onsiteStatus',
+    'onsiteRemarks',
+    'modifiedBy',
+    'modifiedDate',
+    'contractLink',
+    'connectionType',
+    'assignedEmail',
+    'setupImage',
+    'speedtestImage',
+    'startTimeStamp',
+    'endTimeStamp',
+    'duration',
+    'externalId',
+    'lcpnapId',
+    'billingStatus',
+    'routerModel',
+    'dateInstalled',
+    'clientSignature',
+    'ip',
+    'signedContractImage',
+    'boxReadingImage',
+    'routerReadingImage',
+    'usernameStatus',
+    'lcpnapportId',
+    'itemName1',
+    'itemQuantity1',
+    'itemName2',
+    'itemQuantity2',
+    'itemName3',
+    'itemQuantity3',
+    'itemName4',
+    'itemQuantity4',
+    'itemName5',
+    'itemQuantity5',
+    'itemName6',
+    'itemQuantity6',
+    'itemName7',
+    'itemQuantity7',
+    'itemName8',
+    'itemQuantity8',
+    'itemName9',
+    'itemQuantity9',
+    'itemName10',
+    'itemQuantity10',
+    'usageType',
+    'renter',
+    'installationLandmark',
+    'statusRemarks',
+    'portLabelImage',
+    'secondContactNumber',
+    'accountNo',
+    'addressCoordinates',
+    'referrersAccountNumber',
+    'applicationId',
+    'houseFront',
+    'createdBy',
+    'createdDate',
+  ];
+
   /// Fields `PUT /api/JobOrders/{id}` accepts as null.
   ///
   /// Everything else in UpdateJobOrderRequest is a non-nullable string, so a
@@ -476,11 +574,20 @@ class JobOrderDto {
   /// `applicationId` entirely, then the PUT rejects the very record it just
   /// gave out with "The Duration field is required". Replaying the server's
   /// own response therefore fails with HTTP 400 unless these are filled in.
-  static const Set<String> _requiredApiFields = {
-    'duration',
-    'billingDay',
-    'applicationId',
-    'installationFee',
+  /// These four hold numbers, so an empty string is not a safe filler: the
+  /// endpoint accepted `""` past validation and then failed inside the update
+  /// with `HTTP 500 An error occurred while updating job order with ID`,
+  /// which is what a numeric parse of an empty string looks like from the
+  /// outside. Each is given a numeric default instead.
+  ///
+  /// `duration` is null on every record on the server, so there is no
+  /// populated example to copy a format from; zero is the neutral choice.
+  /// `applicationId` is handled separately: it is the application's own
+  /// number, which the record already carries as `accountNo`.
+  static const Map<String, String> _requiredApiFields = {
+    'duration': '0',
+    'billingDay': defaultBillingDay,
+    'installationFee': defaultInstallationFee,
   };
 
   /// Billing day used when the record carries none.
@@ -489,31 +596,63 @@ class JobOrderDto {
   /// would change real billing data to satisfy a validator.
   static const String defaultBillingDay = '27';
 
+  /// Installation fee used when the record carries none.
+  ///
+  /// A record that already has a fee keeps it, **including an explicit 0**.
+  /// Most job orders on the server currently read 0, and a zero fee is a real
+  /// value the office may have set on purpose; only a null or empty fee is
+  /// treated as missing.
+  static const String defaultInstallationFee = '1';
+
   /// Makes [body] satisfy UpdateJobOrderRequest without changing any value
   /// the server actually holds.
   ///
-  /// Nulls become empty strings, except for the six fields the endpoint
-  /// genuinely accepts as null, and the required fields the GET leaves out
-  /// are added empty.
+  /// Produces exactly the contract's fields, every value a string, in the
+  /// shape the owner's own curl uses:
+  ///
+  /// - keys outside [apiRequestFields] are dropped;
+  /// - the four numeric required fields get a numeric default when the record
+  ///   has none, whether they arrived null or were missing entirely;
+  /// - the six genuinely nullable fields stay null;
+  /// - every other null becomes `""`, and every number (`0.0`, `22`) becomes
+  ///   its string form, since the request type declares strings.
   static Map<String, dynamic> normalizeForApi(Map<String, dynamic> body) {
     final out = Map<String, dynamic>.from(body);
 
-    for (final key in _requiredApiFields) {
-      out.putIfAbsent(key, () => null);
-    }
-
-    for (final entry in out.entries.toList()) {
-      if (entry.value == null && !_nullableApiFields.contains(entry.key)) {
-        out[entry.key] = '';
+    for (final entry in _requiredApiFields.entries) {
+      final current = out[entry.key];
+      // Only a null or blank counts as missing. A value the office already
+      // set is kept, including an explicit zero fee or a real billing day.
+      if (current == null || current.toString().trim().isEmpty) {
+        out[entry.key] = entry.value;
       }
     }
 
-    final billingDay = out['billingDay'];
-    if (billingDay == null || billingDay.toString().trim().isEmpty) {
-      out['billingDay'] = defaultBillingDay;
+    // The GET never returns applicationId, but the PUT requires it, and it
+    // is the same number the record carries as accountNo (the ticket the
+    // technician sees, e.g. 202609022055224002481). Copy it across rather
+    // than inventing a value.
+    final applicationId = out['applicationId'];
+    if (applicationId == null || applicationId.toString().trim().isEmpty) {
+      final accountNo = out['accountNo']?.toString().trim() ?? '';
+      out['applicationId'] = accountNo.isNotEmpty ? accountNo : '0';
     }
 
-    return out;
+    final result = <String, dynamic>{};
+    for (final key in apiRequestFields) {
+      final value = out[key];
+      if (value == null) {
+        result[key] = _nullableApiFields.contains(key) ? null : '';
+      } else if (value is num) {
+        // 22 -> "22", 0.0 -> "0", 799.5 -> "799.5".
+        result[key] = value == value.truncateToDouble() && value.abs() < 1e15
+            ? value.toInt().toString()
+            : value.toString();
+      } else {
+        result[key] = value.toString();
+      }
+    }
+    return result;
   }
 
   /// Fields the technician's app is allowed to change on the server.

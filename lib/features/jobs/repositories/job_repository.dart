@@ -117,6 +117,22 @@ class JobRepository {
     return syncWorker.syncPendingJobs();
   }
 
+  /// Push whatever is pending, then throw the local cache away and take the
+  /// server as the truth.
+  ///
+  /// This is the override behind Settings > Force Full Sync. A normal refresh
+  /// protects unsynced edits; this one does not, which is why the screen asks
+  /// for the technician's password first. Pending edits are pushed before the
+  /// wipe so a completion that can go through does, and the returned result
+  /// says whether any were refused and therefore lost.
+  Future<SyncResult> forceRefreshFromServer({String? technicianEmail}) async {
+    final pushed = await syncWorker.syncPendingJobs();
+    await _dao.clearAllJobs();
+    await fetchRemoteJobs(technicianEmail: technicianEmail);
+    await syncWorker.refreshPendingCount();
+    return pushed;
+  }
+
   /// Activate a job: Scheduled -> Activated.
   Future<void> activateJob(int id, {String? technicianEmail}) async {
     final existing = await _dao.getJobById(id);

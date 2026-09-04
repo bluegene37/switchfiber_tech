@@ -24,6 +24,7 @@ void main() {
         'firstName': 'Ana',
         'lastName': 'Reyes',
         'status': 'Activated',
+        'accountNo': '202609022055224002481',
         'duration': null,
         'billingDay': null,
         'installationFee': null,
@@ -62,10 +63,58 @@ void main() {
     }
   });
 
-  test('a missing required field is added, not just un-nulled', () {
+  test('applicationId is the account number the record already carries', () {
     final body = completedJob().toApiJson();
-    expect(body['applicationId'], '',
-        reason: 'the GET omits applicationId entirely, so the PUT must add it');
+    expect(body['applicationId'], '202609022055224002481',
+        reason: 'the GET omits applicationId, but it is the same number as '
+            'accountNo, the ticket the technician sees');
+  });
+
+  test('applicationId falls back to zero only when there is no accountNo', () {
+    final raw = json.encode({'id': 1, 'status': 'Activated'});
+    expect(completedJob(raw: raw).toApiJson()['applicationId'], '0');
+  });
+
+  test('an applicationId the server already holds is kept', () {
+    final raw = json.encode(
+        {'id': 1, 'applicationId': '999', 'accountNo': '111', 'status': 'x'});
+    expect(completedJob(raw: raw).toApiJson()['applicationId'], '999');
+  });
+
+  test('the numeric required fields are never sent as an empty string', () {
+    // Empty strings cleared the 400 and then produced
+    // "HTTP 500 An error occurred while updating job order with ID: 3977",
+    // which is what parsing "" as a number looks like from outside.
+    final body = completedJob().toApiJson();
+    for (final field in [
+      'duration',
+      'applicationId',
+      'billingDay',
+      'installationFee'
+    ]) {
+      expect(body[field], isNot(''),
+          reason: '$field holds a number; "" is not a safe filler');
+      expect(body[field].toString().trim(), isNotEmpty);
+    }
+  });
+
+  test('duration defaults to zero, since no record on the server has one', () {
+    expect(completedJob().toApiJson()['duration'], '0');
+  });
+
+  test('installationFee falls back to 1 when the record has none', () {
+    final body = completedJob().toApiJson();
+    expect(body['installationFee'], JobOrderDto.defaultInstallationFee);
+    expect(body['installationFee'], '1');
+  });
+
+  test('an explicit zero installation fee is kept, not replaced by 1', () {
+    final raw =
+        json.encode({'id': 1, 'installationFee': 0.0, 'status': 'Activated'});
+    final body = completedJob(raw: raw).toApiJson();
+    expect(body['installationFee'], '0',
+        reason: 'most job orders read 0 and a free install is a real value; '
+            'only a null or empty fee counts as missing');
   });
 
   test('billingDay falls back to 27 when the record has none', () {
@@ -119,20 +168,26 @@ void main() {
     expect(body['duration'], '24');
   });
 
-  test('normalizeForApi leaves a body that already satisfies the contract', () {
+  test('normalizeForApi keeps contract values that already satisfy it', () {
     final clean = {
       'duration': '12',
       'billingDay': '5',
       'applicationId': '77',
       'installationFee': '1000',
     };
-    expect(JobOrderDto.normalizeForApi(clean), clean);
+    final out = JobOrderDto.normalizeForApi(clean);
+    for (final e in clean.entries) {
+      expect(out[e.key], e.value, reason: '${e.key} must pass through');
+    }
+    expect(out.length, JobOrderDto.apiRequestFields.length,
+        reason: 'the rest of the contract is filled in, not left out');
   });
 
   test('a job with no server record is normalized too', () {
     final body = completedJob(raw: '').toApiJson();
-    expect(body['duration'], '');
-    expect(body['applicationId'], '');
+    expect(body['duration'], '0');
+    expect(body['applicationId'], '0');
     expect(body['billingDay'], '27');
+    expect(body['installationFee'], '1');
   });
 }

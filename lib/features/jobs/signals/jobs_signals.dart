@@ -273,6 +273,18 @@ class JobsSignals {
         technicianEmail: technicianEmail.value);
   }
 
+  /// Settings > Force Full Sync: push pending edits, then replace the local
+  /// cache with the server's copy. See [JobRepository.forceRefreshFromServer].
+  Future<SyncResult> forceRefresh() async {
+    isRefreshing.value = true;
+    try {
+      return await repository.forceRefreshFromServer(
+          technicianEmail: technicianEmail.value);
+    } finally {
+      isRefreshing.value = false;
+    }
+  }
+
   /// Update tab filter
   void setFilter(String filter) {
     activeFilter.value = filter;
