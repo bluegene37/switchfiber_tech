@@ -16,6 +16,8 @@ import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../widgets/job_photo_gallery.dart';
 import '../widgets/status_badge.dart';
+import '../../reports/screens/create_report_screen.dart';
+import '../../reports/signals/report_signals.dart';
 
 /// Comprehensive details screen for a Job Order with full Dark Mode support
 /// and responsive flex layouts.
@@ -143,6 +145,48 @@ class JobOrderDetailScreen extends StatelessWidget {
               ),
             ],
           ),
+          bottomNavigationBar: readOnly || !job.canActivate
+              ? null
+              : SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkCard : Colors.white,
+                      border: Border(
+                        top: BorderSide(
+                          color: isDark
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight,
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: job.hasCompletedReport
+                          ? () => _handleComplete(context, job, isDark)
+                          : () => _handleOpenReport(context, job),
+                      icon: Icon(
+                        job.hasCompletedReport
+                            ? Icons.check_circle_rounded
+                            : Icons.assignment_turned_in_rounded,
+                        size: 22,
+                      ),
+                      label: Text(
+                        job.hasCompletedReport
+                            ? 'Mark as Completed'
+                            : 'Fill Completion Report',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
           body: ListView(
             // The activate button sits at the very bottom, so the scroll has
             // to clear the phone's navigation bar.
@@ -239,28 +283,10 @@ class JobOrderDetailScreen extends StatelessWidget {
             if (readOnly)
               _buildViewOnlyNote(context, isDark)
             else if (job.canActivate) ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  // Completion is final, so it stays disabled until the
-                  // on-site report is filed.
-                  onPressed: job.hasCompletedReport
-                      ? () => _handleComplete(context, job, isDark)
-                      : null,
-                  icon: const Icon(Icons.check_circle_rounded, size: 24),
-                  label: const Text('Complete',
-                      style: TextStyle(fontWeight: FontWeight.w800)),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              if (!job.hasCompletedReport) ...[
-                const SizedBox(height: 8),
-                _buildReportRequiredNote(context, isDark),
-              ],
+              if (!job.hasCompletedReport)
+                _buildReportRequiredNote(context, isDark)
+              else
+                _buildReportReadyNote(context, isDark),
             ] else
               _buildActivatedNote(context, job, isDark),
           ],
@@ -1073,11 +1099,22 @@ class JobOrderDetailScreen extends StatelessWidget {
   /// directly on the job list: backing out of it landed the technician on the
   /// main screen instead of the job they were working.
   void _handleOpenReport(BuildContext context, JobOrderDto job) {
-    onOpenReport?.call(job);
+    if (onOpenReport != null) {
+      onOpenReport!(job);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateReportScreen(
+          jobsSignals: jobsSignals,
+          reportSignals: ReportSignals()..setJobOrder(job),
+          onReportSubmitted: () => Navigator.of(context).maybePop(),
+        ),
+      ),
+    );
   }
 
-  /// Says why activation is unavailable, so the button does not just look
-  /// broken.
+  /// Informs the technician that a completion report is needed before finalizing.
   Widget _buildReportRequiredNote(BuildContext context, bool isDark) {
     final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
@@ -1096,9 +1133,45 @@ class JobOrderDetailScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Complete the on-site report first. It needs the modem serial '
-              'and the subscriber signature.',
+              'Step 1 of 2: Completion report required. Tap "Fill Completion '
+              'Report" below to record modem serial and subscriber signature.',
               style: context.text.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Informs the technician that the report is complete and ready to finalize.
+  Widget _buildReportReadyNote(BuildContext context, bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppTheme.success.withValues(alpha: 0.15)
+            : AppTheme.successSubtle,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark
+              ? AppTheme.success.withValues(alpha: 0.3)
+              : const Color(0xFFBBF7D0),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.check_circle_outline_rounded,
+              size: 20, color: AppTheme.successInkOf(context)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Step 2 of 2: Completion report filed. Tap "Mark as Completed" '
+              'below to finalize and sync order.',
+              style: context.text.bodySmall!.copyWith(
+                color: AppTheme.successInkOf(context),
+              ),
             ),
           ),
         ],

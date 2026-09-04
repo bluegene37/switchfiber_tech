@@ -59,40 +59,52 @@ void main() {
         modemRouterSN: serial,
       );
 
-  ElevatedButton activateButton(WidgetTester tester) =>
+  ElevatedButton ctaButton(WidgetTester tester, String label) =>
       tester.widget<ElevatedButton>(
         find.ancestor(
-          of: find.text('Complete'),
+          of: find.text(label),
           matching: find.byType(ElevatedButton),
         ),
       );
 
-  testWidgets('activation is disabled until the report is filed',
+  testWidgets(
+      'primary CTA dynamically prompts to fill report when report is pending',
       (tester) async {
-    await pumpDetail(tester, job: job());
+    var reportOpened = false;
+    await pumpDetail(
+      tester,
+      job: job(),
+      onOpenReport: (_) => reportOpened = true,
+    );
 
-    expect(activateButton(tester).onPressed, isNull,
-        reason: 'a job with no report must not be activatable');
-    expect(find.textContaining('Complete the on-site report first'),
-        findsOneWidget,
-        reason: 'the technician needs to be told why the button is dead');
+    // Dynamic CTA progression: button is interactive and guides user to fill report
+    expect(find.text('Fill Completion Report'), findsOneWidget);
+    expect(find.text('Mark as Completed'), findsNothing);
+    expect(ctaButton(tester, 'Fill Completion Report').onPressed, isNotNull,
+        reason: 'a pending report must provide an active CTA to fill report');
+    expect(find.textContaining('Completion report required'), findsOneWidget);
+
+    await tester.tap(find.text('Fill Completion Report'));
+    await tester.pump();
+    expect(reportOpened, isTrue, reason: 'tapping CTA must open the report');
   });
 
-  testWidgets('a signature without a serial still blocks activation',
+  testWidgets('a signature without a serial still requires completing report',
       (tester) async {
     await pumpDetail(tester, job: job(signature: _signature));
-    expect(activateButton(tester).onPressed, isNull);
+    expect(find.text('Fill Completion Report'), findsOneWidget);
+    expect(find.text('Mark as Completed'), findsNothing);
   });
 
-  testWidgets('activation opens up once the report is complete',
+  testWidgets('primary CTA switches to Mark as Completed once report is filed',
       (tester) async {
     await pumpDetail(
         tester, job: job(signature: _signature, serial: 'HWTC8829104'));
 
-    expect(activateButton(tester).onPressed, isNotNull,
-        reason: 'a filed report must unlock activation');
-    expect(find.textContaining('Complete the on-site report first'),
-        findsNothing);
+    expect(find.text('Mark as Completed'), findsOneWidget);
+    expect(ctaButton(tester, 'Mark as Completed').onPressed, isNotNull,
+        reason: 'a filed report must unlock Mark as Completed');
+    expect(find.textContaining('Completion report filed'), findsOneWidget);
   });
 
   testWidgets('opening the report leaves this screen on the stack',
