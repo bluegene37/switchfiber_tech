@@ -185,27 +185,41 @@ class PhotoCaptureTile extends StatelessWidget {
                         Positioned(
                           top: 6,
                           left: 6,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppTheme.success.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(CupertinoIcons.location_fill,
-                                    color: Colors.white, size: 20),
-                                const SizedBox(width: 3),
-                                Text(
-                                  'GPS',
-                                  style: context.text.labelSmall!.copyWith(
-                                    color: Colors.white,
-                                  ),
+                          child: FutureBuilder<ExifMetadata>(
+                            future: ExifService.instance.extractExif(bytes),
+                            builder: (context, snapshot) {
+                              final hasGps = snapshot.data?.hasGps == true;
+                              final color = hasGps
+                                  ? AppTheme.success.withValues(alpha: 0.85)
+                                  : AppTheme.darkSlate.withValues(alpha: 0.75);
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(5),
                                 ),
-                              ],
-                            ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      hasGps
+                                          ? CupertinoIcons.location_fill
+                                          : CupertinoIcons.location_slash,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      hasGps ? 'GPS' : 'No GPS',
+                                      style: context.text.labelSmall!.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                         ),
                         // Size Badge

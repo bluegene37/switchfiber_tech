@@ -57,19 +57,18 @@ class ImageCaptureService {
       }
     } catch (_) {}
 
-    // Fall back to target or plant center if no GPS fix was acquired
-    lat ??= LocationService.fallbackLat;
-    lng ??= LocationService.fallbackLng;
-
-    // Inject GPS EXIF into the compressed JPEG bytes
-    bytes = _exifService.injectGpsExif(
-      bytes,
-      latitude: lat,
-      longitude: lng,
-      altitude: alt,
-      timestamp: DateTime.now(),
-      technicianEmail: technicianEmail,
-    );
+    // Only inject GPS EXIF if a verified GPS fix or explicit coordinates were acquired.
+    // Never fall back to dummy/plant center coordinates to avoid spoofing unverified locations.
+    if (lat != null && lng != null) {
+      bytes = _exifService.injectGpsExif(
+        bytes,
+        latitude: lat,
+        longitude: lng,
+        altitude: alt,
+        timestamp: DateTime.now(),
+        technicianEmail: technicianEmail,
+      );
+    }
 
     return DataUrl.encode(bytes, mimeType: _mimeTypeFor(file));
   }

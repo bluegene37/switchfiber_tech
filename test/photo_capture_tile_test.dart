@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:swithfiber_tech/core/services/exif_service.dart';
 import 'package:swithfiber_tech/core/theme/app_theme.dart';
 import 'package:swithfiber_tech/core/utils/data_url.dart';
 import 'package:swithfiber_tech/features/reports/widgets/photo_capture_tile.dart';
@@ -168,5 +170,43 @@ void main() {
     await tester.tap(find.text('Take photo with GPS'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Could not open the camera'), findsOneWidget);
+  });
+
+  testWidgets('displays No GPS badge when image lacks GPS coordinates',
+      (tester) async {
+    await tester.pumpWidget(host(
+      value: _png,
+      pick: (_) async => null,
+      onChanged: (_) {},
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No GPS'), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.location_slash), findsOneWidget);
+  });
+
+  testWidgets('displays GPS badge when image contains GPS coordinates',
+      (tester) async {
+    final dummyJpeg = Uint8List.fromList([
+      0xFF, 0xD8, // SOI
+      0xFF, 0xC0, 0x00, 0x0B, 0x08, 0x00, 0x0A, 0x00, 0x0A, 0x01, 0x01, 0x11, 0x00, // SOF0
+      0xFF, 0xD9, // EOI
+    ]);
+    final gpsJpeg = ExifService.instance.injectGpsExif(
+      dummyJpeg,
+      latitude: 14.469586,
+      longitude: 121.195615,
+    );
+    final gpsDataUrl = DataUrl.encode(gpsJpeg, mimeType: 'image/jpeg');
+
+    await tester.pumpWidget(host(
+      value: gpsDataUrl,
+      pick: (_) async => null,
+      onChanged: (_) {},
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GPS'), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.location_fill), findsOneWidget);
   });
 }
