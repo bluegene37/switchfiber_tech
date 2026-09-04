@@ -52,7 +52,6 @@ class JobRepository {
       final activated = await _api.fetchByStatus(JobStatus.activated.wireValue);
       final completed = await _api.fetchByStatus(JobStatus.completed.wireValue);
 
-      final email = technicianEmail?.trim() ?? '';
       final pending = await _dao.getUnsyncedIds();
       final companions = <JobOrdersCompanion>[];
       final keep = <int>{};

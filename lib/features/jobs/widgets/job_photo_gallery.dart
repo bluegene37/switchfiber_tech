@@ -115,6 +115,7 @@ class _PhotoThumb extends StatelessWidget {
                       children: [
                         Image.memory(
                           data,
+                          cacheWidth: 300,
                           fit: BoxFit.cover,
                           gaplessPlayback: true,
                         ),

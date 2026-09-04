@@ -814,7 +814,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           ),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Image.memory(existingBytes, fit: BoxFit.contain),
+                        child: Image.memory(existingBytes,
+                            cacheWidth: 600, fit: BoxFit.contain),
                       ),
                       const SizedBox(height: 8),
                       Row(

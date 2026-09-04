@@ -178,7 +178,9 @@ class PhotoCaptureTile extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Image.memory(bytes,
-                            fit: BoxFit.cover, gaplessPlayback: true),
+                            cacheWidth: 400,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true),
                         // GPS Badge
                         Positioned(
                           top: 6,
@@ -593,7 +595,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
         child: InteractiveViewer(
           minScale: 0.5,
           maxScale: 5,
-          child: Image.memory(widget.bytes, fit: BoxFit.contain),
+          child: Image.memory(widget.bytes,
+              cacheWidth: 1200, fit: BoxFit.contain),
         ),
       ),
     );

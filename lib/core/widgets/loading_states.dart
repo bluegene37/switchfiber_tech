@@ -23,20 +23,21 @@ class DownloadingIndicator extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 64,
-              height: 64,
+              width: 56,
+              height: 56,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   const SizedBox(
-                    width: 64,
-                    height: 64,
+                    width: 56,
+                    height: 56,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
                       color: AppTheme.primary,
@@ -44,7 +45,7 @@ class DownloadingIndicator extends StatelessWidget {
                   ),
                   Icon(
                     Icons.cloud_download_rounded,
-                    size: 28,
+                    size: 26,
                     color: isDark
                         ? AppTheme.textSecondaryDark
                         : AppTheme.textMuted,
@@ -52,13 +53,13 @@ class DownloadingIndicator extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Text(
               title,
               textAlign: TextAlign.center,
               style: context.text.titleMedium,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               subtitle,
               textAlign: TextAlign.center,
