@@ -21,7 +21,6 @@ enum HistoryRange {
   all('All time'),
   today('Today'),
   week('This week'),
-  month('This month'),
   custom('Pick dates');
 
   const HistoryRange(this.label);
@@ -163,10 +162,6 @@ class JobsSignals {
           today.subtract(Duration(days: today.weekday - DateTime.monday)),
           today.add(const Duration(days: 1)),
         ),
-      HistoryRange.month => (
-          DateTime(today.year, today.month),
-          today.add(const Duration(days: 1)),
-        ),
       HistoryRange.custom => (
           historyRangeStart.value,
           historyRangeEnd.value?.add(const Duration(days: 1)),
@@ -231,9 +226,6 @@ class JobsSignals {
 
   late final ReadonlySignal<int> historyThisWeekCount =
       computed(() => _historyCountIn(HistoryRange.week));
-
-  late final ReadonlySignal<int> historyThisMonthCount =
-      computed(() => _historyCountIn(HistoryRange.month));
 
   /// Pipe Drift SQLite reactive stream into allJobs signal
   void _initDriftStream() {
