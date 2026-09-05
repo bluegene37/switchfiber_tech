@@ -4,6 +4,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/database/daos/job_orders_dao.dart';
 import '../../../core/database/daos/sync_error_logs_dao.dart';
 import '../../../core/network/network_exceptions.dart';
+import '../../../core/network/request_snapshot.dart';
 import '../models/job_order_model.dart';
 import 'job_orders_api.dart';
 
@@ -65,9 +66,12 @@ class SyncWorker {
         // size that caused it: a completion inlines every photo as Base64
         // and is orders of magnitude larger than an activation.
         var payloadBytes = 0;
+        // Kept outside the try so a refusal can be logged with the exact
+        // body that was refused.
+        Map<String, dynamic>? body;
         try {
           // Replay the full record with the technician's edits applied.
-          final body = await dto.toApiJsonAsync();
+          body = await dto.toApiJsonAsync();
           payloadBytes = utf8.encode(json.encode(body)).length;
           await _api.update(dto.id, body);
           await _replaceWithServerCopy(dto.id);
@@ -87,12 +91,16 @@ class SyncWorker {
             // report, to find out why.
             failures.add('${dto.ticketNumber}: '
                 'HTTP ${err.statusCode ?? "?"} ${err.message}');
-            await _record(dto, err.statusCode, err.message, payloadBytes);
+            await _record(dto, err.statusCode, err.message, payloadBytes,
+                body: body,
+                method: err.requestMethod,
+                url: err.requestUrl,
+                response: err.details);
           }
         } catch (e) {
           syncedFailed++;
           failures.add('${dto.ticketNumber}: $e');
-          await _record(dto, null, e.toString(), payloadBytes);
+          await _record(dto, null, e.toString(), payloadBytes, body: body);
           // Keep isSynced = false so it will retry on next sync cycle
         }
       }
@@ -128,8 +136,17 @@ class SyncWorker {
 
   /// Writes one refused push to the on-phone log. Never lets a logging
   /// problem break the sync it is reporting on.
+  ///
+  /// The request is stored alongside so the log entry is something the
+  /// backend team can replay, not just a status code. [method] and [url]
+  /// fall back to the documented endpoint when the failure happened before
+  /// Dio built the request.
   Future<void> _record(JobOrderDto dto, int? statusCode, String message,
-      int payloadBytes) async {
+      int payloadBytes,
+      {Map<String, dynamic>? body,
+      String? method,
+      String? url,
+      dynamic response}) async {
     try {
       await _errorLog?.log(
         entityType: 'JOB_ORDER',
@@ -139,6 +156,10 @@ class SyncWorker {
         statusCode: statusCode,
         message: message,
         payloadBytes: payloadBytes,
+        requestMethod: method ?? 'PUT',
+        requestUrl: url ?? '/api/JobOrders/${dto.id}',
+        requestBody: body == null ? null : RequestSnapshot.body(body),
+        responseBody: RequestSnapshot.response(response),
       );
     } catch (_) {}
   }

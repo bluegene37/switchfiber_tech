@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:swithfiber_tech/core/database/app_database.dart';
 import 'package:swithfiber_tech/core/database/daos/sync_error_logs_dao.dart';
 import 'package:swithfiber_tech/core/network/network_exceptions.dart';
+import 'package:swithfiber_tech/core/network/request_snapshot.dart';
 import 'package:swithfiber_tech/features/jobs/models/job_order_model.dart';
 import 'package:swithfiber_tech/features/jobs/services/job_orders_api.dart';
 import 'package:swithfiber_tech/features/jobs/services/sync_worker.dart';
@@ -12,14 +13,22 @@ import 'package:swithfiber_tech/features/jobs/services/sync_worker.dart';
 class _RefusingApi implements JobOrdersApi {
   final int? statusCode;
   final String message;
+  final dynamic details;
   int? lastPayloadBytes;
 
-  _RefusingApi({this.statusCode, this.message = 'Payload too large'});
+  _RefusingApi(
+      {this.statusCode, this.message = 'Payload too large', this.details});
 
   @override
   Future<void> update(int id, Map<String, dynamic> body) async {
     if (statusCode == null) throw StateError(message);
-    throw ApiException(message: message, statusCode: statusCode);
+    throw ApiException(
+      message: message,
+      statusCode: statusCode,
+      details: details,
+      requestMethod: 'PUT',
+      requestUrl: 'https://103.249.198.50:8090/api/JobOrders/$id',
+    );
   }
 
   @override
@@ -132,6 +141,70 @@ void main() {
     expect((await logs.getAll()).single.resolved, isTrue);
     expect(await logs.countUnresolved(), 0,
         reason: 'a badge must not keep counting a problem that went away');
+  });
+
+  test('the request that was refused is kept, so it can be replayed',
+      () async {
+    await seedPendingJob();
+    final worker = SyncWorker(db.jobOrdersDao,
+        api: _RefusingApi(
+          statusCode: 400,
+          message: 'Validation failed',
+          details: {
+            'title': 'One or more validation errors occurred.',
+            'errors': {
+              'Duration': ['The Duration field is required.']
+            },
+          },
+        ),
+        errorLog: logs);
+
+    await worker.syncPendingJobs();
+
+    final entry = (await logs.getAll()).single;
+    expect(entry.requestMethod, 'PUT');
+    expect(entry.requestUrl, 'https://103.249.198.50:8090/api/JobOrders/1');
+    expect(entry.requestBody, isNotNull,
+        reason: 'a status code alone gives the backend nothing to look at');
+    expect(entry.requestBody, contains('"status": "Completed"'));
+    expect(entry.requestBody, contains('"onsiteStatus": "Done"'));
+    expect(entry.responseBody, contains('The Duration field is required.'),
+        reason: 'the raw response names the field the message may not');
+  });
+
+  test('inline images are replaced by their size in the stored request', () {
+    final body = {
+      'status': 'Completed',
+      'boxReadingImage': 'data:image/jpeg;base64,${'A' * 40000}',
+      'clientSignature': '',
+    };
+
+    final text = RequestSnapshot.body(body);
+
+    expect(text, isNot(contains('AAAAAAAA')),
+        reason: 'megabytes of Base64 fit in no clipboard or chat message');
+    expect(text, contains('data:image/jpeg;base64,… (29 KB omitted)'));
+    expect(text, contains('"status": "Completed"'));
+    expect(text, contains('"clientSignature": ""'),
+        reason: 'an empty value is a fact the backend needs to see');
+  });
+
+  test('the copyable report reads as one request and one response', () {
+    final report = RequestSnapshot.report(
+      method: 'PUT',
+      url: 'https://103.249.198.50:8090/api/JobOrders/1',
+      statusCode: 400,
+      message: 'Validation failed',
+      requestBody: '{"status": "Completed"}',
+      responseBody: '{"title": "Bad Request"}',
+    );
+
+    expect(report, startsWith('PUT https://103.249.198.50:8090/api/JobOrders/1'));
+    expect(report, contains('Authorization: Bearer <token>'),
+        reason: 'the header is named but the token itself never leaves the phone');
+    expect(report, contains('{"status": "Completed"}'));
+    expect(report, contains('HTTP 400'));
+    expect(report, contains('{"title": "Bad Request"}'));
   });
 
   test('sync errors do not accumulate without bound', () async {

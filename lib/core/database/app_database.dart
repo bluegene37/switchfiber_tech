@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -68,6 +68,14 @@ class AppDatabase extends _$AppDatabase {
           if (from < 8) {
             // Why a pending push was refused, kept on the phone that hit it.
             await m.createTable(syncErrorLogs);
+          }
+          if (from < 9) {
+            // The request itself, so a refusal can be handed to the backend
+            // team as something they can replay.
+            await m.addColumn(syncErrorLogs, syncErrorLogs.requestMethod);
+            await m.addColumn(syncErrorLogs, syncErrorLogs.requestUrl);
+            await m.addColumn(syncErrorLogs, syncErrorLogs.requestBody);
+            await m.addColumn(syncErrorLogs, syncErrorLogs.responseBody);
           }
         },
       );
