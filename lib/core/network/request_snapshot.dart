@@ -9,16 +9,24 @@ class RequestSnapshot {
 
   static const JsonEncoder _pretty = JsonEncoder.withIndent('  ');
 
-  /// The JSON body as sent, with every inline image replaced by a marker
-  /// carrying its size: `data:image/jpeg;base64,… (312 KB omitted)`.
+  /// Inline images up to this size are kept verbatim so the copied request
+  /// replays exactly. A signature is a few kilobytes and belongs in the
+  /// reproduction; a camera photo is hundreds of kilobytes and does not.
+  static const int maxInlineImageBytes = 32 * 1024;
+
+  /// The JSON body as sent, with every inline image over
+  /// [maxInlineImageBytes] replaced by a marker carrying its size:
+  /// `data:image/jpeg;base64,… (312 KB omitted)`.
   ///
-  /// The Base64 is the one part of the body nobody can read, and a completion
-  /// carries megabytes of it. Everything a validation error refers to, the
-  /// field names and their values, is kept verbatim.
+  /// A completion carries megabytes of Base64 that no clipboard or chat
+  /// message can take. Everything a validation error refers to, the field
+  /// names and their values, is kept verbatim.
   static String body(Map<String, dynamic> body) {
     final shown = <String, dynamic>{};
     body.forEach((key, value) {
-      if (value is String && DataUrl.isDataUrl(value)) {
+      if (value is String &&
+          DataUrl.isDataUrl(value) &&
+          DataUrl.approxBytes(value) > maxInlineImageBytes) {
         final mime = DataUrl.mimeTypeOf(value) ?? 'image';
         final size = DataUrl.formatBytes(DataUrl.approxBytes(value));
         shown[key] = 'data:$mime;base64,… ($size omitted)';

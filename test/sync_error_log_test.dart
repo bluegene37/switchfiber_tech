@@ -172,10 +172,11 @@ void main() {
         reason: 'the raw response names the field the message may not');
   });
 
-  test('inline images are replaced by their size in the stored request', () {
+  test('large inline images are replaced by their size in the stored request',
+      () {
     final body = {
       'status': 'Completed',
-      'boxReadingImage': 'data:image/jpeg;base64,${'A' * 40000}',
+      'boxReadingImage': 'data:image/jpeg;base64,${'A' * 200000}',
       'clientSignature': '',
     };
 
@@ -183,10 +184,19 @@ void main() {
 
     expect(text, isNot(contains('AAAAAAAA')),
         reason: 'megabytes of Base64 fit in no clipboard or chat message');
-    expect(text, contains('data:image/jpeg;base64,… (29 KB omitted)'));
+    expect(text, contains('data:image/jpeg;base64,… (146 KB omitted)'));
     expect(text, contains('"status": "Completed"'));
     expect(text, contains('"clientSignature": ""'),
         reason: 'an empty value is a fact the backend needs to see');
+  });
+
+  test('a small image such as a signature is kept verbatim', () {
+    final signature = 'data:image/png;base64,${'B' * 5000}';
+    final text = RequestSnapshot.body({'clientSignature': signature});
+
+    expect(text, contains(signature),
+        reason: 'a replay that swaps the signature for a marker tests a '
+            'different request than the one that failed');
   });
 
   test('the copyable report reads as one request and one response', () {
