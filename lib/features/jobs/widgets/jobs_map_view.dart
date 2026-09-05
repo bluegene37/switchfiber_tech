@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/location_service.dart';
 import '../../../core/theme/app_text.dart';
@@ -14,6 +13,7 @@ import '../../lcp_nap/signals/lcp_nap_signals.dart';
 import '../models/job_order_model.dart';
 import '../signals/jobs_signals.dart';
 import '../../lcp_nap/widgets/map_search_bar.dart';
+import '../../../core/services/map_navigation_service.dart';
 
 /// Interactive map view for field technician scheduled job orders,
 /// plotting subscriber locations, nearby NAP fiber distribution boxes, and technician GPS position.
@@ -845,9 +845,11 @@ class _JobsMapViewState extends State<JobsMapView> {
                   icon: const Icon(CupertinoIcons.location_north_fill,
                       color: AppTheme.primary, size: 24),
                   onPressed: () {
-                    final url = Uri.parse(
-                        'https://maps.apple.com/?q=${jobPos.latitude},${jobPos.longitude}');
-                    launchUrl(url, mode: LaunchMode.externalApplication);
+                    MapNavigationService.navigateToCoordinates(
+                      latitude: jobPos.latitude,
+                      longitude: jobPos.longitude,
+                      destinationLabel: job.customerName,
+                    );
                   },
                 ),
               ),
@@ -872,9 +874,11 @@ class _JobsMapViewState extends State<JobsMapView> {
                         color: Color(0xFF10B981), size: 24),
                     onPressed: () {
                       final polePos = nearestNapInfo.nap.latLng!;
-                      final url = Uri.parse(
-                          'https://maps.apple.com/?q=${polePos.latitude},${polePos.longitude}');
-                      launchUrl(url, mode: LaunchMode.externalApplication);
+                      MapNavigationService.navigateToCoordinates(
+                        latitude: polePos.latitude,
+                        longitude: polePos.longitude,
+                        destinationLabel: 'NAP pole',
+                      );
                     },
                   ),
                 ),

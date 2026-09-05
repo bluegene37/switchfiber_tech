@@ -4,12 +4,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/exif_service.dart';
 import '../../../core/services/photo_storage_service.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/data_url.dart';
+import '../../../core/services/map_navigation_service.dart';
 
 /// Picks a photo from the camera or gallery for one image field.
 ///
@@ -519,9 +519,11 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                     borderRadius: BorderRadius.circular(10),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     onPressed: () {
-                      final url = Uri.parse(
-                          'https://maps.apple.com/?q=${meta!.latitude},${meta.longitude}');
-                      launchUrl(url, mode: LaunchMode.externalApplication);
+                      MapNavigationService.navigateToCoordinates(
+                        latitude: meta!.latitude!,
+                        longitude: meta.longitude!,
+                        destinationLabel: 'Photo location',
+                      );
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,

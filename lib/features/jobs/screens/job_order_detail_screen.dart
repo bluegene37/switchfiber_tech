@@ -18,6 +18,7 @@ import '../widgets/job_photo_gallery.dart';
 import '../widgets/status_badge.dart';
 import '../../reports/screens/create_report_screen.dart';
 import '../../reports/signals/report_signals.dart';
+import '../../../core/services/map_navigation_service.dart';
 
 /// Comprehensive details screen for a Job Order with full Dark Mode support
 /// and responsive flex layouts.
@@ -759,10 +760,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                               ),
                               onPressed: () {
                                 final p = nearestNapInfo.nap.latLng!;
-                                final uri = Uri.parse(
-                                    'https://maps.apple.com/?q=${p.latitude},${p.longitude}');
-                                launchUrl(uri,
-                                    mode: LaunchMode.externalApplication);
+                                MapNavigationService.navigateToCoordinates(
+                                  latitude: p.latitude,
+                                  longitude: p.longitude,
+                                  destinationLabel: 'NAP pole',
+                                );
                               },
                             ),
                           ),
@@ -819,17 +821,17 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   Future<void> _openNavigation(JobOrderDto job) async {
     final latLng = job.latLng;
-    final Uri uri;
     if (latLng != null) {
-      uri = Uri.parse(
-          'https://maps.apple.com/?q=${latLng.latitude},${latLng.longitude}');
-    } else {
-      final fullAddr =
-          '${job.address}${job.barangay != null ? ", ${job.barangay}" : ""}${job.city != null ? ", ${job.city}" : ""}, Philippines';
-      uri = Uri.parse(
-          'https://maps.apple.com/?q=${Uri.encodeComponent(fullAddr)}');
+      await MapNavigationService.navigateToCoordinates(
+        latitude: latLng.latitude,
+        longitude: latLng.longitude,
+        destinationLabel: job.customerName,
+      );
+      return;
     }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final fullAddr =
+        '${job.address}${job.barangay != null ? ", ${job.barangay}" : ""}${job.city != null ? ", ${job.city}" : ""}, Philippines';
+    await MapNavigationService.navigateToAddress(fullAddr);
   }
 
   Widget _buildPlantAndHardwareCard(
@@ -1606,21 +1608,16 @@ class JobOrderDetailScreen extends StatelessWidget {
                 child: const Icon(Icons.navigation_rounded,
                     color: Color(0xFF1A73E8), size: 24),
               ),
-              title: Text('Start Navigation in Google Maps',
-                  style: ctx.text.titleSmall),
+              title: Text('Start Navigation', style: ctx.text.titleSmall),
               subtitle: Text(
-                'Turn-by-turn driving directions from your location',
+                'Driving directions in Google Maps or your map app',
                 style: ctx.text.bodySmall,
               ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
               onTap: () async {
                 Navigator.pop(ctx);
-                final uri = Uri.parse(
-                    'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(addr)}&travelmode=driving');
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
+                await _openNavigation(job);
               },
             ),
             const SizedBox(height: 6),
