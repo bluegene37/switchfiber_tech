@@ -26,9 +26,9 @@ enum JobStatus {
 
   String get label => wireValue;
 
-  /// The next stage. [activated] and [completed] are terminal stages.
+  /// The next stage. [completed] and [activated] are terminal stages.
   JobStatus? get next => switch (this) {
-        JobStatus.scheduled => JobStatus.activated,
+        JobStatus.scheduled => JobStatus.completed,
         JobStatus.activated => null,
         JobStatus.completed => null,
       };
@@ -189,9 +189,9 @@ class JobOrderDto {
   bool get canActivate => !isHistory;
 
   /// The next stage when the technician advances this job. A job outside the
-  /// workflow goes straight to Activated.
+  /// workflow goes straight to Completed.
   JobStatus? get nextStatus =>
-      jobStatus == null ? JobStatus.activated : jobStatus!.next;
+      jobStatus == null ? JobStatus.completed : jobStatus!.next;
 
   /// A failed or postponed visit that must stay visible to the technician.
   SiteException? get siteException => SiteException.parse(onsiteStatus);
@@ -585,10 +585,13 @@ class JobOrderDto {
   /// `applicationId` is handled separately: it is the application's own
   /// number, which the record already carries as `accountNo`.
   static const Map<String, String> _requiredApiFields = {
-    'duration': '0',
+    'duration': defaultDuration,
     'billingDay': defaultBillingDay,
     'installationFee': defaultInstallationFee,
   };
+
+  /// Default duration set on job completion.
+  static const String defaultDuration = '2';
 
   /// Billing day used when the record carries none.
   ///
@@ -628,14 +631,12 @@ class JobOrderDto {
       }
     }
 
-    // The GET never returns applicationId, but the PUT requires it, and it
-    // is the same number the record carries as accountNo (the ticket the
-    // technician sees, e.g. 202609022055224002481). Copy it across rather
-    // than inventing a value.
+    // The GET never returns applicationId, but the PUT requires it.
+    // Use the record's ID to satisfy the backend requirement.
     final applicationId = out['applicationId'];
     if (applicationId == null || applicationId.toString().trim().isEmpty) {
-      final accountNo = out['accountNo']?.toString().trim() ?? '';
-      out['applicationId'] = accountNo.isNotEmpty ? accountNo : '0';
+      final idVal = out['id']?.toString().trim() ?? '';
+      out['applicationId'] = idVal.isNotEmpty ? idVal : (out['accountNo']?.toString().trim() ?? '0');
     }
 
     final result = <String, dynamic>{};
@@ -720,6 +721,7 @@ class JobOrderDto {
     }
 
     return normalizeForApi(<String, dynamic>{
+      'id': id,
       ...decoded,
       ..._technicianEdits(),
       if (dateInstalled != null)

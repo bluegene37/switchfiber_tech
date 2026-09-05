@@ -84,7 +84,7 @@ void main() {
     // are scrolled into view the Complete button below them has been
     // scrolled out and unmounted. Rather than juggle scroll position, size
     // the test viewport tall enough that the whole card renders at once
-    // (the same pattern job_history_screen_test.dart and others use for
+    // (the same pattern job_history_view_test.dart and others use for
     // the taller Task 2 type scale).
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;

@@ -63,16 +63,14 @@ void main() {
     }
   });
 
-  test('applicationId is the account number the record already carries', () {
+  test('applicationId is the record ID', () {
     final body = completedJob().toApiJson();
-    expect(body['applicationId'], '202609022055224002481',
-        reason: 'the GET omits applicationId, but it is the same number as '
-            'accountNo, the ticket the technician sees');
+    expect(body['applicationId'], '1',
+        reason: 'the GET omits applicationId, so the job ID is used to save');
   });
 
-  test('applicationId falls back to zero only when there is no accountNo', () {
-    final raw = json.encode({'id': 1, 'status': 'Activated'});
-    expect(completedJob(raw: raw).toApiJson()['applicationId'], '0');
+  test('applicationId falls back to zero only when there is no id', () {
+    expect(JobOrderDto.normalizeForApi({'status': 'Activated'})['applicationId'], '0');
   });
 
   test('an applicationId the server already holds is kept', () {
@@ -98,8 +96,8 @@ void main() {
     }
   });
 
-  test('duration defaults to zero, since no record on the server has one', () {
-    expect(completedJob().toApiJson()['duration'], '0');
+  test('duration defaults to 2, as required on completion', () {
+    expect(completedJob().toApiJson()['duration'], '2');
   });
 
   test('installationFee falls back to 1 when the record has none', () {
@@ -185,8 +183,8 @@ void main() {
 
   test('a job with no server record is normalized too', () {
     final body = completedJob(raw: '').toApiJson();
-    expect(body['duration'], '0');
-    expect(body['applicationId'], '0');
+    expect(body['duration'], '2');
+    expect(body['applicationId'], '1');
     expect(body['billingDay'], '27');
     expect(body['installationFee'], '1');
   });
