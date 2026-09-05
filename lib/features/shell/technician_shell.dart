@@ -70,14 +70,16 @@ class _TechnicianShellState extends State<TechnicianShell> {
           (email?.isNotEmpty ?? false) && (lastEmail?.isEmpty ?? true);
       lastEmail = email;
       if (becameKnown) {
-        widget.jobsSignals.fetchRemote();
+        // The one and only initial pull of job orders. It waits for the
+        // email on purpose: a pull without it is not scoped to this
+        // technician, and the repository refuses to make one.
+        widget.jobsSignals.fetchRemote(initial: true);
         _serviceOrdersSignals.fetchRemote();
       }
     });
     // Initial fetch / Drift seed. Runs here rather than at construction time so
     // that requests are only made once the technician is authenticated.
     // `initial` walks each screen through downloading -> skeleton -> data.
-    widget.jobsSignals.fetchRemote(initial: true);
     widget.lcpNapSignals.fetchRemote(initial: true);
     _serviceOrdersSignals.fetchRemote();
     // The login response carries no email, and the job history is matched on

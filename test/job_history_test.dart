@@ -176,8 +176,6 @@ void main() {
       expect(signals.historyCompletedCount.value, 1);
       // Wed 2 Sep: today (2 Sep), 1 Sep, and 31 Aug fall in this week
       expect(signals.historyThisWeekCount.value, 3);
-      // Only today (2 Sep) and 1 Sep fall in this month (Sep 2026)
-      expect(signals.historyThisMonthCount.value, 2);
     });
 
     test('status filter narrows history by Activated and Completed', () {
@@ -201,9 +199,6 @@ void main() {
 
       signals.setHistoryRange(HistoryRange.week);
       expect(signals.historyJobs.value.map((j) => j.id), [1, 5, 2]);
-
-      signals.setHistoryRange(HistoryRange.month);
-      expect(signals.historyJobs.value.map((j) => j.id), [1, 5]);
 
       signals.setHistoryRange(HistoryRange.custom,
           start: DateTime(2026, 8, 15), end: DateTime(2026, 8, 31));

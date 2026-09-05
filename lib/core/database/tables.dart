@@ -196,4 +196,19 @@ class SyncErrorLogs extends Table {
   /// Set once the same record syncs successfully, so the log shows what is
   /// still outstanding rather than everything that ever went wrong.
   BoolColumn get resolved => boolean().withDefault(const Constant(false))();
+
+  /// The HTTP method and full URL of the call that failed, e.g. `PUT` and
+  /// `https://host:8090/api/JobOrders/123`, so the backend team can find the
+  /// endpoint without reading the app.
+  TextColumn get requestMethod => text().withDefault(const Constant(''))();
+  TextColumn get requestUrl => text().withDefault(const Constant(''))();
+
+  /// The JSON body exactly as sent, except that inline images are replaced
+  /// by a marker with their size. A completion carries several megabytes of
+  /// Base64, which no clipboard or chat message can take; the field names and
+  /// every other value are what a validation error is about.
+  TextColumn get requestBody => text().nullable()();
+
+  /// The raw response body, when there was one.
+  TextColumn get responseBody => text().nullable()();
 }

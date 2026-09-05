@@ -6,10 +6,18 @@ class ApiException implements Exception {
   final int? statusCode;
   final dynamic details;
 
+  /// The call that failed, e.g. `PUT` and
+  /// `https://host:8090/api/JobOrders/123`. Null when the exception was not
+  /// raised from an HTTP round trip.
+  final String? requestMethod;
+  final String? requestUrl;
+
   ApiException({
     required this.message,
     this.statusCode,
     this.details,
+    this.requestMethod,
+    this.requestUrl,
   });
 
   factory ApiException.fromDioException(DioException error) {
@@ -70,6 +78,8 @@ class ApiException implements Exception {
       message: message,
       statusCode: status,
       details: error.response?.data,
+      requestMethod: error.requestOptions.method,
+      requestUrl: error.requestOptions.uri.toString(),
     );
   }
 

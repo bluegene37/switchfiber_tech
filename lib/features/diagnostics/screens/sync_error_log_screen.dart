@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/daos/sync_error_logs_dao.dart';
+import '../../../core/network/request_snapshot.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -44,8 +45,20 @@ class _SyncErrorLogScreenState extends State<SyncErrorLogScreen> {
   static String asReport(List<SyncErrorLog> logs) => logs
       .map((e) => '${formatWhen(e.occurredAt)}  ${e.reference}  '
           '${e.operation}  HTTP ${e.statusCode ?? "no response"}  '
-          '${formatSize(e.payloadBytes)}\n${e.message}')
+          '${formatSize(e.payloadBytes)}\n'
+          '${e.requestMethod} ${e.requestUrl}\n${e.message}')
       .join('\n\n');
+
+  /// One entry with the request that was sent and the answer that came
+  /// back, ready to hand to the backend team.
+  static String asRequestReport(SyncErrorLog e) => RequestSnapshot.report(
+        method: e.requestMethod.isEmpty ? 'PUT' : e.requestMethod,
+        url: e.requestUrl,
+        statusCode: e.statusCode,
+        message: e.message,
+        requestBody: e.requestBody,
+        responseBody: e.responseBody,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -164,14 +177,41 @@ class _SyncErrorLogScreenState extends State<SyncErrorLogScreen> {
   }
 }
 
-class _LogTile extends StatelessWidget {
+class _LogTile extends StatefulWidget {
   final SyncErrorLog log;
   final bool isDark;
 
   const _LogTile({required this.log, required this.isDark});
 
   @override
+  State<_LogTile> createState() => _LogTileState();
+}
+
+class _LogTileState extends State<_LogTile> {
+  /// The request body is long; it opens on demand so the list stays a list.
+  bool _showRequest = false;
+
+  Future<void> _copyRequest(BuildContext context) async {
+    await Clipboard.setData(ClipboardData(
+        text: _SyncErrorLogScreenState.asRequestReport(widget.log)));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Request and response copied.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final log = widget.log;
+    final isDark = widget.isDark;
+    final mono = context.text.bodySmall!.copyWith(
+      fontFamily: 'monospace',
+      color: AppTheme.secondaryInkOf(context),
+    );
+    final hasRequest = log.requestBody != null || log.requestUrl.isNotEmpty;
     // A refusal that has since gone through is history, not a live problem,
     // so it reads back rather than shouting.
     final accent = log.resolved
@@ -223,14 +263,46 @@ class _LogTile extends StatelessWidget {
             style: context.text.bodySmall!
                 .copyWith(color: AppTheme.secondaryInkOf(context)),
           ),
-          const SizedBox(height: 8),
-          SelectableText(
-            log.message,
-            style: context.text.bodySmall!.copyWith(
-              fontFamily: 'monospace',
-              color: AppTheme.secondaryInkOf(context),
+          if (log.requestUrl.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            SelectableText(
+              '${log.requestMethod} ${log.requestUrl}',
+              style: mono,
             ),
-          ),
+          ],
+          const SizedBox(height: 8),
+          SelectableText(log.message, style: mono),
+          if (hasRequest) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                TextButton.icon(
+                  onPressed: () =>
+                      setState(() => _showRequest = !_showRequest),
+                  icon: Icon(
+                      _showRequest
+                          ? CupertinoIcons.chevron_up
+                          : CupertinoIcons.chevron_down,
+                      size: 20),
+                  label: Text(_showRequest ? 'Hide request' : 'Show request'),
+                ),
+                TextButton.icon(
+                  onPressed: () => _copyRequest(context),
+                  icon: const Icon(CupertinoIcons.doc_on_clipboard, size: 20),
+                  label: const Text('Copy request'),
+                ),
+              ],
+            ),
+            if (_showRequest) ...[
+              const SizedBox(height: 4),
+              SelectableText(
+                _SyncErrorLogScreenState.asRequestReport(log),
+                style: mono,
+              ),
+            ],
+          ],
         ],
       ),
     );

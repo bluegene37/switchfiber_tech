@@ -357,10 +357,7 @@ class ServiceOrderCard extends StatelessWidget {
                       } else {
                         final fullAddr =
                             '${order.address}${order.barangay != null ? ", ${order.barangay}" : ""}${order.city != null ? ", ${order.city}" : ""}, Philippines';
-                        final uri = Uri.parse(
-                            'https://maps.apple.com/?q=${Uri.encodeComponent(fullAddr)}');
-                        await launchUrl(uri,
-                            mode: LaunchMode.externalApplication);
+                        await MapNavigationService.navigateToAddress(fullAddr);
                       }
                     },
                     child: ConstrainedBox(

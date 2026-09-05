@@ -6,6 +6,7 @@ import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/job_order_model.dart';
 import 'status_badge.dart';
+import '../../../core/services/map_navigation_service.dart';
 
 /// A scheduled job order in the queue with modern rugged field instrument styling.
 ///
@@ -288,18 +289,17 @@ class JobCard extends StatelessWidget {
                     behavior: HitTestBehavior.opaque,
                     onTap: () async {
                       final latLng = job.latLng;
-                      final Uri uri;
                       if (latLng != null) {
-                        uri = Uri.parse(
-                            'https://maps.apple.com/?q=${latLng.latitude},${latLng.longitude}');
+                        await MapNavigationService.navigateToCoordinates(
+                          latitude: latLng.latitude,
+                          longitude: latLng.longitude,
+                          destinationLabel: job.customerName,
+                        );
                       } else {
                         final fullAddr =
                             '${job.address}${job.barangay != null ? ", ${job.barangay}" : ""}${job.city != null ? ", ${job.city}" : ""}, Philippines';
-                        uri = Uri.parse(
-                            'https://maps.apple.com/?q=${Uri.encodeComponent(fullAddr)}');
+                        await MapNavigationService.navigateToAddress(fullAddr);
                       }
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
                     },
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(minHeight: 48),

@@ -198,6 +198,40 @@ class AppTheme {
     );
   }
 
+  /// Filter and choice chips: a quiet fill at rest, the brand's subtle tint
+  /// with a brand hairline when selected, matching the hand-built filter
+  /// chips on the RADIUS screen.
+  ///
+  /// Without this, Material 3 paints a selected chip in
+  /// `colorScheme.secondaryContainer`, which the scheme above leaves at its
+  /// fallback of `secondary`: near-black in light mode, so a selected filter
+  /// looked like a dark button rather than a highlighted choice.
+  static ChipThemeData _chipTheme({
+    required Color fill,
+    required Color selectedFill,
+    required Color border,
+    required Color ink,
+    required Color selectedInk,
+  }) {
+    return ChipThemeData(
+      backgroundColor: fill,
+      selectedColor: selectedFill,
+      checkmarkColor: selectedInk,
+      iconTheme: IconThemeData(color: ink, size: 20),
+      labelStyle: TextStyle(
+        color: WidgetStateColor.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? selectedInk : ink),
+        fontWeight: FontWeight.w600,
+      ),
+      side: WidgetStateBorderSide.resolveWith((states) =>
+          states.contains(WidgetState.selected)
+              ? const BorderSide(color: primary, width: 1)
+              : BorderSide(color: border, width: 0.5)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      showCheckmark: true,
+    );
+  }
+
   /// Light Theme (Apple Human Interface Guidelines styled)
   static ThemeData get lightTheme {
     return ThemeData(
@@ -236,6 +270,13 @@ class AppTheme {
         onSurface: darkSlate,
         error: danger,
         onError: white,
+      ),
+      chipTheme: _chipTheme(
+        fill: fillLight,
+        selectedFill: primarySubtleBg,
+        border: borderLight,
+        ink: secondaryInk,
+        selectedInk: brandInk,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: white,
@@ -369,6 +410,13 @@ class AppTheme {
         onSurface: white,
         error: danger,
         onError: white,
+      ),
+      chipTheme: _chipTheme(
+        fill: darkInput,
+        selectedFill: primarySubtleBgDark,
+        border: borderDark,
+        ink: secondaryInkDark,
+        selectedInk: brandInkDark,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: darkCard,

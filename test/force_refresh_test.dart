@@ -69,7 +69,7 @@ void main() {
   Future<JobRepository> repoWith(_ServerApi api) async {
     final repo = JobRepository(db.jobOrdersDao,
         api: api, errorLog: SyncErrorLogsDao(db));
-    await repo.fetchRemoteJobs();
+    await repo.fetchRemoteJobs(technicianEmail: 'me@switchfiber.ph');
     return repo;
   }
 
@@ -84,7 +84,7 @@ void main() {
     expect(api.records[1]!['status'], 'Scheduled',
         reason: 'precondition: the completion has not reached the server');
 
-    final result = await repo.forceRefreshFromServer();
+    final result = await repo.forceRefreshFromServer(technicianEmail: 'me@switchfiber.ph');
 
     expect(result.failedCount, 0);
     expect(api.putIds, contains(1), reason: 'the pending edit was pushed');
@@ -104,7 +104,7 @@ void main() {
     api.records.remove(2);
     api.records[1] = {..._record(1, 'Scheduled'), 'firstName': 'Renamed'};
 
-    await repo.forceRefreshFromServer();
+    await repo.forceRefreshFromServer(technicianEmail: 'me@switchfiber.ph');
 
     final all = await db.jobOrdersDao.getAllJobs();
     expect(all.map((j) => j.id).toList(), [1],
@@ -120,7 +120,7 @@ void main() {
     api.refuse.add(1);
     await repo.completeJob(1, technicianEmail: 'me@switchfiber.ph');
 
-    final result = await repo.forceRefreshFromServer();
+    final result = await repo.forceRefreshFromServer(technicianEmail: 'me@switchfiber.ph');
 
     expect(result.failedCount, 1,
         reason: 'the caller must be able to warn that work was discarded');

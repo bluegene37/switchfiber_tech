@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/network/network_exceptions.dart';
 
@@ -117,8 +119,16 @@ class DioJobOrdersApi implements JobOrdersApi {
     }
   }
 
+  /// Sent with no `Authorization` header. The endpoint accepts the update
+  /// without one: the owner's bare curl with this exact body succeeds where
+  /// the app's tokened request was answered with HTTP 500, so the token is
+  /// left off until the backend team says otherwise.
   @override
   Future<void> update(int id, Map<String, dynamic> body) async {
-    await _api.put('/JobOrders/$id', data: body);
+    await _api.put(
+      '/JobOrders/$id',
+      data: body,
+      options: Options(extra: {ApiClient.skipAuthOption: true}),
+    );
   }
 }

@@ -17,6 +17,10 @@ class ApiClient {
   final SecureStorageService _storage = SecureStorageService.instance;
   void Function()? onUnauthorized;
 
+  /// Set to `true` in a request's `Options.extra` to send it with no
+  /// `Authorization` header at all, exactly like a bare curl.
+  static const String skipAuthOption = 'skipAuth';
+
   ApiClient._internal() {
     dio = Dio(
       BaseOptions(
@@ -75,6 +79,10 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          if (options.extra[skipAuthOption] == true) {
+            options.headers.remove('Authorization');
+            return handler.next(options);
+          }
           // Attach Bearer token from secure storage if present
           final token = await _storage.getToken();
           if (token != null && token.trim().isNotEmpty) {

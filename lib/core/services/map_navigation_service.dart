@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,9 +5,27 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
 
-/// Service to handle launching external GPS navigation apps (Google Maps, Waze, Apple Maps).
+/// Opens turn-by-turn directions in a map *app*, never the browser.
+///
+/// Every https map link (`maps.apple.com`, `google.com/maps`) lands in the
+/// phone's browser on Android, and in the browser on iOS too when Google
+/// Maps is not installed. A technician on a pole then gets a web page asking
+/// them to open the app. So the order is always: Google Maps if it is
+/// installed, then whatever the phone uses for map links, and only when
+/// nothing on the phone can show a map, the https link as a last resort.
 class MapNavigationService {
   MapNavigationService._();
+
+  /// Seam for tests: whether the phone has something that opens [uri].
+  @visibleForTesting
+  static Future<bool> Function(Uri uri) canLaunch = canLaunchUrl;
+
+  /// Seam for tests: hands [uri] to the phone.
+  @visibleForTesting
+  static Future<bool> Function(Uri uri) launch =
+      (uri) => launchUrl(uri, mode: LaunchMode.externalApplication);
+
+  static bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
   /// Launch turn-by-turn navigation to a coordinates object (such as LatLng).
   static Future<bool> navigateTo(
@@ -24,84 +41,98 @@ class MapNavigationService {
     );
   }
 
-  /// Launch turn-by-turn navigation from current location to destination [latitude, longitude].
+  /// Directions from the technician's position to [latitude],[longitude].
   static Future<bool> navigateToCoordinates({
     required double latitude,
     required double longitude,
     String? destinationLabel,
-  }) async {
-    final label =
-        destinationLabel != null ? Uri.encodeComponent(destinationLabel) : '';
-
-    // Standard Google Maps directions URL (opens Google Maps app with turn-by-turn navigation)
-    final googleMapsUrl = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude${label.isNotEmpty ? "($label)" : ""}&travelmode=driving',
-    );
-
-    // Apple Maps directions URL for iOS
-    final appleMapsUrl = Uri.parse(
-      'https://maps.apple.com/?daddr=$latitude,$longitude&dirflg=d${label.isNotEmpty ? "&q=$label" : ""}',
-    );
-
-    try {
-      if (!kIsWeb && Platform.isIOS) {
-        if (await canLaunchUrl(appleMapsUrl)) {
-          return await launchUrl(appleMapsUrl,
-              mode: LaunchMode.externalApplication);
-        }
-      }
-
-      // Default to Google Maps universal navigation
-      if (await canLaunchUrl(googleMapsUrl)) {
-        return await launchUrl(googleMapsUrl,
-            mode: LaunchMode.externalApplication);
-      } else {
-        // Fallback to geo URI
-        final geoUri = Uri.parse(
-            'geo:$latitude,$longitude?q=$latitude,$longitude${label.isNotEmpty ? "($label)" : ""}');
-        if (await canLaunchUrl(geoUri)) {
-          return await launchUrl(geoUri, mode: LaunchMode.externalApplication);
-        }
-      }
-    } catch (_) {
-      // Fallback
-    }
-
-    return false;
+  }) {
+    final point = '$latitude,$longitude';
+    final label = destinationLabel == null || destinationLabel.trim().isEmpty
+        ? ''
+        : '(${Uri.encodeComponent(destinationLabel.trim())})';
+    return _launchFirst(_isIOS
+        ? [
+            Uri.parse(
+                'comgooglemaps://?daddr=$point&directionsmode=driving'),
+            Uri.parse('maps://?daddr=$point&dirflg=d'),
+            Uri.parse('https://maps.apple.com/?daddr=$point&dirflg=d'),
+          ]
+        : [
+            Uri.parse('google.navigation:q=$point&mode=d'),
+            Uri.parse('geo:$point?q=$point$label'),
+            Uri.parse('https://www.google.com/maps/dir/?api=1'
+                '&destination=$point&travelmode=driving'),
+          ]);
   }
 
-  /// Launch specific navigation app
+  /// Directions to a street [address] when the record carries no
+  /// coordinates. The map app geocodes it.
+  static Future<bool> navigateToAddress(String address) {
+    final q = Uri.encodeComponent(address.trim());
+    if (q.isEmpty) return Future.value(false);
+    return _launchFirst(_isIOS
+        ? [
+            Uri.parse('comgooglemaps://?daddr=$q&directionsmode=driving'),
+            Uri.parse('maps://?daddr=$q&dirflg=d'),
+            Uri.parse('https://maps.apple.com/?daddr=$q&dirflg=d'),
+          ]
+        : [
+            Uri.parse('google.navigation:q=$q&mode=d'),
+            Uri.parse('geo:0,0?q=$q'),
+            Uri.parse('https://www.google.com/maps/dir/?api=1'
+                '&destination=$q&travelmode=driving'),
+          ]);
+  }
+
+  /// Launch one particular navigation app. Its own URL scheme comes first
+  /// so an installed app opens directly; the https form is only for a phone
+  /// without it, where the link leads to the store or the browser.
   static Future<bool> launchSpecificMap({
     required String appType,
     required double latitude,
     required double longitude,
     String? label,
-  }) async {
-    Uri url;
-    final encodedLabel = label != null ? Uri.encodeComponent(label) : '';
-
+  }) {
+    final point = '$latitude,$longitude';
     switch (appType.toLowerCase()) {
       case 'waze':
-        url = Uri.parse(
-            'https://waze.com/ul?ll=$latitude,$longitude&navigate=yes');
-        break;
+        return _launchFirst([
+          Uri.parse('waze://?ll=$point&navigate=yes'),
+          Uri.parse('https://waze.com/ul?ll=$point&navigate=yes'),
+        ]);
       case 'apple':
-        url = Uri.parse(
-            'https://maps.apple.com/?daddr=$latitude,$longitude&dirflg=d');
-        break;
+        return _launchFirst([
+          Uri.parse('maps://?daddr=$point&dirflg=d'),
+          Uri.parse('https://maps.apple.com/?daddr=$point&dirflg=d'),
+        ]);
       case 'google':
       default:
-        url = Uri.parse(
-          'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude${encodedLabel.isNotEmpty ? "($encodedLabel)" : ""}&travelmode=driving',
-        );
-        break;
+        return _launchFirst([
+          if (_isIOS)
+            Uri.parse('comgooglemaps://?daddr=$point&directionsmode=driving')
+          else
+            Uri.parse('google.navigation:q=$point&mode=d'),
+          Uri.parse('https://www.google.com/maps/dir/?api=1'
+              '&destination=$point&travelmode=driving'),
+        ]);
     }
+  }
 
-    try {
-      return await launchUrl(url, mode: LaunchMode.externalApplication);
-    } catch (_) {
-      return false;
+  /// Tries each candidate in order and stops at the first the phone opens.
+  ///
+  /// An https link is a valid target for any phone with a browser, which is
+  /// exactly the wrong answer here, so it is only ever the final entry.
+  static Future<bool> _launchFirst(List<Uri> candidates) async {
+    for (final uri in candidates) {
+      try {
+        if (!await canLaunch(uri)) continue;
+        if (await launch(uri)) return true;
+      } catch (_) {
+        // Try the next one.
+      }
     }
+    return false;
   }
 
   /// Shows a modal bottom sheet allowing the technician to pick their preferred navigation app or copy coordinates.
@@ -178,7 +209,7 @@ class MapNavigationService {
             _buildAppTile(
               context: ctx,
               title: 'Google Maps (Turn-by-Turn Navigation)',
-              subtitle: 'Starts live driving directions from your GPS location',
+              subtitle: 'Opens the Google Maps app with live driving directions',
               icon: Icons.map_rounded,
               iconColor: const Color(0xFF1A73E8),
               onTap: () async {

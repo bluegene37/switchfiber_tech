@@ -21,8 +21,11 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
+  /// Bumped with every change to [migration] below.
+  static const int currentSchemaVersion = 9;
+
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => currentSchemaVersion;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -68,6 +71,20 @@ class AppDatabase extends _$AppDatabase {
           if (from < 8) {
             // Why a pending push was refused, kept on the phone that hit it.
             await m.createTable(syncErrorLogs);
+          }
+          if (from == 8) {
+            // The request itself, so a refusal can be handed to the backend
+            // team as something they can replay.
+            //
+            // Only for a database that is exactly at 8. `createTable` above
+            // builds the table from its *current* definition, so a database
+            // coming from 7 or lower already has these four columns, and
+            // adding them again fails with "duplicate column name" before the
+            // app draws its first frame.
+            await m.addColumn(syncErrorLogs, syncErrorLogs.requestMethod);
+            await m.addColumn(syncErrorLogs, syncErrorLogs.requestUrl);
+            await m.addColumn(syncErrorLogs, syncErrorLogs.requestBody);
+            await m.addColumn(syncErrorLogs, syncErrorLogs.responseBody);
           }
         },
       );

@@ -153,22 +153,13 @@ void main() {
     ]);
   });
 
-  test('omits assignedEmail when technician email is not set or empty',
-      () async {
+  test('pulls nothing while the technician email is unknown', () async {
+    // An unscoped pull returned every technician's history: 3,929 activated
+    // jobs of other crews landed on one phone on 2026-09-05.
     await repository.fetchRemoteJobs(technicianEmail: null);
-    expect(api.requestedAssigned, [
-      ('Scheduled', null),
-      ('Activated', null),
-      ('Completed', null),
-    ]);
-
-    api.requestedAssigned.clear();
     await repository.fetchRemoteJobs(technicianEmail: '  ');
-    expect(api.requestedAssigned, [
-      ('Scheduled', null),
-      ('Activated', null),
-      ('Completed', null),
-    ]);
+    expect(api.requestedAssigned, isEmpty,
+        reason: 'without an email there is no way to ask for only my jobs');
   });
 
   test(
@@ -195,15 +186,16 @@ void main() {
     expect(signals.allJobs.value.map((j) => j.id).toSet(),
         {1, 2, 10, 11, 12, 20, 21});
     expect(signals.scheduledCount.value, 2);
-    expect(signals.historyJobs.value.map((j) => j.id).toSet(),
-        {10, 11, 12, 20, 21});
+    // This fake server ignores the email filter; the history must not.
+    expect(signals.historyJobs.value.map((j) => j.id).toSet(), {10, 20},
+        reason: 'only jobs assigned to me, matched case-insensitively');
   });
 
-  test('caches all history jobs even without a known email', () async {
+  test('caches nothing while the email is unknown', () async {
     await signals.fetchRemote();
     await settle();
-    expect(signals.allJobs.value.map((j) => j.id).toSet(),
-        {1, 2, 10, 11, 12, 20, 21});
+    expect(signals.allJobs.value, isEmpty,
+        reason: 'an unscoped pull is every technician\'s history, not mine');
   });
 
   test('drops synced rows the server stopped returning', () async {

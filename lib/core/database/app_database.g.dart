@@ -4874,6 +4874,34 @@ class $SyncErrorLogsTable extends SyncErrorLogs
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("resolved" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _requestMethodMeta =
+      const VerificationMeta('requestMethod');
+  @override
+  late final GeneratedColumn<String> requestMethod = GeneratedColumn<String>(
+      'request_method', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _requestUrlMeta =
+      const VerificationMeta('requestUrl');
+  @override
+  late final GeneratedColumn<String> requestUrl = GeneratedColumn<String>(
+      'request_url', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _requestBodyMeta =
+      const VerificationMeta('requestBody');
+  @override
+  late final GeneratedColumn<String> requestBody = GeneratedColumn<String>(
+      'request_body', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _responseBodyMeta =
+      const VerificationMeta('responseBody');
+  @override
+  late final GeneratedColumn<String> responseBody = GeneratedColumn<String>(
+      'response_body', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -4885,7 +4913,11 @@ class $SyncErrorLogsTable extends SyncErrorLogs
         message,
         payloadBytes,
         occurredAt,
-        resolved
+        resolved,
+        requestMethod,
+        requestUrl,
+        requestBody,
+        responseBody
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4952,6 +4984,30 @@ class $SyncErrorLogsTable extends SyncErrorLogs
       context.handle(_resolvedMeta,
           resolved.isAcceptableOrUnknown(data['resolved']!, _resolvedMeta));
     }
+    if (data.containsKey('request_method')) {
+      context.handle(
+          _requestMethodMeta,
+          requestMethod.isAcceptableOrUnknown(
+              data['request_method']!, _requestMethodMeta));
+    }
+    if (data.containsKey('request_url')) {
+      context.handle(
+          _requestUrlMeta,
+          requestUrl.isAcceptableOrUnknown(
+              data['request_url']!, _requestUrlMeta));
+    }
+    if (data.containsKey('request_body')) {
+      context.handle(
+          _requestBodyMeta,
+          requestBody.isAcceptableOrUnknown(
+              data['request_body']!, _requestBodyMeta));
+    }
+    if (data.containsKey('response_body')) {
+      context.handle(
+          _responseBodyMeta,
+          responseBody.isAcceptableOrUnknown(
+              data['response_body']!, _responseBodyMeta));
+    }
     return context;
   }
 
@@ -4981,6 +5037,14 @@ class $SyncErrorLogsTable extends SyncErrorLogs
           .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
       resolved: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}resolved'])!,
+      requestMethod: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}request_method'])!,
+      requestUrl: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}request_url'])!,
+      requestBody: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}request_body']),
+      responseBody: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}response_body']),
     );
   }
 
@@ -5019,6 +5083,21 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
   /// Set once the same record syncs successfully, so the log shows what is
   /// still outstanding rather than everything that ever went wrong.
   final bool resolved;
+
+  /// The HTTP method and full URL of the call that failed, e.g. `PUT` and
+  /// `https://host:8090/api/JobOrders/123`, so the backend team can find the
+  /// endpoint without reading the app.
+  final String requestMethod;
+  final String requestUrl;
+
+  /// The JSON body exactly as sent, except that inline images are replaced
+  /// by a marker with their size. A completion carries several megabytes of
+  /// Base64, which no clipboard or chat message can take; the field names and
+  /// every other value are what a validation error is about.
+  final String? requestBody;
+
+  /// The raw response body, when there was one.
+  final String? responseBody;
   const SyncErrorLog(
       {required this.id,
       required this.entityType,
@@ -5029,7 +5108,11 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
       required this.message,
       required this.payloadBytes,
       required this.occurredAt,
-      required this.resolved});
+      required this.resolved,
+      required this.requestMethod,
+      required this.requestUrl,
+      this.requestBody,
+      this.responseBody});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -5045,6 +5128,14 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
     map['payload_bytes'] = Variable<int>(payloadBytes);
     map['occurred_at'] = Variable<DateTime>(occurredAt);
     map['resolved'] = Variable<bool>(resolved);
+    map['request_method'] = Variable<String>(requestMethod);
+    map['request_url'] = Variable<String>(requestUrl);
+    if (!nullToAbsent || requestBody != null) {
+      map['request_body'] = Variable<String>(requestBody);
+    }
+    if (!nullToAbsent || responseBody != null) {
+      map['response_body'] = Variable<String>(responseBody);
+    }
     return map;
   }
 
@@ -5062,6 +5153,14 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
       payloadBytes: Value(payloadBytes),
       occurredAt: Value(occurredAt),
       resolved: Value(resolved),
+      requestMethod: Value(requestMethod),
+      requestUrl: Value(requestUrl),
+      requestBody: requestBody == null && nullToAbsent
+          ? const Value.absent()
+          : Value(requestBody),
+      responseBody: responseBody == null && nullToAbsent
+          ? const Value.absent()
+          : Value(responseBody),
     );
   }
 
@@ -5079,6 +5178,10 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
       payloadBytes: serializer.fromJson<int>(json['payloadBytes']),
       occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
       resolved: serializer.fromJson<bool>(json['resolved']),
+      requestMethod: serializer.fromJson<String>(json['requestMethod']),
+      requestUrl: serializer.fromJson<String>(json['requestUrl']),
+      requestBody: serializer.fromJson<String?>(json['requestBody']),
+      responseBody: serializer.fromJson<String?>(json['responseBody']),
     );
   }
   @override
@@ -5095,6 +5198,10 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
       'payloadBytes': serializer.toJson<int>(payloadBytes),
       'occurredAt': serializer.toJson<DateTime>(occurredAt),
       'resolved': serializer.toJson<bool>(resolved),
+      'requestMethod': serializer.toJson<String>(requestMethod),
+      'requestUrl': serializer.toJson<String>(requestUrl),
+      'requestBody': serializer.toJson<String?>(requestBody),
+      'responseBody': serializer.toJson<String?>(responseBody),
     };
   }
 
@@ -5108,7 +5215,11 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
           String? message,
           int? payloadBytes,
           DateTime? occurredAt,
-          bool? resolved}) =>
+          bool? resolved,
+          String? requestMethod,
+          String? requestUrl,
+          Value<String?> requestBody = const Value.absent(),
+          Value<String?> responseBody = const Value.absent()}) =>
       SyncErrorLog(
         id: id ?? this.id,
         entityType: entityType ?? this.entityType,
@@ -5120,6 +5231,11 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
         payloadBytes: payloadBytes ?? this.payloadBytes,
         occurredAt: occurredAt ?? this.occurredAt,
         resolved: resolved ?? this.resolved,
+        requestMethod: requestMethod ?? this.requestMethod,
+        requestUrl: requestUrl ?? this.requestUrl,
+        requestBody: requestBody.present ? requestBody.value : this.requestBody,
+        responseBody:
+            responseBody.present ? responseBody.value : this.responseBody,
       );
   SyncErrorLog copyWithCompanion(SyncErrorLogsCompanion data) {
     return SyncErrorLog(
@@ -5138,6 +5254,16 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
       occurredAt:
           data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
       resolved: data.resolved.present ? data.resolved.value : this.resolved,
+      requestMethod: data.requestMethod.present
+          ? data.requestMethod.value
+          : this.requestMethod,
+      requestUrl:
+          data.requestUrl.present ? data.requestUrl.value : this.requestUrl,
+      requestBody:
+          data.requestBody.present ? data.requestBody.value : this.requestBody,
+      responseBody: data.responseBody.present
+          ? data.responseBody.value
+          : this.responseBody,
     );
   }
 
@@ -5153,14 +5279,31 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
           ..write('message: $message, ')
           ..write('payloadBytes: $payloadBytes, ')
           ..write('occurredAt: $occurredAt, ')
-          ..write('resolved: $resolved')
+          ..write('resolved: $resolved, ')
+          ..write('requestMethod: $requestMethod, ')
+          ..write('requestUrl: $requestUrl, ')
+          ..write('requestBody: $requestBody, ')
+          ..write('responseBody: $responseBody')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, entityType, entityId, reference,
-      operation, statusCode, message, payloadBytes, occurredAt, resolved);
+  int get hashCode => Object.hash(
+      id,
+      entityType,
+      entityId,
+      reference,
+      operation,
+      statusCode,
+      message,
+      payloadBytes,
+      occurredAt,
+      resolved,
+      requestMethod,
+      requestUrl,
+      requestBody,
+      responseBody);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5174,7 +5317,11 @@ class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
           other.message == this.message &&
           other.payloadBytes == this.payloadBytes &&
           other.occurredAt == this.occurredAt &&
-          other.resolved == this.resolved);
+          other.resolved == this.resolved &&
+          other.requestMethod == this.requestMethod &&
+          other.requestUrl == this.requestUrl &&
+          other.requestBody == this.requestBody &&
+          other.responseBody == this.responseBody);
 }
 
 class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
@@ -5188,6 +5335,10 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
   final Value<int> payloadBytes;
   final Value<DateTime> occurredAt;
   final Value<bool> resolved;
+  final Value<String> requestMethod;
+  final Value<String> requestUrl;
+  final Value<String?> requestBody;
+  final Value<String?> responseBody;
   const SyncErrorLogsCompanion({
     this.id = const Value.absent(),
     this.entityType = const Value.absent(),
@@ -5199,6 +5350,10 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
     this.payloadBytes = const Value.absent(),
     this.occurredAt = const Value.absent(),
     this.resolved = const Value.absent(),
+    this.requestMethod = const Value.absent(),
+    this.requestUrl = const Value.absent(),
+    this.requestBody = const Value.absent(),
+    this.responseBody = const Value.absent(),
   });
   SyncErrorLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -5211,6 +5366,10 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
     this.payloadBytes = const Value.absent(),
     this.occurredAt = const Value.absent(),
     this.resolved = const Value.absent(),
+    this.requestMethod = const Value.absent(),
+    this.requestUrl = const Value.absent(),
+    this.requestBody = const Value.absent(),
+    this.responseBody = const Value.absent(),
   })  : entityType = Value(entityType),
         entityId = Value(entityId),
         operation = Value(operation),
@@ -5226,6 +5385,10 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
     Expression<int>? payloadBytes,
     Expression<DateTime>? occurredAt,
     Expression<bool>? resolved,
+    Expression<String>? requestMethod,
+    Expression<String>? requestUrl,
+    Expression<String>? requestBody,
+    Expression<String>? responseBody,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5238,6 +5401,10 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
       if (payloadBytes != null) 'payload_bytes': payloadBytes,
       if (occurredAt != null) 'occurred_at': occurredAt,
       if (resolved != null) 'resolved': resolved,
+      if (requestMethod != null) 'request_method': requestMethod,
+      if (requestUrl != null) 'request_url': requestUrl,
+      if (requestBody != null) 'request_body': requestBody,
+      if (responseBody != null) 'response_body': responseBody,
     });
   }
 
@@ -5251,7 +5418,11 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
       Value<String>? message,
       Value<int>? payloadBytes,
       Value<DateTime>? occurredAt,
-      Value<bool>? resolved}) {
+      Value<bool>? resolved,
+      Value<String>? requestMethod,
+      Value<String>? requestUrl,
+      Value<String?>? requestBody,
+      Value<String?>? responseBody}) {
     return SyncErrorLogsCompanion(
       id: id ?? this.id,
       entityType: entityType ?? this.entityType,
@@ -5263,6 +5434,10 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
       payloadBytes: payloadBytes ?? this.payloadBytes,
       occurredAt: occurredAt ?? this.occurredAt,
       resolved: resolved ?? this.resolved,
+      requestMethod: requestMethod ?? this.requestMethod,
+      requestUrl: requestUrl ?? this.requestUrl,
+      requestBody: requestBody ?? this.requestBody,
+      responseBody: responseBody ?? this.responseBody,
     );
   }
 
@@ -5299,6 +5474,18 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
     if (resolved.present) {
       map['resolved'] = Variable<bool>(resolved.value);
     }
+    if (requestMethod.present) {
+      map['request_method'] = Variable<String>(requestMethod.value);
+    }
+    if (requestUrl.present) {
+      map['request_url'] = Variable<String>(requestUrl.value);
+    }
+    if (requestBody.present) {
+      map['request_body'] = Variable<String>(requestBody.value);
+    }
+    if (responseBody.present) {
+      map['response_body'] = Variable<String>(responseBody.value);
+    }
     return map;
   }
 
@@ -5314,7 +5501,11 @@ class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
           ..write('message: $message, ')
           ..write('payloadBytes: $payloadBytes, ')
           ..write('occurredAt: $occurredAt, ')
-          ..write('resolved: $resolved')
+          ..write('resolved: $resolved, ')
+          ..write('requestMethod: $requestMethod, ')
+          ..write('requestUrl: $requestUrl, ')
+          ..write('requestBody: $requestBody, ')
+          ..write('responseBody: $responseBody')
           ..write(')'))
         .toString();
   }
@@ -7352,6 +7543,10 @@ typedef $$SyncErrorLogsTableCreateCompanionBuilder = SyncErrorLogsCompanion
   Value<int> payloadBytes,
   Value<DateTime> occurredAt,
   Value<bool> resolved,
+  Value<String> requestMethod,
+  Value<String> requestUrl,
+  Value<String?> requestBody,
+  Value<String?> responseBody,
 });
 typedef $$SyncErrorLogsTableUpdateCompanionBuilder = SyncErrorLogsCompanion
     Function({
@@ -7365,6 +7560,10 @@ typedef $$SyncErrorLogsTableUpdateCompanionBuilder = SyncErrorLogsCompanion
   Value<int> payloadBytes,
   Value<DateTime> occurredAt,
   Value<bool> resolved,
+  Value<String> requestMethod,
+  Value<String> requestUrl,
+  Value<String?> requestBody,
+  Value<String?> responseBody,
 });
 
 class $$SyncErrorLogsTableFilterComposer
@@ -7405,6 +7604,18 @@ class $$SyncErrorLogsTableFilterComposer
 
   ColumnFilters<bool> get resolved => $composableBuilder(
       column: $table.resolved, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get requestMethod => $composableBuilder(
+      column: $table.requestMethod, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get requestUrl => $composableBuilder(
+      column: $table.requestUrl, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get requestBody => $composableBuilder(
+      column: $table.requestBody, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get responseBody => $composableBuilder(
+      column: $table.responseBody, builder: (column) => ColumnFilters(column));
 }
 
 class $$SyncErrorLogsTableOrderingComposer
@@ -7446,6 +7657,20 @@ class $$SyncErrorLogsTableOrderingComposer
 
   ColumnOrderings<bool> get resolved => $composableBuilder(
       column: $table.resolved, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get requestMethod => $composableBuilder(
+      column: $table.requestMethod,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get requestUrl => $composableBuilder(
+      column: $table.requestUrl, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get requestBody => $composableBuilder(
+      column: $table.requestBody, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get responseBody => $composableBuilder(
+      column: $table.responseBody,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$SyncErrorLogsTableAnnotationComposer
@@ -7486,6 +7711,18 @@ class $$SyncErrorLogsTableAnnotationComposer
 
   GeneratedColumn<bool> get resolved =>
       $composableBuilder(column: $table.resolved, builder: (column) => column);
+
+  GeneratedColumn<String> get requestMethod => $composableBuilder(
+      column: $table.requestMethod, builder: (column) => column);
+
+  GeneratedColumn<String> get requestUrl => $composableBuilder(
+      column: $table.requestUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get requestBody => $composableBuilder(
+      column: $table.requestBody, builder: (column) => column);
+
+  GeneratedColumn<String> get responseBody => $composableBuilder(
+      column: $table.responseBody, builder: (column) => column);
 }
 
 class $$SyncErrorLogsTableTableManager extends RootTableManager<
@@ -7524,6 +7761,10 @@ class $$SyncErrorLogsTableTableManager extends RootTableManager<
             Value<int> payloadBytes = const Value.absent(),
             Value<DateTime> occurredAt = const Value.absent(),
             Value<bool> resolved = const Value.absent(),
+            Value<String> requestMethod = const Value.absent(),
+            Value<String> requestUrl = const Value.absent(),
+            Value<String?> requestBody = const Value.absent(),
+            Value<String?> responseBody = const Value.absent(),
           }) =>
               SyncErrorLogsCompanion(
             id: id,
@@ -7536,6 +7777,10 @@ class $$SyncErrorLogsTableTableManager extends RootTableManager<
             payloadBytes: payloadBytes,
             occurredAt: occurredAt,
             resolved: resolved,
+            requestMethod: requestMethod,
+            requestUrl: requestUrl,
+            requestBody: requestBody,
+            responseBody: responseBody,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -7548,6 +7793,10 @@ class $$SyncErrorLogsTableTableManager extends RootTableManager<
             Value<int> payloadBytes = const Value.absent(),
             Value<DateTime> occurredAt = const Value.absent(),
             Value<bool> resolved = const Value.absent(),
+            Value<String> requestMethod = const Value.absent(),
+            Value<String> requestUrl = const Value.absent(),
+            Value<String?> requestBody = const Value.absent(),
+            Value<String?> responseBody = const Value.absent(),
           }) =>
               SyncErrorLogsCompanion.insert(
             id: id,
@@ -7560,6 +7809,10 @@ class $$SyncErrorLogsTableTableManager extends RootTableManager<
             payloadBytes: payloadBytes,
             occurredAt: occurredAt,
             resolved: resolved,
+            requestMethod: requestMethod,
+            requestUrl: requestUrl,
+            requestBody: requestBody,
+            responseBody: responseBody,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

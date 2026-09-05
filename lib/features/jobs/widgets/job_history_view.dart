@@ -288,6 +288,16 @@ Color _inkFor(BuildContext context, Color fill) {
   return fill;
 }
 
+/// Chip text: brand ink when the filter is the active one, secondary ink
+/// otherwise. The theme's chip style carries the same colours; this only
+/// keeps the history's larger label role while staying on ink tokens.
+TextStyle _chipLabel(BuildContext context, bool selected) =>
+    context.text.labelLarge!.copyWith(
+      color: selected
+          ? AppTheme.brandInkOf(context)
+          : AppTheme.secondaryInkOf(context),
+    );
+
 /// Status filter chips for technician history (All, Activated, Completed).
 class _StatusChips extends StatelessWidget {
   final JobsSignals signals;
@@ -307,11 +317,12 @@ class _StatusChips extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final filter = HistoryStatusFilter.values[index];
+              final selected = filter == active;
               return ChoiceChip(
                 label: Text(filter.label),
-                selected: filter == active,
+                selected: selected,
                 onSelected: (_) => signals.setHistoryStatus(filter),
-                labelStyle: context.text.labelLarge,
+                labelStyle: _chipLabel(context, selected),
               );
             },
           ),
@@ -350,16 +361,19 @@ class _RangeChips extends StatelessWidget {
               final label = isCustom && start != null && end != null
                   ? '${_short.format(start)} - ${_short.format(end)}'
                   : range.label;
+              final selected = range == active;
               return ChoiceChip(
                 avatar: isCustom
                     ? Icon(
                         Icons.date_range_rounded,
                         size: 24,
-                        color: range == active ? Colors.white : null,
+                        color: selected
+                            ? AppTheme.brandInkOf(context)
+                            : AppTheme.secondaryInkOf(context),
                       )
                     : null,
                 label: Text(label),
-                selected: range == active,
+                selected: selected,
                 onSelected: (_) {
                   if (isCustom) {
                     onPickCustom();
@@ -367,7 +381,7 @@ class _RangeChips extends StatelessWidget {
                     signals.setHistoryRange(range);
                   }
                 },
-                labelStyle: context.text.labelLarge,
+                labelStyle: _chipLabel(context, selected),
               );
             },
           ),
@@ -398,15 +412,22 @@ class _CityChips extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final city = options[index];
+              final selected = city == active;
               return FilterChip(
                 avatar: city == null
                     ? null
-                    : const Icon(Icons.location_city_rounded, size: 24),
+                    : Icon(
+                        Icons.location_city_rounded,
+                        size: 24,
+                        color: selected
+                            ? AppTheme.brandInkOf(context)
+                            : AppTheme.secondaryInkOf(context),
+                      ),
                 label: Text(city ?? 'All areas'),
-                selected: city == active,
+                selected: selected,
                 onSelected: (_) => signals.setHistoryCity(city),
                 showCheckmark: false,
-                labelStyle: context.text.labelLarge,
+                labelStyle: _chipLabel(context, selected),
               );
             },
           ),

@@ -45,6 +45,10 @@ class SyncErrorLogsDao extends DatabaseAccessor<AppDatabase>
     int? statusCode,
     required String message,
     int payloadBytes = 0,
+    String requestMethod = '',
+    String requestUrl = '',
+    String? requestBody,
+    String? responseBody,
   }) async {
     await into(syncErrorLogs).insert(SyncErrorLogsCompanion.insert(
       entityType: entityType,
@@ -53,11 +57,24 @@ class SyncErrorLogsDao extends DatabaseAccessor<AppDatabase>
       operation: operation,
       statusCode: Value(statusCode),
       // A server can return a whole HTML error page; keep it readable.
-      message: message.length > 2000 ? message.substring(0, 2000) : message,
+      message: _clip(message, 2000),
       payloadBytes: Value(payloadBytes),
+      requestMethod: Value(requestMethod),
+      requestUrl: Value(requestUrl),
+      requestBody: Value(requestBody == null ? null : _clip(requestBody, maxBodyChars)),
+      responseBody:
+          Value(responseBody == null ? null : _clip(responseBody, maxBodyChars)),
     ));
     await _trim();
   }
+
+  /// Cap on a stored request or response. With images abbreviated a job
+  /// order body is a few kilobytes; this only guards against a runaway
+  /// server page.
+  static const int maxBodyChars = 64 * 1024;
+
+  static String _clip(String s, int max) =>
+      s.length > max ? '${s.substring(0, max)}\n… (${s.length - max} more characters)' : s;
 
   /// Called when a record finally syncs, so its past failures stop counting
   /// as outstanding. The history stays readable until it is cleared.
