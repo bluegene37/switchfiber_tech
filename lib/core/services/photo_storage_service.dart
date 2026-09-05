@@ -173,6 +173,18 @@ class PhotoStorageService {
     return trimmed;
   }
 
+  /// Whether [value] is an image this phone captured (a data URL or a file
+  /// on this device) rather than a name or URL the server handed out.
+  bool isCapturedImage(String? value) {
+    if (value == null) return false;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return false;
+    return DataUrl.isDataUrl(trimmed) ||
+        trimmed.startsWith('/') ||
+        trimmed.startsWith('file://') ||
+        trimmed.contains(':\\');
+  }
+
   /// Delete a stored local file if it exists in the photos directory.
   Future<void> deletePhotoFile(String? filePath) async {
     if (filePath == null || filePath.trim().isEmpty) return;

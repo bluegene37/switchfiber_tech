@@ -88,7 +88,8 @@ void main() {
     await pumpView(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('SF-2'), findsOneWidget);
+    expect(find.text('SF-2'), findsNothing,
+        reason: 'assigned to another technician, so not my history');
     expect(find.text('SF-3'), findsOneWidget);
     expect(find.text('SF-1'), findsOneWidget);
     expect(find.text('SF-4'), findsNothing,
@@ -98,8 +99,8 @@ void main() {
         .widgetList<JobHistoryTile>(find.byType(JobHistoryTile))
         .map((t) => t.job.id)
         .toList();
-    expect(tiles, [2, 3, 1], reason: 'most recent activation first');
-    expect(find.text('Aug 30, 2026'), findsOneWidget);
+    expect(tiles, [3, 1], reason: 'most recent activation first');
+    expect(find.text('Aug 20, 2026'), findsOneWidget);
   });
 
   testWidgets('date and area chips narrow the list and clear together',
@@ -159,6 +160,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('SF-1'), findsOneWidget);
     expect(find.text('SF-2'), findsOneWidget);
+  });
+
+  testWidgets("another technician's jobs never show once my email is known",
+      (tester) async {
+    // A pull made before the email was known can leave other crews' rows in
+    // the cache; the history must not show them.
+    await seed(tester, [
+      _job(1, _me, 'Activated'),
+      _job(2, 'tech1@switchfiber.ph', 'Activated'),
+    ]);
+    jobsSignals.setTechnicianEmail(_me);
+
+    await pumpView(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('SF-1'), findsOneWidget);
+    expect(find.text('SF-2'), findsNothing);
   });
 
   testWidgets('displays history jobs even when technician email is not set',

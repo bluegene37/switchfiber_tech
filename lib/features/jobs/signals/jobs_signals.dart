@@ -117,10 +117,18 @@ class JobsSignals {
   );
 
   /// Every finished job (Activated or Completed) assigned to the signed-in
-  /// technician, newest first. Empty until the technician's email is known.
+  /// technician, newest first.
+  ///
+  /// Once the email is known the list is scoped to it here as well as on the
+  /// server, so rows another technician's pull left in the cache never show.
+  /// While it is unknown everything cached is shown rather than nothing.
   late final ReadonlySignal<List<JobOrderDto>> assignedJobs = computed(() {
-    final history =
-        allJobs.value.where((j) => j.isActivated || j.isCompleted).toList();
+    final email = technicianEmail.value?.trim() ?? '';
+    final history = allJobs.value
+        .where((j) =>
+            (j.isActivated || j.isCompleted) &&
+            (email.isEmpty || j.isAssignedTo(email)))
+        .toList();
 
     history.sort((a, b) {
       final ad = a.historyDate;

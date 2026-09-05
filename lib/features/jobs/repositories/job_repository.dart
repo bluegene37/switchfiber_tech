@@ -32,11 +32,15 @@ class JobRepository {
   /// Pull the job orders the technician can act on or look back at, and
   /// bring the cache in line with them.
   ///
-  /// Uses `GET /JobOrders/status-assigned` with `assignedEmail` when
-  /// [technicianEmail] is provided so the server returns only the assigned
-  /// jobs across `Scheduled`, `Activated`, and `Completed`.
-  /// When [technicianEmail] is null or empty, `assignedEmail` is omitted
-  /// to fetch all jobs in those statuses.
+  /// Uses `GET /JobOrders/status-assigned` with `assignedEmail` so the server
+  /// returns only this technician's jobs across `Scheduled`, `Activated`, and
+  /// `Completed`.
+  ///
+  /// Without [technicianEmail] nothing is pulled and the cache is left as it
+  /// is. The login response carries no email, so the first seconds of a
+  /// session have none; pulling unscoped then fetched every technician's
+  /// history (3,900 jobs) and, because that download outlived the scoped one
+  /// that followed, left them on the phone.
   ///
   /// After a successful pull, synced rows the server no longer returned (a job
   /// cancelled or reassigned by the office) are dropped. Rows with local edits
@@ -47,9 +51,10 @@ class JobRepository {
     // Purge test/sample demo jobs (IDs 101-106) permanently
     await _dao.deleteSampleJobs();
 
+    final assignedEmail = technicianEmail?.trim();
+    if (assignedEmail == null || assignedEmail.isEmpty) return;
+
     try {
-      final email = technicianEmail?.trim();
-      final assignedEmail = (email != null && email.isNotEmpty) ? email : null;
 
       final scheduled = await _api.fetchByStatusAssigned(
         status: JobStatus.scheduled.wireValue,

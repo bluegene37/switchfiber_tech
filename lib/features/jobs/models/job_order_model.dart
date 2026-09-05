@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:drift/drift.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/database/app_database.dart';
@@ -730,9 +731,55 @@ class JobOrderDto {
     });
   }
 
-  /// Converts fields to API JSON map, resolving local photo and signature file
-  /// paths back into Base64 data URLs as expected by `PUT /api/JobOrders/{id}`.
+  /// Whether `PUT /api/JobOrders/{id}` can take an image inline.
+  ///
+  /// It cannot yet. Probed on 2026-09-05 against job order 3975:
+  /// clientSignature, setupImage and houseFront accept 255 characters and
+  /// answer HTTP 500 "An error occurred while updating job order" at 256, so
+  /// any real image failed the whole completion. Until the backend takes
+  /// uploads, each captured image is sent as the placeholder URL the owner
+  /// asked for and the image itself stays on the phone. Flip this once the
+  /// backend stores inline images.
+  static const bool serverAcceptsInlineImages = false;
+
+  /// Stand-ins sent while [serverAcceptsInlineImages] is false.
+  static const String placeholderPhotoUrl = 'https://picsum.photos/200';
+  static const String placeholderSignatureUrl =
+      'https://picsum.photos/200/300?grayscale';
+
+  /// The image fields of `UpdateJobOrderRequest`.
+  static const List<String> imageFields = [
+    'boxReadingImage',
+    'routerReadingImage',
+    'clientSignature',
+    'setupImage',
+    'speedtestImage',
+    'portLabelImage',
+    'signedContractImage',
+    'houseFront',
+  ];
+
+  /// Converts fields to API JSON map. Captured photos and the signature go
+  /// out as Base64 data URLs when [serverAcceptsInlineImages], otherwise as
+  /// the placeholder URLs. A value the server itself holds (`image.jpeg`,
+  /// `uploads/...`) or an empty field is echoed back unchanged.
   Future<Map<String, dynamic>> toApiJsonAsync() async {
+    if (serverAcceptsInlineImages) return toApiJsonWithInlineImages();
+    final map = toApiJson();
+    final storage = PhotoStorageService.instance;
+    for (final key in imageFields) {
+      final value = map[key];
+      if (value is! String || !storage.isCapturedImage(value)) continue;
+      map[key] = key == 'clientSignature'
+          ? placeholderSignatureUrl
+          : placeholderPhotoUrl;
+    }
+    return map;
+  }
+
+  /// The old inline form, kept for the day the flag above flips.
+  @visibleForTesting
+  Future<Map<String, dynamic>> toApiJsonWithInlineImages() async {
     final map = toApiJson();
     final storage = PhotoStorageService.instance;
     const keys = [
