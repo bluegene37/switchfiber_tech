@@ -98,8 +98,8 @@ void main() {
 
   testWidgets('primary CTA switches to Mark as Completed once report is filed',
       (tester) async {
-    await pumpDetail(
-        tester, job: job(signature: _signature, serial: 'HWTC8829104'));
+    await pumpDetail(tester,
+        job: job(signature: _signature, serial: 'HWTC8829104'));
 
     expect(find.text('Mark as Completed'), findsOneWidget);
     expect(ctaButton(tester, 'Mark as Completed').onPressed, isNotNull,

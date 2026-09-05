@@ -26,9 +26,9 @@ enum JobStatus {
 
   String get label => wireValue;
 
-  /// The next stage. [activated] and [completed] are terminal stages.
+  /// The next stage. [completed] and [activated] are terminal stages.
   JobStatus? get next => switch (this) {
-        JobStatus.scheduled => JobStatus.activated,
+        JobStatus.scheduled => JobStatus.completed,
         JobStatus.activated => null,
         JobStatus.completed => null,
       };
@@ -189,9 +189,9 @@ class JobOrderDto {
   bool get canActivate => !isHistory;
 
   /// The next stage when the technician advances this job. A job outside the
-  /// workflow goes straight to Activated.
+  /// workflow goes straight to Completed.
   JobStatus? get nextStatus =>
-      jobStatus == null ? JobStatus.activated : jobStatus!.next;
+      jobStatus == null ? JobStatus.completed : jobStatus!.next;
 
   /// A failed or postponed visit that must stay visible to the technician.
   SiteException? get siteException => SiteException.parse(onsiteStatus);
@@ -320,7 +320,9 @@ class JobOrderDto {
       city: json['city']?.toString(),
       planName: json['plan']?.toString() ??
           json['desiredPlan']?.toString() ??
-          'Fiber 50Mbps',
+          (json['planId'] is String ? json['planId'] as String : null) ??
+          json['choose_Plan']?.toString() ??
+          '',
       planId: json['planId'] is int
           ? json['planId']
           : int.tryParse(json['planId']?.toString() ?? '0'),
@@ -400,10 +402,10 @@ class JobOrderDto {
           .resolveToDataUrlSync(row.clientSignature),
       setupImage:
           PhotoStorageService.instance.resolveToDataUrlSync(row.setupImage),
-      speedtestImage: PhotoStorageService.instance
-          .resolveToDataUrlSync(row.speedtestImage),
-      portLabelImage: PhotoStorageService.instance
-          .resolveToDataUrlSync(row.portLabelImage),
+      speedtestImage:
+          PhotoStorageService.instance.resolveToDataUrlSync(row.speedtestImage),
+      portLabelImage:
+          PhotoStorageService.instance.resolveToDataUrlSync(row.portLabelImage),
       signedContractImage: PhotoStorageService.instance
           .resolveToDataUrlSync(row.signedContractImage),
       houseFront:
@@ -452,6 +454,206 @@ class JobOrderDto {
       isSynced: Value(synced),
       updatedAt: Value(updatedAt ?? DateTime.now()),
     );
+  }
+
+  /// Every field of `UpdateJobOrderRequest`, exactly as the owner's working
+  /// curl sends it. The PUT body is built from this list and nothing else.
+  ///
+  /// The GET returns 99 keys, a dozen of which (`id`, `timestamp`, `nap`,
+  /// `lcp`, `vlan`, `choose_Plan`, …) are read-side echoes the request type
+  /// does not declare. Replaying them was one more way for the update to
+  /// fail without saying which field it disliked.
+  static const List<String> apiRequestFields = [
+    'emailAddress',
+    'referredBy',
+    'firstName',
+    'middleInitial',
+    'lastName',
+    'contactNumber',
+    'applicantEmailAddress',
+    'address',
+    'location',
+    'barangay',
+    'city',
+    'region',
+    'planId',
+    'remarks',
+    'installationFee',
+    'contractTemplate',
+    'billingDay',
+    'preferredDay',
+    'joRemarks',
+    'status',
+    'verifiedBy',
+    'modemRouterSN',
+    'provider',
+    'lcpId',
+    'napId',
+    'portId',
+    'vlanId',
+    'username',
+    'visitBy',
+    'visitWith',
+    'visitWithOther',
+    'onsiteStatus',
+    'onsiteRemarks',
+    'modifiedBy',
+    'modifiedDate',
+    'contractLink',
+    'connectionType',
+    'assignedEmail',
+    'setupImage',
+    'speedtestImage',
+    'startTimeStamp',
+    'endTimeStamp',
+    'duration',
+    'externalId',
+    'lcpnapId',
+    'billingStatus',
+    'routerModel',
+    'dateInstalled',
+    'clientSignature',
+    'ip',
+    'signedContractImage',
+    'boxReadingImage',
+    'routerReadingImage',
+    'usernameStatus',
+    'lcpnapportId',
+    'itemName1',
+    'itemQuantity1',
+    'itemName2',
+    'itemQuantity2',
+    'itemName3',
+    'itemQuantity3',
+    'itemName4',
+    'itemQuantity4',
+    'itemName5',
+    'itemQuantity5',
+    'itemName6',
+    'itemQuantity6',
+    'itemName7',
+    'itemQuantity7',
+    'itemName8',
+    'itemQuantity8',
+    'itemName9',
+    'itemQuantity9',
+    'itemName10',
+    'itemQuantity10',
+    'usageType',
+    'renter',
+    'installationLandmark',
+    'statusRemarks',
+    'portLabelImage',
+    'secondContactNumber',
+    'accountNo',
+    'addressCoordinates',
+    'referrersAccountNumber',
+    'applicationId',
+    'houseFront',
+    'createdBy',
+    'createdDate',
+  ];
+
+  /// Fields `PUT /api/JobOrders/{id}` accepts as null.
+  ///
+  /// Everything else in UpdateJobOrderRequest is a non-nullable string, so a
+  /// null fails validation where an empty string passes.
+  static const Set<String> _nullableApiFields = {
+    'modifiedDate',
+    'startTimeStamp',
+    'endTimeStamp',
+    'dateInstalled',
+    'createdBy',
+    'createdDate',
+  };
+
+  /// Fields the PUT requires that the matching GET does not always return.
+  ///
+  /// The endpoint is not a clean round trip: `GET /api/JobOrders/{id}` hands
+  /// back `duration`, `billingDay` and `installationFee` as null and omits
+  /// `applicationId` entirely, then the PUT rejects the very record it just
+  /// gave out with "The Duration field is required". Replaying the server's
+  /// own response therefore fails with HTTP 400 unless these are filled in.
+  /// These four hold numbers, so an empty string is not a safe filler: the
+  /// endpoint accepted `""` past validation and then failed inside the update
+  /// with `HTTP 500 An error occurred while updating job order with ID`,
+  /// which is what a numeric parse of an empty string looks like from the
+  /// outside. Each is given a numeric default instead.
+  ///
+  /// `duration` is null on every record on the server, so there is no
+  /// populated example to copy a format from; zero is the neutral choice.
+  /// `applicationId` is handled separately: it is the application's own
+  /// number, which the record already carries as `accountNo`.
+  static const Map<String, String> _requiredApiFields = {
+    'duration': defaultDuration,
+    'billingDay': defaultBillingDay,
+    'installationFee': defaultInstallationFee,
+  };
+
+  /// Default duration set on job completion.
+  static const String defaultDuration = '2';
+
+  /// Billing day used when the record carries none.
+  ///
+  /// A subscriber that already has a billing day keeps it: overwriting one
+  /// would change real billing data to satisfy a validator.
+  static const String defaultBillingDay = '27';
+
+  /// Installation fee used when the record carries none.
+  ///
+  /// A record that already has a fee keeps it, **including an explicit 0**.
+  /// Most job orders on the server currently read 0, and a zero fee is a real
+  /// value the office may have set on purpose; only a null or empty fee is
+  /// treated as missing.
+  static const String defaultInstallationFee = '1';
+
+  /// Makes [body] satisfy UpdateJobOrderRequest without changing any value
+  /// the server actually holds.
+  ///
+  /// Produces exactly the contract's fields, every value a string, in the
+  /// shape the owner's own curl uses:
+  ///
+  /// - keys outside [apiRequestFields] are dropped;
+  /// - the four numeric required fields get a numeric default when the record
+  ///   has none, whether they arrived null or were missing entirely;
+  /// - the six genuinely nullable fields stay null;
+  /// - every other null becomes `""`, and every number (`0.0`, `22`) becomes
+  ///   its string form, since the request type declares strings.
+  static Map<String, dynamic> normalizeForApi(Map<String, dynamic> body) {
+    final out = Map<String, dynamic>.from(body);
+
+    for (final entry in _requiredApiFields.entries) {
+      final current = out[entry.key];
+      // Only a null or blank counts as missing. A value the office already
+      // set is kept, including an explicit zero fee or a real billing day.
+      if (current == null || current.toString().trim().isEmpty) {
+        out[entry.key] = entry.value;
+      }
+    }
+
+    // The GET never returns applicationId, but the PUT requires it.
+    // Use the record's ID to satisfy the backend requirement.
+    final applicationId = out['applicationId'];
+    if (applicationId == null || applicationId.toString().trim().isEmpty) {
+      final idVal = out['id']?.toString().trim() ?? '';
+      out['applicationId'] = idVal.isNotEmpty ? idVal : (out['accountNo']?.toString().trim() ?? '0');
+    }
+
+    final result = <String, dynamic>{};
+    for (final key in apiRequestFields) {
+      final value = out[key];
+      if (value == null) {
+        result[key] = _nullableApiFields.contains(key) ? null : '';
+      } else if (value is num) {
+        // 22 -> "22", 0.0 -> "0", 799.5 -> "799.5".
+        result[key] = value == value.truncateToDouble() && value.abs() < 1e15
+            ? value.toInt().toString()
+            : value.toString();
+      } else {
+        result[key] = value.toString();
+      }
+    }
+    return result;
   }
 
   /// Fields the technician's app is allowed to change on the server.
@@ -509,21 +711,23 @@ class JobOrderDto {
       }.entries) {
         if (e.value != null) fallback[e.key] = e.value;
       }
-      return fallback;
+      return normalizeForApi(fallback);
     }
 
     final decoded = json.decode(original);
     if (decoded is! Map<String, dynamic>) {
-      return <String, dynamic>{'id': id, ..._technicianEdits()};
+      return normalizeForApi(
+          <String, dynamic>{'id': id, ..._technicianEdits()});
     }
 
-    return <String, dynamic>{
+    return normalizeForApi(<String, dynamic>{
+      'id': id,
       ...decoded,
       ..._technicianEdits(),
       if (dateInstalled != null)
         'dateInstalled': dateInstalled!.toIso8601String(),
       if (opticalPower != null) 'opticalPower': opticalPower,
-    };
+    });
   }
 
   /// Converts fields to API JSON map, resolving local photo and signature file

@@ -11,8 +11,7 @@ class ReportSignals {
   final routerModel = signal<String>('Huawei 5v5');
   final napPort = signal<String>('PORT 001');
   final nap = signal<String?>(null);
-  final remarks = signal<String>(
-      'Fiber drop cable installed. Power verified. Client speedtest 100Mbps symmetrical.');
+  final remarks = signal<String>('');
 
   /// Photo proofs by field, as data URLs. A missing key means untouched (the
   /// server's value stands); an empty string means the technician removed it.
@@ -76,6 +75,7 @@ class ReportSignals {
     } else {
       nap.value = null;
     }
+    remarks.value = job.onsiteRemarks ?? '';
     // Start from what the job already carries; a fresh capture replaces it.
     photos.value = const {};
     signature.value = job.hasSignature ? job.clientSignature : null;

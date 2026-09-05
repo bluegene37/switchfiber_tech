@@ -67,6 +67,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         widget.jobsSignals.allJobs.value.isNotEmpty) {
       rep.setJobOrder(widget.jobsSignals.allJobs.value.first);
       _serialController.text = rep.routerSerial.value;
+      _remarksController.text = rep.remarks.value;
       _dbmController.text = rep.opticalPower.value.toStringAsFixed(1);
     }
   }
@@ -184,7 +185,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
               SizedBox(width: 10),
               Expanded(
-                child: Text('Customer signature is required before saving report.'),
+                child: Text(
+                    'Customer signature is required before saving report.'),
               ),
             ],
           ),
@@ -330,7 +332,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                     onPressed: submitting ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      minimumSize: const Size.fromHeight(52),
+                      minimumSize: const Size.fromHeight(56),
                     ),
                     child: submitting
                         ? const SizedBox(
@@ -402,6 +404,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   Text(
                     job.ticketNumber,
                     style: context.text.titleSmall!.copyWith(
+                      fontFamily: 'JetBrains Mono',
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
                       color: AppTheme.brandInkOf(context),
                     ),
                   ),
@@ -534,6 +539,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             // Router SN
             TextFormField(
               controller: _serialController,
+              style: const TextStyle(fontFamily: 'JetBrains Mono'),
               decoration: const InputDecoration(
                 labelText: 'Modem / ONT Serial Number (SN)',
                 prefixIcon: Icon(Icons.qr_code_scanner_rounded, size: 20),
@@ -608,9 +614,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           : portNames.firstWhere(
                               (p) =>
                                   p.toLowerCase().replaceAll(' ', '') ==
-                                  currentVal
-                                      .toLowerCase()
-                                      .replaceAll(' ', ''),
+                                  currentVal.toLowerCase().replaceAll(' ', ''),
                               orElse: () => portNames.isNotEmpty
                                   ? portNames.first
                                   : currentVal,
@@ -1035,9 +1039,7 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                         children: [
                           Icon(Icons.search_off_rounded,
                               size: 40,
-                              color: isDark
-                                  ? AppTheme.textSecondaryDark
-                                  : AppTheme.textMuted),
+                              color: AppTheme.secondaryInkOf(context)),
                           const SizedBox(height: 8),
                           Text(
                             'No NAP matching "$_query"',
@@ -1060,10 +1062,8 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primary.withValues(alpha: 0.15)
-                                  : (isDark
-                                      ? Colors.white.withValues(alpha: 0.06)
-                                      : Colors.black.withValues(alpha: 0.04)),
+                                  ? AppTheme.primarySubtleBgOf(context)
+                                  : AppTheme.fillOf(context),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -1071,9 +1071,7 @@ class _NapFilterBottomSheetState extends State<_NapFilterBottomSheet> {
                               size: 20,
                               color: isSelected
                                   ? AppTheme.primary
-                                  : (isDark
-                                      ? AppTheme.textSecondaryDark
-                                      : AppTheme.textMuted),
+                                  : AppTheme.secondaryInkOf(context),
                             ),
                           ),
                           title: Text(

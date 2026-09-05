@@ -4795,6 +4795,531 @@ class ServiceOrdersCompanion extends UpdateCompanion<ServiceOrder> {
   }
 }
 
+class $SyncErrorLogsTable extends SyncErrorLogs
+    with TableInfo<$SyncErrorLogsTable, SyncErrorLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncErrorLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _entityTypeMeta =
+      const VerificationMeta('entityType');
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+      'entity_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _entityIdMeta =
+      const VerificationMeta('entityId');
+  @override
+  late final GeneratedColumn<int> entityId = GeneratedColumn<int>(
+      'entity_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _referenceMeta =
+      const VerificationMeta('reference');
+  @override
+  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
+      'reference', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _operationMeta =
+      const VerificationMeta('operation');
+  @override
+  late final GeneratedColumn<String> operation = GeneratedColumn<String>(
+      'operation', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _statusCodeMeta =
+      const VerificationMeta('statusCode');
+  @override
+  late final GeneratedColumn<int> statusCode = GeneratedColumn<int>(
+      'status_code', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _messageMeta =
+      const VerificationMeta('message');
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+      'message', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadBytesMeta =
+      const VerificationMeta('payloadBytes');
+  @override
+  late final GeneratedColumn<int> payloadBytes = GeneratedColumn<int>(
+      'payload_bytes', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _resolvedMeta =
+      const VerificationMeta('resolved');
+  @override
+  late final GeneratedColumn<bool> resolved = GeneratedColumn<bool>(
+      'resolved', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("resolved" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        entityType,
+        entityId,
+        reference,
+        operation,
+        statusCode,
+        message,
+        payloadBytes,
+        occurredAt,
+        resolved
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_error_logs';
+  @override
+  VerificationContext validateIntegrity(Insertable<SyncErrorLog> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+          _entityTypeMeta,
+          entityType.isAcceptableOrUnknown(
+              data['entity_type']!, _entityTypeMeta));
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(_entityIdMeta,
+          entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta));
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('reference')) {
+      context.handle(_referenceMeta,
+          reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta));
+    }
+    if (data.containsKey('operation')) {
+      context.handle(_operationMeta,
+          operation.isAcceptableOrUnknown(data['operation']!, _operationMeta));
+    } else if (isInserting) {
+      context.missing(_operationMeta);
+    }
+    if (data.containsKey('status_code')) {
+      context.handle(
+          _statusCodeMeta,
+          statusCode.isAcceptableOrUnknown(
+              data['status_code']!, _statusCodeMeta));
+    }
+    if (data.containsKey('message')) {
+      context.handle(_messageMeta,
+          message.isAcceptableOrUnknown(data['message']!, _messageMeta));
+    } else if (isInserting) {
+      context.missing(_messageMeta);
+    }
+    if (data.containsKey('payload_bytes')) {
+      context.handle(
+          _payloadBytesMeta,
+          payloadBytes.isAcceptableOrUnknown(
+              data['payload_bytes']!, _payloadBytesMeta));
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    }
+    if (data.containsKey('resolved')) {
+      context.handle(_resolvedMeta,
+          resolved.isAcceptableOrUnknown(data['resolved']!, _resolvedMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncErrorLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncErrorLog(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      entityType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}entity_type'])!,
+      entityId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}entity_id'])!,
+      reference: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reference'])!,
+      operation: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operation'])!,
+      statusCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}status_code']),
+      message: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}message'])!,
+      payloadBytes: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}payload_bytes'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}occurred_at'])!,
+      resolved: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}resolved'])!,
+    );
+  }
+
+  @override
+  $SyncErrorLogsTable createAlias(String alias) {
+    return $SyncErrorLogsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncErrorLog extends DataClass implements Insertable<SyncErrorLog> {
+  final int id;
+
+  /// 'JOB_ORDER' or 'SERVICE_ORDER'.
+  final String entityType;
+  final int entityId;
+
+  /// The ticket number, so a log line is readable without a lookup.
+  final String reference;
+
+  /// What the technician was doing: 'complete', 'activate', 'field-status'.
+  final String operation;
+
+  /// HTTP status, or null when the request never got an answer at all
+  /// (no signal, timeout, connection reset).
+  final int? statusCode;
+
+  /// The server's own message, or the exception when there was no response.
+  final String message;
+
+  /// Size of the request body in bytes. A completion inlines every photo as
+  /// Base64, so this is the first thing to look at when big pushes fail and
+  /// small ones do not.
+  final int payloadBytes;
+  final DateTime occurredAt;
+
+  /// Set once the same record syncs successfully, so the log shows what is
+  /// still outstanding rather than everything that ever went wrong.
+  final bool resolved;
+  const SyncErrorLog(
+      {required this.id,
+      required this.entityType,
+      required this.entityId,
+      required this.reference,
+      required this.operation,
+      this.statusCode,
+      required this.message,
+      required this.payloadBytes,
+      required this.occurredAt,
+      required this.resolved});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<int>(entityId);
+    map['reference'] = Variable<String>(reference);
+    map['operation'] = Variable<String>(operation);
+    if (!nullToAbsent || statusCode != null) {
+      map['status_code'] = Variable<int>(statusCode);
+    }
+    map['message'] = Variable<String>(message);
+    map['payload_bytes'] = Variable<int>(payloadBytes);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['resolved'] = Variable<bool>(resolved);
+    return map;
+  }
+
+  SyncErrorLogsCompanion toCompanion(bool nullToAbsent) {
+    return SyncErrorLogsCompanion(
+      id: Value(id),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      reference: Value(reference),
+      operation: Value(operation),
+      statusCode: statusCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(statusCode),
+      message: Value(message),
+      payloadBytes: Value(payloadBytes),
+      occurredAt: Value(occurredAt),
+      resolved: Value(resolved),
+    );
+  }
+
+  factory SyncErrorLog.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncErrorLog(
+      id: serializer.fromJson<int>(json['id']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<int>(json['entityId']),
+      reference: serializer.fromJson<String>(json['reference']),
+      operation: serializer.fromJson<String>(json['operation']),
+      statusCode: serializer.fromJson<int?>(json['statusCode']),
+      message: serializer.fromJson<String>(json['message']),
+      payloadBytes: serializer.fromJson<int>(json['payloadBytes']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      resolved: serializer.fromJson<bool>(json['resolved']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<int>(entityId),
+      'reference': serializer.toJson<String>(reference),
+      'operation': serializer.toJson<String>(operation),
+      'statusCode': serializer.toJson<int?>(statusCode),
+      'message': serializer.toJson<String>(message),
+      'payloadBytes': serializer.toJson<int>(payloadBytes),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'resolved': serializer.toJson<bool>(resolved),
+    };
+  }
+
+  SyncErrorLog copyWith(
+          {int? id,
+          String? entityType,
+          int? entityId,
+          String? reference,
+          String? operation,
+          Value<int?> statusCode = const Value.absent(),
+          String? message,
+          int? payloadBytes,
+          DateTime? occurredAt,
+          bool? resolved}) =>
+      SyncErrorLog(
+        id: id ?? this.id,
+        entityType: entityType ?? this.entityType,
+        entityId: entityId ?? this.entityId,
+        reference: reference ?? this.reference,
+        operation: operation ?? this.operation,
+        statusCode: statusCode.present ? statusCode.value : this.statusCode,
+        message: message ?? this.message,
+        payloadBytes: payloadBytes ?? this.payloadBytes,
+        occurredAt: occurredAt ?? this.occurredAt,
+        resolved: resolved ?? this.resolved,
+      );
+  SyncErrorLog copyWithCompanion(SyncErrorLogsCompanion data) {
+    return SyncErrorLog(
+      id: data.id.present ? data.id.value : this.id,
+      entityType:
+          data.entityType.present ? data.entityType.value : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      reference: data.reference.present ? data.reference.value : this.reference,
+      operation: data.operation.present ? data.operation.value : this.operation,
+      statusCode:
+          data.statusCode.present ? data.statusCode.value : this.statusCode,
+      message: data.message.present ? data.message.value : this.message,
+      payloadBytes: data.payloadBytes.present
+          ? data.payloadBytes.value
+          : this.payloadBytes,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      resolved: data.resolved.present ? data.resolved.value : this.resolved,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncErrorLog(')
+          ..write('id: $id, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('reference: $reference, ')
+          ..write('operation: $operation, ')
+          ..write('statusCode: $statusCode, ')
+          ..write('message: $message, ')
+          ..write('payloadBytes: $payloadBytes, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('resolved: $resolved')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, entityType, entityId, reference,
+      operation, statusCode, message, payloadBytes, occurredAt, resolved);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncErrorLog &&
+          other.id == this.id &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.reference == this.reference &&
+          other.operation == this.operation &&
+          other.statusCode == this.statusCode &&
+          other.message == this.message &&
+          other.payloadBytes == this.payloadBytes &&
+          other.occurredAt == this.occurredAt &&
+          other.resolved == this.resolved);
+}
+
+class SyncErrorLogsCompanion extends UpdateCompanion<SyncErrorLog> {
+  final Value<int> id;
+  final Value<String> entityType;
+  final Value<int> entityId;
+  final Value<String> reference;
+  final Value<String> operation;
+  final Value<int?> statusCode;
+  final Value<String> message;
+  final Value<int> payloadBytes;
+  final Value<DateTime> occurredAt;
+  final Value<bool> resolved;
+  const SyncErrorLogsCompanion({
+    this.id = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.operation = const Value.absent(),
+    this.statusCode = const Value.absent(),
+    this.message = const Value.absent(),
+    this.payloadBytes = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.resolved = const Value.absent(),
+  });
+  SyncErrorLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required String entityType,
+    required int entityId,
+    this.reference = const Value.absent(),
+    required String operation,
+    this.statusCode = const Value.absent(),
+    required String message,
+    this.payloadBytes = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.resolved = const Value.absent(),
+  })  : entityType = Value(entityType),
+        entityId = Value(entityId),
+        operation = Value(operation),
+        message = Value(message);
+  static Insertable<SyncErrorLog> custom({
+    Expression<int>? id,
+    Expression<String>? entityType,
+    Expression<int>? entityId,
+    Expression<String>? reference,
+    Expression<String>? operation,
+    Expression<int>? statusCode,
+    Expression<String>? message,
+    Expression<int>? payloadBytes,
+    Expression<DateTime>? occurredAt,
+    Expression<bool>? resolved,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (reference != null) 'reference': reference,
+      if (operation != null) 'operation': operation,
+      if (statusCode != null) 'status_code': statusCode,
+      if (message != null) 'message': message,
+      if (payloadBytes != null) 'payload_bytes': payloadBytes,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (resolved != null) 'resolved': resolved,
+    });
+  }
+
+  SyncErrorLogsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? entityType,
+      Value<int>? entityId,
+      Value<String>? reference,
+      Value<String>? operation,
+      Value<int?>? statusCode,
+      Value<String>? message,
+      Value<int>? payloadBytes,
+      Value<DateTime>? occurredAt,
+      Value<bool>? resolved}) {
+    return SyncErrorLogsCompanion(
+      id: id ?? this.id,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      reference: reference ?? this.reference,
+      operation: operation ?? this.operation,
+      statusCode: statusCode ?? this.statusCode,
+      message: message ?? this.message,
+      payloadBytes: payloadBytes ?? this.payloadBytes,
+      occurredAt: occurredAt ?? this.occurredAt,
+      resolved: resolved ?? this.resolved,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<int>(entityId.value);
+    }
+    if (reference.present) {
+      map['reference'] = Variable<String>(reference.value);
+    }
+    if (operation.present) {
+      map['operation'] = Variable<String>(operation.value);
+    }
+    if (statusCode.present) {
+      map['status_code'] = Variable<int>(statusCode.value);
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (payloadBytes.present) {
+      map['payload_bytes'] = Variable<int>(payloadBytes.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (resolved.present) {
+      map['resolved'] = Variable<bool>(resolved.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncErrorLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('reference: $reference, ')
+          ..write('operation: $operation, ')
+          ..write('statusCode: $statusCode, ')
+          ..write('message: $message, ')
+          ..write('payloadBytes: $payloadBytes, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('resolved: $resolved')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4803,17 +5328,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LcpNapLocationsTable lcpNapLocations =
       $LcpNapLocationsTable(this);
   late final $ServiceOrdersTable serviceOrders = $ServiceOrdersTable(this);
+  late final $SyncErrorLogsTable syncErrorLogs = $SyncErrorLogsTable(this);
   late final JobOrdersDao jobOrdersDao = JobOrdersDao(this as AppDatabase);
   late final LcpNapLocationsDao lcpNapLocationsDao =
       LcpNapLocationsDao(this as AppDatabase);
   late final ServiceOrdersDao serviceOrdersDao =
       ServiceOrdersDao(this as AppDatabase);
+  late final SyncErrorLogsDao syncErrorLogsDao =
+      SyncErrorLogsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [jobOrders, syncQueues, lcpNapLocations, serviceOrders];
+      [jobOrders, syncQueues, lcpNapLocations, serviceOrders, syncErrorLogs];
 }
 
 typedef $$JobOrdersTableCreateCompanionBuilder = JobOrdersCompanion Function({
@@ -6812,6 +7340,253 @@ typedef $$ServiceOrdersTableProcessedTableManager = ProcessedTableManager<
     ),
     ServiceOrder,
     PrefetchHooks Function()>;
+typedef $$SyncErrorLogsTableCreateCompanionBuilder = SyncErrorLogsCompanion
+    Function({
+  Value<int> id,
+  required String entityType,
+  required int entityId,
+  Value<String> reference,
+  required String operation,
+  Value<int?> statusCode,
+  required String message,
+  Value<int> payloadBytes,
+  Value<DateTime> occurredAt,
+  Value<bool> resolved,
+});
+typedef $$SyncErrorLogsTableUpdateCompanionBuilder = SyncErrorLogsCompanion
+    Function({
+  Value<int> id,
+  Value<String> entityType,
+  Value<int> entityId,
+  Value<String> reference,
+  Value<String> operation,
+  Value<int?> statusCode,
+  Value<String> message,
+  Value<int> payloadBytes,
+  Value<DateTime> occurredAt,
+  Value<bool> resolved,
+});
+
+class $$SyncErrorLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncErrorLogsTable> {
+  $$SyncErrorLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get entityId => $composableBuilder(
+      column: $table.entityId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reference => $composableBuilder(
+      column: $table.reference, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operation => $composableBuilder(
+      column: $table.operation, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get statusCode => $composableBuilder(
+      column: $table.statusCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get message => $composableBuilder(
+      column: $table.message, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get payloadBytes => $composableBuilder(
+      column: $table.payloadBytes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get resolved => $composableBuilder(
+      column: $table.resolved, builder: (column) => ColumnFilters(column));
+}
+
+class $$SyncErrorLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncErrorLogsTable> {
+  $$SyncErrorLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get entityId => $composableBuilder(
+      column: $table.entityId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reference => $composableBuilder(
+      column: $table.reference, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operation => $composableBuilder(
+      column: $table.operation, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get statusCode => $composableBuilder(
+      column: $table.statusCode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get message => $composableBuilder(
+      column: $table.message, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get payloadBytes => $composableBuilder(
+      column: $table.payloadBytes,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get resolved => $composableBuilder(
+      column: $table.resolved, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SyncErrorLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncErrorLogsTable> {
+  $$SyncErrorLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => column);
+
+  GeneratedColumn<int> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get reference =>
+      $composableBuilder(column: $table.reference, builder: (column) => column);
+
+  GeneratedColumn<String> get operation =>
+      $composableBuilder(column: $table.operation, builder: (column) => column);
+
+  GeneratedColumn<int> get statusCode => $composableBuilder(
+      column: $table.statusCode, builder: (column) => column);
+
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumn<int> get payloadBytes => $composableBuilder(
+      column: $table.payloadBytes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get resolved =>
+      $composableBuilder(column: $table.resolved, builder: (column) => column);
+}
+
+class $$SyncErrorLogsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SyncErrorLogsTable,
+    SyncErrorLog,
+    $$SyncErrorLogsTableFilterComposer,
+    $$SyncErrorLogsTableOrderingComposer,
+    $$SyncErrorLogsTableAnnotationComposer,
+    $$SyncErrorLogsTableCreateCompanionBuilder,
+    $$SyncErrorLogsTableUpdateCompanionBuilder,
+    (
+      SyncErrorLog,
+      BaseReferences<_$AppDatabase, $SyncErrorLogsTable, SyncErrorLog>
+    ),
+    SyncErrorLog,
+    PrefetchHooks Function()> {
+  $$SyncErrorLogsTableTableManager(_$AppDatabase db, $SyncErrorLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncErrorLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncErrorLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncErrorLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> entityType = const Value.absent(),
+            Value<int> entityId = const Value.absent(),
+            Value<String> reference = const Value.absent(),
+            Value<String> operation = const Value.absent(),
+            Value<int?> statusCode = const Value.absent(),
+            Value<String> message = const Value.absent(),
+            Value<int> payloadBytes = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<bool> resolved = const Value.absent(),
+          }) =>
+              SyncErrorLogsCompanion(
+            id: id,
+            entityType: entityType,
+            entityId: entityId,
+            reference: reference,
+            operation: operation,
+            statusCode: statusCode,
+            message: message,
+            payloadBytes: payloadBytes,
+            occurredAt: occurredAt,
+            resolved: resolved,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String entityType,
+            required int entityId,
+            Value<String> reference = const Value.absent(),
+            required String operation,
+            Value<int?> statusCode = const Value.absent(),
+            required String message,
+            Value<int> payloadBytes = const Value.absent(),
+            Value<DateTime> occurredAt = const Value.absent(),
+            Value<bool> resolved = const Value.absent(),
+          }) =>
+              SyncErrorLogsCompanion.insert(
+            id: id,
+            entityType: entityType,
+            entityId: entityId,
+            reference: reference,
+            operation: operation,
+            statusCode: statusCode,
+            message: message,
+            payloadBytes: payloadBytes,
+            occurredAt: occurredAt,
+            resolved: resolved,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable<$SyncErrorLogsTable, SyncErrorLog>(table),
+                    BaseReferences<_$AppDatabase, $SyncErrorLogsTable,
+                        SyncErrorLog>(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SyncErrorLogsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $SyncErrorLogsTable,
+    SyncErrorLog,
+    $$SyncErrorLogsTableFilterComposer,
+    $$SyncErrorLogsTableOrderingComposer,
+    $$SyncErrorLogsTableAnnotationComposer,
+    $$SyncErrorLogsTableCreateCompanionBuilder,
+    $$SyncErrorLogsTableUpdateCompanionBuilder,
+    (
+      SyncErrorLog,
+      BaseReferences<_$AppDatabase, $SyncErrorLogsTable, SyncErrorLog>
+    ),
+    SyncErrorLog,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6824,4 +7599,6 @@ class $AppDatabaseManager {
       $$LcpNapLocationsTableTableManager(_db, _db.lcpNapLocations);
   $$ServiceOrdersTableTableManager get serviceOrders =>
       $$ServiceOrdersTableTableManager(_db, _db.serviceOrders);
+  $$SyncErrorLogsTableTableManager get syncErrorLogs =>
+      $$SyncErrorLogsTableTableManager(_db, _db.syncErrorLogs);
 }

@@ -91,19 +91,19 @@ class JobOrderDetailScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: job.isSynced
                       ? (isDark
-                          ? const Color(0xFF059669).withValues(alpha: 0.25)
+                          ? const Color(0xFF064E3B)
                           : AppTheme.successSubtle)
                       : (isDark
-                          ? const Color(0xFF78350F).withValues(alpha: 0.25)
+                          ? const Color(0xFF3B2506)
                           : AppTheme.warningSubtle),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: job.isSynced
                         ? (isDark
-                            ? const Color(0xFF059669).withValues(alpha: 0.4)
+                            ? const Color(0xFF059669)
                             : const Color(0xFFBBF7D0))
                         : (isDark
-                            ? const Color(0xFFD97706).withValues(alpha: 0.4)
+                            ? const Color(0xFFB45309)
                             : const Color(0xFFFDE68A)),
                   ),
                 ),
@@ -116,12 +116,8 @@ class JobOrderDetailScreen extends StatelessWidget {
                           : Icons.cloud_off_rounded,
                       size: 20,
                       color: job.isSynced
-                          ? (isDark
-                              ? const Color(0xFF4ADE80)
-                              : AppTheme.success)
-                          : (isDark
-                              ? const Color(0xFFFDE68A)
-                              : const Color(0xFF92400E)),
+                          ? AppTheme.successInkOf(context)
+                          : AppTheme.warningInkOf(context),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -182,8 +178,7 @@ class JobOrderDetailScreen extends StatelessWidget {
                         job.hasCompletedReport
                             ? 'Mark as Completed'
                             : 'Fill Completion Report',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 16),
+                        style: context.text.titleSmall,
                       ),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
@@ -306,11 +301,11 @@ class JobOrderDetailScreen extends StatelessWidget {
   Widget _buildAssignmentRow(
       BuildContext context, JobOrderDto job, bool isDark) {
     final email = job.assignedEmail?.trim() ?? '';
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.person_pin_rounded, size: 20, color: muted),
+        Icon(Icons.person_pin_rounded,
+            size: 20, color: AppTheme.secondaryInkOf(context)),
         const SizedBox(width: 8),
         Text('Assigned To', style: context.text.bodySmall),
         const SizedBox(width: 12),
@@ -412,16 +407,14 @@ class JobOrderDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark
-            ? (isReschedule
-                ? const Color(0xFF78350F).withValues(alpha: 0.3)
-                : const Color(0xFF7F1D1D).withValues(alpha: 0.3))
+            ? (isReschedule ? const Color(0xFF3B2506) : const Color(0xFF3B1215))
             : (isReschedule ? AppTheme.warningSubtle : AppTheme.dangerSubtle),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
               ? (isReschedule
-                  ? const Color(0xFFD97706).withValues(alpha: 0.5)
-                  : const Color(0xFFDC2626).withValues(alpha: 0.5))
+                  ? const Color(0xFF78350F)
+                  : const Color(0xFF7F1D1D))
               : (isReschedule
                   ? const Color(0xFFFDE68A)
                   : const Color(0xFFFECACA)),
@@ -445,13 +438,9 @@ class JobOrderDetailScreen extends StatelessWidget {
                 Text(
                   'Site Exception: ${exception.label}',
                   style: context.text.titleSmall!.copyWith(
-                    color: isDark
-                        ? (isReschedule
-                            ? const Color(0xFFFDE68A)
-                            : const Color(0xFFFCA5A5))
-                        : (isReschedule
-                            ? const Color(0xFF92400E)
-                            : const Color(0xFF991B1B)),
+                    color: isReschedule
+                        ? AppTheme.warningInkOf(context)
+                        : AppTheme.dangerInkOf(context),
                   ),
                 ),
                 if (job.onsiteRemarks != null &&
@@ -460,13 +449,9 @@ class JobOrderDetailScreen extends StatelessWidget {
                   Text(
                     job.onsiteRemarks!,
                     style: context.text.bodySmall!.copyWith(
-                      color: isDark
-                          ? (isReschedule
-                              ? const Color(0xFFFCD34D)
-                              : const Color(0xFFFECACA))
-                          : (isReschedule
-                              ? const Color(0xFF78350F)
-                              : const Color(0xFF7F1D1D)),
+                      color: isReschedule
+                          ? AppTheme.warningInkOf(context)
+                          : AppTheme.dangerInkOf(context),
                     ),
                   ),
                 ],
@@ -518,11 +503,10 @@ class JobOrderDetailScreen extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.location_on_outlined,
+                const Icon(
+                  Icons.location_on_rounded,
                   size: 20,
-                  color:
-                      isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted,
+                  color: AppTheme.primary,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -850,6 +834,21 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   Widget _buildPlantAndHardwareCard(
       BuildContext context, JobOrderDto job, bool isDark) {
+    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
+    final muted = AppTheme.secondaryInkOf(context);
+    final lcpText = job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned';
+    final napText = job.nap?.isNotEmpty == true
+        ? job.nap!
+        : (job.napId != null && job.napId! > 0
+            ? 'NAP-${job.napId}'
+            : 'Unassigned');
+    final portText = job.portId ?? 'Port 1';
+    final ontText = job.routerModel?.isNotEmpty == true
+        ? job.routerModel!
+        : (job.modemRouterSN?.isNotEmpty == true
+            ? job.modemRouterSN!
+            : 'Pending Installation');
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -867,39 +866,241 @@ class JobOrderDetailScreen extends StatelessWidget {
                     style: context.text.titleMedium,
                   ),
                 ),
+                if (job.vlanId != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: borderColor, width: 0.5),
+                    ),
+                    child: Text(
+                      'VLAN ${job.vlanId}',
+                      style: context.text.labelMedium!.copyWith(
+                        fontFamily: 'JetBrains Mono',
+                        color: AppTheme.infoInkOf(context),
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 14),
-            _buildSpecRow(
-                context,
-                'LCP Cabinet',
-                job.lcpId != null ? 'LCP-${job.lcpId}' : 'Unassigned',
-                Icons.storage_rounded,
-                isDark),
-            _buildSpecRow(
-                context,
-                'NAP Box',
-                job.nap?.isNotEmpty == true
-                    ? job.nap!
-                    : (job.napId != null && job.napId! > 0
-                        ? 'NAP-${job.napId}'
-                        : 'Unassigned'),
-                Icons.hub_rounded,
-                isDark),
-            _buildSpecRow(context, 'Port Assignment', job.portId ?? 'Port 1',
-                Icons.electrical_services_rounded, isDark),
-            if (job.vlanId != null)
-              _buildSpecRow(context, 'VLAN Tag', 'VLAN ${job.vlanId}',
-                  Icons.tag_rounded, isDark),
-            _buildSpecRow(
-                context,
-                'Modem / ONT SN',
-                job.modemRouterSN ?? 'Pending Installation',
-                Icons.qr_code_rounded,
-                isDark),
-            if (job.routerModel != null && job.routerModel!.isNotEmpty)
-              _buildSpecRow(context, 'ONT Model', job.routerModel!,
-                  Icons.devices_rounded, isDark),
+
+            // Modern 2x2 Instrument Grid Partitioned by Hairlines
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: borderColor, width: 0.5),
+                color:
+                    isDark ? const Color(0xFF14171F) : const Color(0xFFF8FAFC),
+              ),
+              child: Column(
+                children: [
+                  // Row 1: LCP & NAP
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.storage_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'LCP CABINET',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  lcpText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                          width: 0.5,
+                          thickness: 0.5,
+                          color: borderColor,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.hub_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'NAP BOX',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  napText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(height: 0.5, thickness: 0.5, color: borderColor),
+
+                  // Row 2: Port Assignment & ONT Model/SN
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.electrical_services_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'PORT',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  portText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                          width: 0.5,
+                          thickness: 0.5,
+                          color: borderColor,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.devices_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'ONT / MODEM',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            context.text.labelSmall!.copyWith(
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: muted,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  ontText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (job.modemRouterSN?.isNotEmpty == true &&
+                                    job.modemRouterSN != ontText) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'SN: ${job.modemRouterSN!}',
+                                    style: context.text.bodySmall!.copyWith(
+                                      fontFamily: 'JetBrains Mono',
+                                      color: muted,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -977,8 +1178,11 @@ class JobOrderDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         '${dbm.toStringAsFixed(1)} dBm',
-                        style: context.text.headlineSmall!
-                            .copyWith(color: badgeColorInk),
+                        style: context.text.headlineSmall!.copyWith(
+                          fontFamily: 'JetBrains Mono',
+                          fontWeight: FontWeight.bold,
+                          color: badgeColorInk,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -1094,9 +1298,7 @@ class JobOrderDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(icon,
-              size: 20,
-              color: isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted),
+          Icon(icon, size: 20, color: AppTheme.secondaryInkOf(context)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1140,7 +1342,6 @@ class JobOrderDetailScreen extends StatelessWidget {
 
   /// Informs the technician that a completion report is needed before finalizing.
   Widget _buildReportRequiredNote(BuildContext context, bool isDark) {
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1153,7 +1354,7 @@ class JobOrderDetailScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 20, color: muted),
+          Icon(Icons.info_outline_rounded, size: 20, color: AppTheme.info),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1206,7 +1407,6 @@ class JobOrderDetailScreen extends StatelessWidget {
   /// A read-only banner for the history: the record can be inspected but not
   /// changed from here.
   Widget _buildViewOnlyNote(BuildContext context, bool isDark) {
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1218,7 +1418,8 @@ class JobOrderDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.lock_outline_rounded, size: 20, color: muted),
+          Icon(Icons.lock_outline_rounded,
+              size: 20, color: AppTheme.secondaryInkOf(context)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1301,14 +1502,30 @@ class JobOrderDetailScreen extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    await jobsSignals.completeJob(job);
+    final result = await jobsSignals.completeJob(job);
     if (!context.mounted) return;
+
+    // The completion is written locally first and only then pushed. Reporting
+    // success off the local write alone told technicians the office had the
+    // job when the server had refused it, and the job sat on "needs to sync"
+    // with nothing anywhere saying why.
+    final reachedServer = result == null || result.success;
+    final detail = result?.failures.isNotEmpty == true
+        ? result!.failures.first
+        : result?.message;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-            '${job.ticketNumber} marked as completed. It now appears in History.'),
-        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.darkSlate,
+        content: Text(reachedServer
+            ? '${job.ticketNumber} marked as completed. It now appears in History.'
+            : '${job.ticketNumber} is saved on this phone but the office has '
+                'not accepted it yet. It will retry.'
+                '${detail == null ? '' : '\n$detail'}'),
+        backgroundColor: reachedServer
+            ? (isDark ? AppTheme.darkCard : AppTheme.darkSlate)
+            : AppTheme.warning,
         behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: reachedServer ? 4 : 10),
       ),
     );
   }
@@ -1413,9 +1630,7 @@ class JobOrderDetailScreen extends StatelessWidget {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF3F2327)
-                      : AppTheme.primarySubtleBg,
+                  color: AppTheme.primarySubtleBgOf(ctx),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.copy_rounded,
@@ -1455,31 +1670,29 @@ class JobOrderDetailScreen extends StatelessWidget {
     JobOrderDto? job,
     required bool isDark,
   }) {
+    // SMS opens its own sheet so the technician can edit the message before
+    // it reaches the phone's messaging app. The suggested wording is a
+    // starting point, not a script: a subscriber who is already waiting, or
+    // a job running late, needs different words.
+    if (!isCall && job != null) {
+      _composeSms(context, phone, job, isDark);
+      return;
+    }
+
     showCupertinoModalPopup(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: Text(isCall ? 'Call Subscriber' : 'Send SMS'),
-        message: Text(
-          !isCall && job != null
-              ? '$phone\n\n"Good day ${job.customerName}, Switch Fiber Technician is arriving shortly for ticket ${job.ticketNumber}."'
-              : phone,
-        ),
+        title: const Text('Call Subscriber'),
+        message: Text(phone),
         actions: [
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(isCall
-                      ? 'Calling $phone...'
-                      : 'Opening SMS to $phone...'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppTheme.primary,
-                ),
-              );
+              _launchContactUri(context, Uri(scheme: 'tel', path: phone),
+                  failure: 'Could not open the dialer for $phone.');
             },
             isDefaultAction: true,
-            child: Text(isCall ? 'Dial Now' : 'Send Message'),
+            child: const Text('Dial Now'),
           ),
           CupertinoActionSheetAction(
             onPressed: () {
@@ -1501,6 +1714,67 @@ class JobOrderDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(ctx),
           child: const Text('Cancel'),
         ),
+      ),
+    );
+  }
+
+  /// The wording offered when texting a subscriber about an arrival.
+  ///
+  /// Public so the sheet's starting text can be asserted in a test without
+  /// pumping the whole detail screen.
+  static String smsTemplate(JobOrderDto job) =>
+      'Good day ${job.customerName}, Switch Fiber Technician is arriving '
+      'shortly for ticket ${job.ticketNumber}.';
+
+  /// Opens the phone's messaging app with [body] already filled in.
+  void _composeSms(
+      BuildContext context, String phone, JobOrderDto job, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _SmsComposeSheet(
+        phone: phone,
+        initialMessage: smsTemplate(job),
+        isDark: isDark,
+        onSend: (message) {
+          Navigator.pop(ctx);
+          _launchContactUri(
+            context,
+            // `body` as a query parameter is what both iOS Messages and
+            // Android SMS apps read; Uri's own encoding handles the newlines
+            // and punctuation a technician may type.
+            Uri(scheme: 'sms', path: phone, queryParameters: {'body': message}),
+            failure: 'Could not open the messaging app for $phone.',
+          );
+        },
+      ),
+    );
+  }
+
+  /// Hands [uri] to the phone and says so plainly when the phone refuses.
+  ///
+  /// The previous version only showed a snackbar claiming the call or message
+  /// had been opened, so a technician standing at a pole believed a
+  /// subscriber had been contacted when nothing had happened.
+  Future<void> _launchContactUri(BuildContext context, Uri uri,
+      {required String failure}) async {
+    final messenger = ScaffoldMessenger.of(context);
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      opened = false;
+    }
+    if (opened) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(failure),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.danger,
       ),
     );
   }
@@ -1573,6 +1847,130 @@ class _DistanceFromTechnicianRowState
           widget.isDark,
         );
       },
+    );
+  }
+}
+
+/// An editable SMS draft, shown before the phone's messaging app opens.
+///
+/// Stateful because the draft belongs to the sheet: the technician edits it,
+/// and only the final text is handed to the phone.
+class _SmsComposeSheet extends StatefulWidget {
+  final String phone;
+  final String initialMessage;
+  final bool isDark;
+  final ValueChanged<String> onSend;
+
+  const _SmsComposeSheet({
+    required this.phone,
+    required this.initialMessage,
+    required this.isDark,
+    required this.onSend,
+  });
+
+  @override
+  State<_SmsComposeSheet> createState() => _SmsComposeSheetState();
+}
+
+class _SmsComposeSheetState extends State<_SmsComposeSheet> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialMessage);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    return Padding(
+      // viewInsets lifts the sheet above the keyboard while it is open;
+      // padding.bottom clears the system navigation bar once it closes.
+      padding: EdgeInsets.fromLTRB(
+          20, 16, 20, 20 + media.padding.bottom + media.viewInsets.bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.sms_outlined, size: 24, color: AppTheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child:
+                    Text('Message Subscriber', style: context.text.titleMedium),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'To ${widget.phone}',
+            style: context.text.bodySmall!
+                .copyWith(color: AppTheme.secondaryInkOf(context)),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            minLines: 3,
+            maxLines: 6,
+            textCapitalization: TextCapitalization.sentences,
+            keyboardType: TextInputType.multiline,
+            style: context.text.bodyMedium,
+            decoration: const InputDecoration(
+              hintText: 'Type the message to send',
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Restores the suggested wording after an edit, so a technician who
+          // types over it can get back without retyping or cancelling.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, _) => TextButton.icon(
+                onPressed: value.text.trim() == widget.initialMessage.trim()
+                    ? null
+                    : () {
+                        _controller.text = widget.initialMessage;
+                        _controller.selection = TextSelection.collapsed(
+                            offset: _controller.text.length);
+                      },
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                label: const Text('Reset to suggested'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _controller,
+                  builder: (context, value, _) => ElevatedButton.icon(
+                    // An empty draft would open the messaging app with
+                    // nothing to send, so the button waits for real text.
+                    onPressed: value.text.trim().isEmpty
+                        ? null
+                        : () => widget.onSend(value.text.trim()),
+                    icon: const Icon(Icons.send_rounded, size: 20),
+                    label: const Text('Send'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

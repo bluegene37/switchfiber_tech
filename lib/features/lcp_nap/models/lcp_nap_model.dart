@@ -92,11 +92,15 @@ class LcpNapDto {
   bool get isMappable => latLng != null;
 
   factory LcpNapDto.fromJson(Map<String, dynamic> json) {
-    final lcpStr = json['lcp']?.toString() ?? 'LCP 01';
-    final napStr = json['nap']?.toString() ?? 'NAP 01';
-    final lcpNapStr = json['lcpNap']?.toString() ??
-        json['lcpnap']?.toString() ??
-        '$lcpStr - $napStr';
+    final lcpStr = json['lcp']?.toString().trim() ?? '';
+    final napStr = json['nap']?.toString().trim() ?? '';
+    final lcpNapRaw =
+        (json['lcpNap'] ?? json['lcpnap'])?.toString().trim() ?? '';
+    final lcpNapStr = lcpNapRaw.isNotEmpty
+        ? lcpNapRaw
+        : (lcpStr.isNotEmpty && napStr.isNotEmpty
+            ? '$lcpStr - $napStr'
+            : (lcpStr.isNotEmpty ? lcpStr : napStr));
 
     return LcpNapDto(
       id: json['id'] is int

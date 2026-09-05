@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/daos/job_orders_dao.dart';
+import '../../../core/database/daos/sync_error_logs_dao.dart';
 import '../../../core/services/photo_storage_service.dart';
 import '../models/job_order_model.dart';
 import '../services/job_orders_api.dart';
@@ -12,9 +13,13 @@ class JobRepository {
   final JobOrdersApi _api;
   late final SyncWorker syncWorker;
 
-  JobRepository(this._dao, {JobOrdersApi? api})
+  /// The on-phone record of refused pushes, so the Settings screen can show
+  /// it without reaching for a database singleton that does not exist.
+  final SyncErrorLogsDao? errorLog;
+
+  JobRepository(this._dao, {JobOrdersApi? api, this.errorLog})
       : _api = api ?? DioJobOrdersApi() {
-    syncWorker = SyncWorker(_dao, api: _api);
+    syncWorker = SyncWorker(_dao, api: _api, errorLog: errorLog);
   }
 
   /// Watch reactive stream of all jobs directly from Drift SQLite
@@ -96,7 +101,10 @@ class JobRepository {
   /// The completing technician's email is stamped on the record so the job
   /// appears in their history, and the install date is set if it was not
   /// already. Queued for sync like every other edit.
-  Future<void> completeJob(int id, {String? technicianEmail}) async {
+  /// Returns the sync attempt's outcome so the caller can tell the technician
+  /// whether the office actually has the completion, rather than reporting
+  /// success off the local write alone.
+  Future<SyncResult> completeJob(int id, {String? technicianEmail}) async {
     final existing = await _dao.getJobById(id);
     final email = technicianEmail?.trim();
     await _dao.completeJob(
@@ -106,7 +114,23 @@ class JobRepository {
       isSynced: false,
     );
     await syncWorker.refreshPendingCount();
-    unawaited(syncWorker.syncPendingJobs());
+    return syncWorker.syncPendingJobs();
+  }
+
+  /// Push whatever is pending, then throw the local cache away and take the
+  /// server as the truth.
+  ///
+  /// This is the override behind Settings > Force Full Sync. A normal refresh
+  /// protects unsynced edits; this one does not, which is why the screen asks
+  /// for the technician's password first. Pending edits are pushed before the
+  /// wipe so a completion that can go through does, and the returned result
+  /// says whether any were refused and therefore lost.
+  Future<SyncResult> forceRefreshFromServer({String? technicianEmail}) async {
+    final pushed = await syncWorker.syncPendingJobs();
+    await _dao.clearAllJobs();
+    await fetchRemoteJobs(technicianEmail: technicianEmail);
+    await syncWorker.refreshPendingCount();
+    return pushed;
   }
 
   /// Activate a job: Scheduled -> Activated.

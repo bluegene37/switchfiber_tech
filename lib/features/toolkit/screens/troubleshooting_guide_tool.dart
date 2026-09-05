@@ -61,7 +61,6 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
   Widget _buildGuideCard(
       BuildContext context, TroubleshootingGuideItem guide, bool isDark) {
     final isExpanded = _expanded.contains(guide.id);
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -109,7 +108,8 @@ class _TroubleshootingGuideToolState extends State<TroubleshootingGuideTool> {
                     AnimatedRotation(
                       turns: isExpanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 200),
-                      child: Icon(Icons.expand_more_rounded, color: muted),
+                      child: Icon(Icons.expand_more_rounded,
+                          color: AppTheme.secondaryInkOf(context)),
                     ),
                   ],
                 ),

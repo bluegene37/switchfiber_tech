@@ -60,8 +60,8 @@ class PhotoCaptureTile extends StatelessWidget {
   }
 
   Future<void> _showActions(BuildContext context) async {
-    final bytes =
-        PhotoStorageService.instance.resolveBytes(value) ?? DataUrl.decode(value);
+    final bytes = PhotoStorageService.instance.resolveBytes(value) ??
+        DataUrl.decode(value);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final action = await showModalBottomSheet<_PhotoAction>(
@@ -145,9 +145,8 @@ class PhotoCaptureTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
-    final bytes =
-        PhotoStorageService.instance.resolveBytes(value) ?? DataUrl.decode(value);
+    final bytes = PhotoStorageService.instance.resolveBytes(value) ??
+        DataUrl.decode(value);
     final onServer = _hasValue && bytes == null;
 
     return InkWell(
@@ -210,7 +209,7 @@ class PhotoCaptureTile extends StatelessWidget {
                                           ? CupertinoIcons.location_fill
                                           : CupertinoIcons.location_slash,
                                       color: Colors.white,
-                                      size: 14,
+                                      size: 20,
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
@@ -278,7 +277,8 @@ class PhotoCaptureTile extends StatelessWidget {
                           Icon(
                             onServer ? Icons.cloud_done_rounded : icon,
                             size: 28,
-                            color: onServer ? AppTheme.success : muted,
+                            color:
+                                onServer ? AppTheme.success : AppTheme.primary,
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -310,7 +310,9 @@ class PhotoCaptureTile extends StatelessWidget {
                         ? CupertinoIcons.checkmark_seal_fill
                         : CupertinoIcons.camera,
                     size: 20,
-                    color: _hasValue ? AppTheme.success : muted,
+                    color: _hasValue
+                        ? AppTheme.success
+                        : AppTheme.secondaryInkOf(context),
                   ),
                 ],
               ),
@@ -616,8 +618,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
         child: InteractiveViewer(
           minScale: 0.5,
           maxScale: 5,
-          child: Image.memory(widget.bytes,
-              cacheWidth: 1200, fit: BoxFit.contain),
+          child:
+              Image.memory(widget.bytes, cacheWidth: 1200, fit: BoxFit.contain),
         ),
       ),
     );
@@ -643,7 +645,8 @@ class _MetaRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: color ?? AppTheme.textMuted),
+          Icon(icon,
+              size: 20, color: color ?? AppTheme.secondaryInkOf(context)),
           const SizedBox(width: 10),
           Text(
             label,

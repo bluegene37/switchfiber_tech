@@ -34,8 +34,7 @@ class ToolkitScreen extends StatelessWidget {
               color: isDark ? AppTheme.darkCard : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color:
-                    isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
                 width: 0.5,
               ),
             ),
@@ -288,9 +287,7 @@ class ToolkitScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 12),
                   child: Icon(
                     CupertinoIcons.chevron_forward,
-                    color: isDark
-                        ? AppTheme.textSecondaryDark
-                        : AppTheme.textMuted,
+                    color: AppTheme.secondaryInkOf(context),
                     size: 24,
                   ),
                 ),

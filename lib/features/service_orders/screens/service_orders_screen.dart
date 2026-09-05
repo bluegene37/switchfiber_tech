@@ -146,11 +146,12 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                                       ? Colors.white
                                       : AppTheme.secondaryInkOf(chipContext),
                                 ),
-                                selectedColor: p == 'Urgent'
-                                    ? AppTheme.primary
-                                    : (isDark
-                                        ? AppTheme.primary
-                                        : AppTheme.primary),
+                                selectedColor: switch (p) {
+                                  'Urgent' => AppTheme.danger,
+                                  'High' => AppTheme.warning,
+                                  'Normal' => AppTheme.info,
+                                  _ => AppTheme.primary,
+                                },
                               );
                             }),
                           ],
@@ -171,14 +172,12 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFF1F5F9),
+                        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFE2E8F0),
+                              ? AppTheme.borderDark
+                              : AppTheme.borderLight,
                           width: 0.5,
                         ),
                       ),
@@ -186,10 +185,8 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                         children: [
                           Icon(
                             CupertinoIcons.wrench_fill,
-                            size: 20,
-                            color: isDark
-                                ? const Color(0xFF94A3B8)
-                                : const Color(0xFF475569),
+                            size: 18,
+                            color: AppTheme.brandInkOf(context),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -198,9 +195,8 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: context.text.labelMedium!.copyWith(
-                                color: isDark
-                                    ? const Color(0xFFE2E8F0)
-                                    : const Color(0xFF1E293B),
+                                color: AppTheme.secondaryInkOf(context),
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -210,13 +206,14 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppTheme.primary,
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppTheme.danger,
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 '$urgent urgent',
-                                style: context.text.labelLarge!.copyWith(
+                                style: context.text.labelSmall!.copyWith(
                                   color: Colors.white,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
@@ -245,6 +242,47 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
                 }
 
                 if (orders.isEmpty) {
+                  final hasQuery = signals.searchQuery.value.trim().isNotEmpty;
+                  if (hasQuery) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off_rounded,
+                              size: 48,
+                              color: AppTheme.secondaryInkOf(context),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No repair tickets found',
+                              style: context.text.titleSmall,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'No tickets matching "${signals.searchQuery.value.trim()}". Check account number or subscriber name.',
+                              style: context.text.bodyMedium!.copyWith(
+                                color: AppTheme.secondaryInkOf(context),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                signals.searchQuery.value = '';
+                                setState(() {});
+                              },
+                              child: const Text('Clear search'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32),

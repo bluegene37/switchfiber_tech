@@ -7,10 +7,10 @@ import 'package:swithfiber_tech/features/auth/models/user_model.dart';
 import 'package:swithfiber_tech/features/auth/signals/auth_signals.dart';
 import 'package:swithfiber_tech/features/jobs/models/job_order_model.dart';
 import 'package:swithfiber_tech/features/jobs/repositories/job_repository.dart';
-import 'package:swithfiber_tech/features/jobs/screens/job_history_screen.dart';
 import 'package:swithfiber_tech/features/jobs/screens/job_order_detail_screen.dart';
 import 'package:swithfiber_tech/features/jobs/signals/jobs_signals.dart';
 import 'package:swithfiber_tech/features/jobs/widgets/job_history_tile.dart';
+import 'package:swithfiber_tech/features/jobs/widgets/job_history_view.dart';
 
 const _me = 'tech@switchfiber.ph';
 final _now = DateTime(2026, 9, 2, 14);
@@ -51,12 +51,14 @@ void main() {
     });
   }
 
-  Future<void> pumpScreen(WidgetTester tester) => tester.pumpWidget(
+  Future<void> pumpView(WidgetTester tester) => tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
-          home: JobHistoryScreen(
-            jobsSignals: jobsSignals,
-            authSignals: auth,
+          home: Scaffold(
+            body: JobHistoryView(
+              jobsSignals: jobsSignals,
+              authSignals: auth,
+            ),
           ),
         ),
       );
@@ -83,10 +85,9 @@ void main() {
     ]);
     jobsSignals.setTechnicianEmail(_me);
 
-    await pumpScreen(tester);
+    await pumpView(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('My Job History'), findsOneWidget);
     expect(find.text('SF-2'), findsOneWidget);
     expect(find.text('SF-3'), findsOneWidget);
     expect(find.text('SF-1'), findsOneWidget);
@@ -110,7 +111,7 @@ void main() {
     ]);
     jobsSignals.setTechnicianEmail(_me);
 
-    await pumpScreen(tester);
+    await pumpView(tester);
     await tester.pumpAndSettle();
     expect(find.text('SF-1'), findsOneWidget);
     expect(find.text('SF-2'), findsOneWidget);
@@ -139,7 +140,7 @@ void main() {
     ]);
     jobsSignals.setTechnicianEmail(_me);
 
-    await pumpScreen(tester);
+    await pumpView(tester);
     await tester.pumpAndSettle();
     expect(find.text('SF-1'), findsOneWidget);
     expect(find.text('SF-2'), findsOneWidget);
@@ -165,7 +166,7 @@ void main() {
     await seed(tester, [_job(1, _me, 'Activated')]);
     jobsSignals.setTechnicianEmail('');
 
-    await pumpScreen(tester);
+    await pumpView(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('SF-1'), findsOneWidget);
@@ -177,7 +178,7 @@ void main() {
     jobsSignals.setTechnicianEmail(_me);
     auth.currentUser.value = UserModel(id: 1, username: 'tech', email: _me);
 
-    await pumpScreen(tester);
+    await pumpView(tester);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(JobHistoryTile));

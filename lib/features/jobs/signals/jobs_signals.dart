@@ -3,6 +3,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/widgets/loading_states.dart';
 import '../models/job_order_model.dart';
 import '../repositories/job_repository.dart';
+import '../services/sync_worker.dart';
 
 /// Which terminal status of the technician's job history is shown.
 enum HistoryStatusFilter {
@@ -118,9 +119,8 @@ class JobsSignals {
   /// Every finished job (Activated or Completed) assigned to the signed-in
   /// technician, newest first. Empty until the technician's email is known.
   late final ReadonlySignal<List<JobOrderDto>> assignedJobs = computed(() {
-    final history = allJobs.value
-        .where((j) => j.isActivated || j.isCompleted)
-        .toList();
+    final history =
+        allJobs.value.where((j) => j.isActivated || j.isCompleted).toList();
 
     history.sort((a, b) {
       final ad = a.historyDate;
@@ -259,9 +259,9 @@ class JobsSignals {
 
   /// Mark a job Completed, stamping it with the signed-in technician so it
   /// appears in history. Already-completed jobs are left alone.
-  Future<void> completeJob(JobOrderDto job) async {
-    if (job.isCompleted) return;
-    await repository.completeJob(job.id,
+  Future<SyncResult?> completeJob(JobOrderDto job) async {
+    if (job.isCompleted) return null;
+    return repository.completeJob(job.id,
         technicianEmail: technicianEmail.value);
   }
 
@@ -271,6 +271,18 @@ class JobsSignals {
     if (job.isActivated) return;
     await repository.activateJob(job.id,
         technicianEmail: technicianEmail.value);
+  }
+
+  /// Settings > Force Full Sync: push pending edits, then replace the local
+  /// cache with the server's copy. See [JobRepository.forceRefreshFromServer].
+  Future<SyncResult> forceRefresh() async {
+    isRefreshing.value = true;
+    try {
+      return await repository.forceRefreshFromServer(
+          technicianEmail: technicianEmail.value);
+    } finally {
+      isRefreshing.value = false;
+    }
   }
 
   /// Update tab filter

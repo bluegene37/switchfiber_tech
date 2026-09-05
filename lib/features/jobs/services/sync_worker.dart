@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../../core/database/daos/job_orders_dao.dart';
+import '../../../core/database/daos/sync_error_logs_dao.dart';
 import '../../../core/network/network_exceptions.dart';
 import '../models/job_order_model.dart';
 import 'job_orders_api.dart';
@@ -9,7 +12,13 @@ class SyncWorker {
   final JobOrdersDao _dao;
   final JobOrdersApi _api;
 
-  SyncWorker(this._dao, {JobOrdersApi? api}) : _api = api ?? DioJobOrdersApi();
+  /// Where refused pushes are recorded. Optional so tests that only care
+  /// about sync behaviour can leave it out.
+  final SyncErrorLogsDao? _errorLog;
+
+  SyncWorker(this._dao, {JobOrdersApi? api, SyncErrorLogsDao? errorLog})
+      : _api = api ?? DioJobOrdersApi(),
+        _errorLog = errorLog;
 
   // Reactive state
   final isSyncing = signal<bool>(false);
@@ -36,6 +45,9 @@ class SyncWorker {
     int syncedSuccess = 0;
     int syncedFailed = 0;
     int removed = 0;
+    // One line per job the server refused, carrying the status code and the
+    // server's own message.
+    final failures = <String>[];
 
     try {
       final unsynced = await _dao.getUnsyncedJobs();
@@ -49,10 +61,17 @@ class SyncWorker {
 
       for (final rawJob in unsynced) {
         final dto = JobOrderDto.fromDrift(rawJob);
+        // Measured before the request so a refusal can be read against the
+        // size that caused it: a completion inlines every photo as Base64
+        // and is orders of magnitude larger than an activation.
+        var payloadBytes = 0;
         try {
           // Replay the full record with the technician's edits applied.
-          await _api.update(dto.id, await dto.toApiJsonAsync());
+          final body = await dto.toApiJsonAsync();
+          payloadBytes = utf8.encode(json.encode(body)).length;
+          await _api.update(dto.id, body);
           await _replaceWithServerCopy(dto.id);
+          await _errorLog?.markResolved('JOB_ORDER', dto.id);
           syncedSuccess++;
         } on ApiException catch (err) {
           if (err.statusCode == 404) {
@@ -63,9 +82,17 @@ class SyncWorker {
             removed++;
           } else {
             syncedFailed++;
+            // Keep what the server actually said. Swallowing it left jobs
+            // stuck on "needs to sync" with no way, in the app or in a bug
+            // report, to find out why.
+            failures.add('${dto.ticketNumber}: '
+                'HTTP ${err.statusCode ?? "?"} ${err.message}');
+            await _record(dto, err.statusCode, err.message, payloadBytes);
           }
-        } catch (_) {
+        } catch (e) {
           syncedFailed++;
+          failures.add('${dto.ticketNumber}: $e');
+          await _record(dto, null, e.toString(), payloadBytes);
           // Keep isSynced = false so it will retry on next sync cycle
         }
       }
@@ -81,12 +108,15 @@ class SyncWorker {
         if (syncedFailed > 0) '$syncedFailed remaining offline.',
       ];
 
+      syncError.value = failures.isEmpty ? null : failures.join('\n');
+
       return SyncResult(
         success: syncedFailed == 0,
         syncedCount: syncedSuccess,
         failedCount: syncedFailed,
         removedCount: removed,
         message: parts.join(' '),
+        failures: List.unmodifiable(failures),
       );
     } catch (e) {
       syncError.value = e.toString();
@@ -94,6 +124,23 @@ class SyncWorker {
     } finally {
       isSyncing.value = false;
     }
+  }
+
+  /// Writes one refused push to the on-phone log. Never lets a logging
+  /// problem break the sync it is reporting on.
+  Future<void> _record(JobOrderDto dto, int? statusCode, String message,
+      int payloadBytes) async {
+    try {
+      await _errorLog?.log(
+        entityType: 'JOB_ORDER',
+        entityId: dto.id,
+        reference: dto.ticketNumber,
+        operation: dto.status.toLowerCase(),
+        statusCode: statusCode,
+        message: message,
+        payloadBytes: payloadBytes,
+      );
+    } catch (_) {}
   }
 
   /// After the server accepted an edit, swap the local row for the server's
@@ -124,11 +171,16 @@ class SyncResult {
   final int removedCount;
   final String message;
 
+  /// One line per refused job: its ticket, the HTTP status and what the
+  /// server said. Empty when nothing failed.
+  final List<String> failures;
+
   SyncResult({
     required this.success,
     this.syncedCount = 0,
     this.failedCount = 0,
     this.removedCount = 0,
     required this.message,
+    this.failures = const [],
   });
 }

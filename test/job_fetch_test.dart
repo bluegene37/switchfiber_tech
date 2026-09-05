@@ -74,7 +74,9 @@ class FakeJobOrdersApi implements JobOrdersApi {
     final last = updates.lastWhere((u) => u.$1 == id,
         orElse: () => (id, <String, dynamic>{}));
     if (last.$2.isEmpty) return null;
-    return {...last.$2, 'modifiedDate': '2026-09-02T12:00:00'};
+    // A real GET carries the record's id. The PUT body does not, since the
+    // contract puts the id in the URL, so the echo has to add it back.
+    return {'id': id, ...last.$2, 'modifiedDate': '2026-09-02T12:00:00'};
   }
 
   @override
@@ -169,7 +171,8 @@ void main() {
     ]);
   });
 
-  test('server filtering by assigned email caches only technician assigned jobs',
+  test(
+      'server filtering by assigned email caches only technician assigned jobs',
       () async {
     api.filterByAssignedEmail = true;
     signals.setTechnicianEmail('me@switchfiber.ph');
@@ -182,7 +185,9 @@ void main() {
     expect(signals.historyJobs.value.map((j) => j.id).toSet(), {10, 20});
   });
 
-  test('caches every scheduled, activated, and completed job from status endpoints', () async {
+  test(
+      'caches every scheduled, activated, and completed job from status endpoints',
+      () async {
     signals.setTechnicianEmail('me@switchfiber.ph');
     await signals.fetchRemote();
     await settle();

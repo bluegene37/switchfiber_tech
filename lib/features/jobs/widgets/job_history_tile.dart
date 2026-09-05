@@ -25,7 +25,6 @@ class JobHistoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
     final date = dateLabel(job);
     final power = job.opticalPower;
 
@@ -100,13 +99,13 @@ class JobHistoryTile extends StatelessWidget {
                           _Meta(
                             icon: CupertinoIcons.calendar,
                             text: date ?? 'No date recorded',
-                            color: muted,
+                            color: AppTheme.secondaryInkOf(context),
                           ),
                           if (job.planName?.isNotEmpty == true)
                             _Meta(
                               icon: CupertinoIcons.wifi,
                               text: job.planName!,
-                              color: muted,
+                              color: AppTheme.secondaryInkOf(context),
                             ),
                           if (power != null)
                             _Meta(
@@ -133,7 +132,7 @@ class JobHistoryTile extends StatelessWidget {
                   child: Icon(
                     CupertinoIcons.chevron_forward,
                     size: 20,
-                    color: muted.withValues(alpha: 0.6),
+                    color: AppTheme.secondaryInkOf(context),
                   ),
                 ),
               ],

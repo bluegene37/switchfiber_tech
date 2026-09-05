@@ -91,7 +91,8 @@ class ExifService {
       if (tags.containsKey('GPS GPSLatitude') &&
           tags.containsKey('GPS GPSLatitudeRef')) {
         final latTag = tags['GPS GPSLatitude'];
-        final latRef = tags['GPS GPSLatitudeRef']?.printable.toUpperCase() ?? 'N';
+        final latRef =
+            tags['GPS GPSLatitudeRef']?.printable.toUpperCase() ?? 'N';
         final val = _parseGpsCoordinate(latTag);
         if (val != null) {
           lat = latRef.startsWith('S') ? -val : val;
@@ -102,7 +103,8 @@ class ExifService {
       if (tags.containsKey('GPS GPSLongitude') &&
           tags.containsKey('GPS GPSLongitudeRef')) {
         final lngTag = tags['GPS GPSLongitude'];
-        final lngRef = tags['GPS GPSLongitudeRef']?.printable.toUpperCase() ?? 'E';
+        final lngRef =
+            tags['GPS GPSLongitudeRef']?.printable.toUpperCase() ?? 'E';
         final val = _parseGpsCoordinate(lngTag);
         if (val != null) {
           lng = lngRef.startsWith('W') ? -val : val;
@@ -234,11 +236,13 @@ class ExifService {
     int insertIndex = 2;
 
     // Check if there is already an APP0 or APP1 segment
-    while (insertIndex + 4 < jpegBytes.length && jpegBytes[insertIndex] == 0xFF) {
+    while (
+        insertIndex + 4 < jpegBytes.length && jpegBytes[insertIndex] == 0xFF) {
       final marker = jpegBytes[insertIndex + 1];
       if (marker == 0xE1) {
         // Replace existing APP1 marker
-        final segLen = (jpegBytes[insertIndex + 2] << 8) | jpegBytes[insertIndex + 3];
+        final segLen =
+            (jpegBytes[insertIndex + 2] << 8) | jpegBytes[insertIndex + 3];
         final nextIndex = insertIndex + 2 + segLen;
 
         final builder = BytesBuilder();
@@ -253,7 +257,8 @@ class ExifService {
 
       if (marker == 0xE0) {
         // Skip APP0 JFIF, insert after it
-        final segLen = (jpegBytes[insertIndex + 2] << 8) | jpegBytes[insertIndex + 3];
+        final segLen =
+            (jpegBytes[insertIndex + 2] << 8) | jpegBytes[insertIndex + 3];
         insertIndex += 2 + segLen;
       } else {
         break;
@@ -288,8 +293,10 @@ class ExifService {
             jpegBytes[exifStart + 5] == 0x00) {
           final tiffStart = exifStart + 6;
           if (tiffStart + 8 <= jpegBytes.length) {
-            final isLe = jpegBytes[tiffStart] == 0x49 && jpegBytes[tiffStart + 1] == 0x49;
-            final isBe = jpegBytes[tiffStart] == 0x4D && jpegBytes[tiffStart + 1] == 0x4D;
+            final isLe = jpegBytes[tiffStart] == 0x49 &&
+                jpegBytes[tiffStart + 1] == 0x49;
+            final isBe = jpegBytes[tiffStart] == 0x4D &&
+                jpegBytes[tiffStart + 1] == 0x4D;
             if (isLe || isBe) {
               final endian = isLe ? Endian.little : Endian.big;
               final bd = ByteData.sublistView(jpegBytes);
@@ -336,9 +343,14 @@ class ExifService {
     // 42 test: 0x2A, 0x00
     // Offset to IFD0: 0x08, 0x00, 0x00, 0x00 (8 bytes)
     final tiffHeader = Uint8List.fromList([
-      0x49, 0x49,
-      0x2A, 0x00,
-      0x08, 0x00, 0x00, 0x00,
+      0x49,
+      0x49,
+      0x2A,
+      0x00,
+      0x08,
+      0x00,
+      0x00,
+      0x00,
     ]);
 
     // Data area buffer (holds strings and RATIONALs)
@@ -362,9 +374,11 @@ class ExifService {
 
     // Format DateTime string: "YYYY:MM:DD HH:MM:SS\0" (20 bytes)
     String pad2(int n) => n.toString().padLeft(2, '0');
-    final dtStr = '${localTime.year}:${pad2(localTime.month)}:${pad2(localTime.day)} '
+    final dtStr =
+        '${localTime.year}:${pad2(localTime.month)}:${pad2(localTime.day)} '
         '${pad2(localTime.hour)}:${pad2(localTime.minute)}:${pad2(localTime.second)}\x00';
-    final dateStampStr = '${utcTime.year}:${pad2(utcTime.month)}:${pad2(utcTime.day)}\x00';
+    final dateStampStr =
+        '${utcTime.year}:${pad2(utcTime.month)}:${pad2(utcTime.day)}\x00';
 
     // Structure layout:
     // TIFF Header: 8 bytes (offset 0..7)
@@ -443,7 +457,8 @@ class ExifService {
     final ifd0Bd = ByteData.sublistView(ifd0Bytes);
     ifd0Bd.setUint16(0, ifd0EntryCount, Endian.little);
 
-    void writeEntry(ByteData bd, int index, int tag, int type, int count, int valOrOffset) {
+    void writeEntry(
+        ByteData bd, int index, int tag, int type, int count, int valOrOffset) {
       final pos = 2 + (index * 12);
       bd.setUint16(pos, tag, Endian.little);
       bd.setUint16(pos + 2, type, Endian.little);
@@ -458,7 +473,8 @@ class ExifService {
     writeEntry(ifd0Bd, 3, 0x0131, 2, softwareBytes.length, softwareOffset);
     writeEntry(ifd0Bd, 4, 0x0132, 2, dtBytes.length, dtOffset);
     writeEntry(ifd0Bd, 5, 0x8825, 4, 1, gpsIfdOffset); // GPS Pointer
-    ifd0Bd.setUint32(2 + (ifd0EntryCount * 12), 0, Endian.little); // Next IFD = 0
+    ifd0Bd.setUint32(
+        2 + (ifd0EntryCount * 12), 0, Endian.little); // Next IFD = 0
 
     // Build GPS IFD
     final gpsIfdBytes = Uint8List(gpsIfdLen);
@@ -466,19 +482,30 @@ class ExifService {
     gpsBd.setUint16(0, gpsIfdEntryCount, Endian.little);
 
     // 0: GPSVersionID (0x0000, BYTE, count 4, value 2.3.0.0)
-    final vBytes = Uint8List(4)..[0] = 2..[1] = 3..[2] = 0..[3] = 0;
-    writeEntry(gpsBd, 0, 0x0000, 1, 4, ByteData.sublistView(vBytes).getUint32(0, Endian.little));
+    final vBytes = Uint8List(4)
+      ..[0] = 2
+      ..[1] = 3
+      ..[2] = 0
+      ..[3] = 0;
+    writeEntry(gpsBd, 0, 0x0000, 1, 4,
+        ByteData.sublistView(vBytes).getUint32(0, Endian.little));
 
     // 1: GPSLatitudeRef (0x0001, ASCII, count 2, 'N\0')
-    final latRefBytes = Uint8List(4)..[0] = latRef.codeUnitAt(0)..[1] = 0;
-    writeEntry(gpsBd, 1, 0x0001, 2, 2, ByteData.sublistView(latRefBytes).getUint32(0, Endian.little));
+    final latRefBytes = Uint8List(4)
+      ..[0] = latRef.codeUnitAt(0)
+      ..[1] = 0;
+    writeEntry(gpsBd, 1, 0x0001, 2, 2,
+        ByteData.sublistView(latRefBytes).getUint32(0, Endian.little));
 
     // 2: GPSLatitude (0x0002, RATIONAL, count 3, latOffset)
     writeEntry(gpsBd, 2, 0x0002, 5, 3, latOffset);
 
     // 3: GPSLongitudeRef (0x0003, ASCII, count 2, 'E\0')
-    final lngRefBytes = Uint8List(4)..[0] = lngRef.codeUnitAt(0)..[1] = 0;
-    writeEntry(gpsBd, 3, 0x0003, 2, 2, ByteData.sublistView(lngRefBytes).getUint32(0, Endian.little));
+    final lngRefBytes = Uint8List(4)
+      ..[0] = lngRef.codeUnitAt(0)
+      ..[1] = 0;
+    writeEntry(gpsBd, 3, 0x0003, 2, 2,
+        ByteData.sublistView(lngRefBytes).getUint32(0, Endian.little));
 
     // 4: GPSLongitude (0x0004, RATIONAL, count 3, lngOffset)
     writeEntry(gpsBd, 4, 0x0004, 5, 3, lngOffset);
@@ -495,7 +522,8 @@ class ExifService {
     // 8: GPSDateStamp (0x001D, ASCII, count 11, dateStampOffset)
     writeEntry(gpsBd, 8, 0x001D, 2, dateStampBytes.length, dateStampOffset);
 
-    gpsBd.setUint32(2 + (gpsIfdEntryCount * 12), 0, Endian.little); // Next IFD = 0
+    gpsBd.setUint32(
+        2 + (gpsIfdEntryCount * 12), 0, Endian.little); // Next IFD = 0
 
     // Assemble final TIFF payload
     bb.add(tiffHeader);

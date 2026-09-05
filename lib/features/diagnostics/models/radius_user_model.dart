@@ -1,8 +1,10 @@
 /// Model representing a RADIUS PPPoE subscriber account.
 class RadiusUserDto {
   final String id;
-  final String name; // Account name / PPPoE username (e.g. "accountt0601261206")
-  final String group; // Plan group or "Disconnected" (e.g. "SwitchLite", "SwitchLite-Disconnected")
+  final String
+      name; // Account name / PPPoE username (e.g. "accountt0601261206")
+  final String
+      group; // Plan group or "Disconnected" (e.g. "SwitchLite", "SwitchLite-Disconnected")
   final bool disabled;
   final String password;
   final int sharedUsers;
@@ -25,8 +27,12 @@ class RadiusUserDto {
   factory RadiusUserDto.fromJson(Map<String, dynamic> json) {
     return RadiusUserDto(
       id: json['id']?.toString().trim() ?? '',
-      name: json['name']?.toString().trim() ?? json['Name']?.toString().trim() ?? '',
-      group: json['group']?.toString().trim() ?? json['Group']?.toString().trim() ?? '',
+      name: json['name']?.toString().trim() ??
+          json['Name']?.toString().trim() ??
+          '',
+      group: json['group']?.toString().trim() ??
+          json['Group']?.toString().trim() ??
+          '',
       disabled: json['disabled'] is bool
           ? json['disabled'] as bool
           : (json['disabled']?.toString().toLowerCase() == 'true'),

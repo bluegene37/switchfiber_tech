@@ -2,20 +2,27 @@ import 'package:drift/drift.dart';
 import 'daos/job_orders_dao.dart';
 import 'daos/lcp_nap_dao.dart';
 import 'daos/service_orders_dao.dart';
+import 'daos/sync_error_logs_dao.dart';
 import 'native_database.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [JobOrders, SyncQueues, LcpNapLocations, ServiceOrders],
-  daos: [JobOrdersDao, LcpNapLocationsDao, ServiceOrdersDao],
+  tables: [
+    JobOrders,
+    SyncQueues,
+    LcpNapLocations,
+    ServiceOrders,
+    SyncErrorLogs
+  ],
+  daos: [JobOrdersDao, LcpNapLocationsDao, ServiceOrdersDao, SyncErrorLogsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? constructDbConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -57,6 +64,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 7) {
             // Service orders table for offline repairs & maintenance
             await m.createTable(serviceOrders);
+          }
+          if (from < 8) {
+            // Why a pending push was refused, kept on the phone that hit it.
+            await m.createTable(syncErrorLogs);
           }
         },
       );

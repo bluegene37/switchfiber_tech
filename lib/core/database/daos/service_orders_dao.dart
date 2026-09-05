@@ -27,7 +27,8 @@ class ServiceOrdersDao extends DatabaseAccessor<AppDatabase>
 
   /// Get a single service order by id.
   Future<ServiceOrder?> getOrderById(int id) {
-    return (select(serviceOrders)..where((t) => t.id.equals(id))).getSingleOrNull();
+    return (select(serviceOrders)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
   }
 
   /// Insert or update a single service order.
@@ -55,7 +56,8 @@ class ServiceOrdersDao extends DatabaseAccessor<AppDatabase>
 
   /// Get all unsynced service orders.
   Future<List<ServiceOrder>> getUnsyncedOrders() {
-    return (select(serviceOrders)..where((t) => t.isSynced.equals(false))).get();
+    return (select(serviceOrders)..where((t) => t.isSynced.equals(false)))
+        .get();
   }
 
   /// IDs of rows with local edits not yet synced to the server.
@@ -91,7 +93,8 @@ class ServiceOrdersDao extends DatabaseAccessor<AppDatabase>
   /// row with an unsynced local edit.
   Future<int> deleteSyncedOrdersNotIn(Set<int> keepIds) async {
     if (keepIds.isEmpty) {
-      return (delete(serviceOrders)..where((t) => t.isSynced.equals(true))).go();
+      return (delete(serviceOrders)..where((t) => t.isSynced.equals(true)))
+          .go();
     }
     final allSynced = await (selectOnly(serviceOrders)
           ..addColumns([serviceOrders.id])

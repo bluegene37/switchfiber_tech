@@ -106,12 +106,10 @@ class LcpNapCard extends StatelessWidget {
                 if (location.barangay != null || location.city != null)
                   Row(
                     children: [
-                      Icon(
-                        CupertinoIcons.location,
+                      const Icon(
+                        CupertinoIcons.location_solid,
                         size: 20,
-                        color: isDark
-                            ? AppTheme.textSecondaryDark
-                            : AppTheme.textMuted,
+                        color: AppTheme.primary,
                       ),
                       const SizedBox(width: 5),
                       Expanded(
@@ -136,9 +134,7 @@ class LcpNapCard extends StatelessWidget {
                       Icon(
                         CupertinoIcons.scope,
                         size: 20,
-                        color: isDark
-                            ? AppTheme.textSecondaryDark
-                            : AppTheme.textMuted,
+                        color: AppTheme.secondaryInkOf(context),
                       ),
                       const SizedBox(width: 5),
                       Expanded(
@@ -173,9 +169,7 @@ class LcpNapCard extends StatelessWidget {
                     Icon(
                       CupertinoIcons.chevron_forward,
                       size: 24,
-                      color: isDark
-                          ? AppTheme.textSecondaryDark
-                          : AppTheme.textMuted,
+                      color: AppTheme.secondaryInkOf(context),
                     ),
                   ],
                 ),

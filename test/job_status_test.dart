@@ -46,9 +46,9 @@ void main() {
   });
 
   group('activation and terminal stages', () {
-    test('Scheduled goes straight to Activated', () {
-      expect(job(status: 'Scheduled').nextStatus, JobStatus.activated);
-      expect(job(status: 'Confirmed').nextStatus, JobStatus.activated);
+    test('Scheduled goes straight to Completed', () {
+      expect(job(status: 'Scheduled').nextStatus, JobStatus.completed);
+      expect(job(status: 'Confirmed').nextStatus, JobStatus.completed);
       expect(job(status: 'Scheduled').canActivate, isTrue);
     });
 

@@ -141,7 +141,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(find.byType(JobCard), findsNothing);
-    expect(find.text('No jobs matching "NonexistentSubscriber"'), findsOneWidget);
+    expect(
+        find.text('No jobs matching "NonexistentSubscriber"'), findsOneWidget);
     expect(find.text('Clear Search'), findsOneWidget);
 
     // Tap Clear Search button
@@ -226,4 +227,3 @@ void main() {
     });
   });
 }
-

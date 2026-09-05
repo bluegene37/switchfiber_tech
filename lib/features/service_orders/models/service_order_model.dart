@@ -24,8 +24,10 @@ class ServiceOrderDto {
   final String? port;
   final String? vlan;
   final String supportStatus;
-  final String concern; // e.g. "Pullout", "No Connection", "High Loss", "Relocation"
-  final String? priorityLevel; // e.g. "Urgent", "High", "Normal", "System Generated"
+  final String
+      concern; // e.g. "Pullout", "No Connection", "High Loss", "Relocation"
+  final String?
+      priorityLevel; // e.g. "Urgent", "High", "Normal", "System Generated"
   final String? visitStatus; // e.g. "In Progress", "Done", "Pending"
   final String? visitBy;
   final String? visitRemarks;
@@ -216,8 +218,8 @@ class ServiceOrderDto {
       try {
         final decoded = jsonDecode(row.materialsUsedJson!);
         if (decoded is Map) {
-          materials = decoded.map(
-              (k, v) => MapEntry(k.toString(), (v as num).toInt()));
+          materials =
+              decoded.map((k, v) => MapEntry(k.toString(), (v as num).toInt()));
         }
       } catch (_) {}
     }
@@ -308,8 +310,8 @@ class ServiceOrderDto {
       pulloutRouterModel: Value(pulloutRouterModel),
       pulloutRouterModelSN: Value(pulloutRouterModelSN),
       pulloutRemarks: Value(pulloutRemarks),
-      materialsUsedJson: Value(
-          materialsUsed.isNotEmpty ? jsonEncode(materialsUsed) : null),
+      materialsUsedJson:
+          Value(materialsUsed.isNotEmpty ? jsonEncode(materialsUsed) : null),
       clientSignature: Value(clientSignature),
       image1: Value(image1),
       image2: Value(image2),
@@ -357,7 +359,11 @@ class ServiceOrderDto {
       if (parts.length >= 2) {
         final lat = double.tryParse(parts[0]);
         final lng = double.tryParse(parts[1]);
-        if (lat != null && lng != null && lat.abs() <= 90 && lng.abs() <= 180 && !(lat == 0 && lng == 0)) {
+        if (lat != null &&
+            lng != null &&
+            lat.abs() <= 90 &&
+            lng.abs() <= 180 &&
+            !(lat == 0 && lng == 0)) {
           return LatLng(lat, lng);
         }
       }
@@ -382,7 +388,8 @@ class ServiceOrderDto {
       final name = json[nameKey]?.toString().trim();
       final qty = json[qtyKey];
       if (name != null && name.isNotEmpty) {
-        final parsedQty = qty is int ? qty : int.tryParse(qty?.toString() ?? '1') ?? 1;
+        final parsedQty =
+            qty is int ? qty : int.tryParse(qty?.toString() ?? '1') ?? 1;
         materials[name] = parsedQty;
       }
     }
@@ -393,7 +400,9 @@ class ServiceOrderDto {
     }
 
     return ServiceOrderDto(
-      id: json['id'] is int ? json['id'] as int : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       accountNumber: json['accountNumber']?.toString().trim() ?? '',
       fullName: json['fullName']?.toString().trim() ?? 'Subscriber',
       contactNumber: json['contactNumber']?.toString().trim() ?? '',
@@ -417,8 +426,12 @@ class ServiceOrderDto {
       visitBy: json['visitBy']?.toString().trim(),
       visitRemarks: json['visitRemarks']?.toString().trim(),
       assignedEmail: json['assignedEmail']?.toString().trim(),
-      createdDate: json['createdDate'] != null ? DateTime.tryParse(json['createdDate'].toString()) : null,
-      dateInstalled: json['dateInstalled'] != null ? DateTime.tryParse(json['dateInstalled'].toString()) : null,
+      createdDate: json['createdDate'] != null
+          ? DateTime.tryParse(json['createdDate'].toString())
+          : null,
+      dateInstalled: json['dateInstalled'] != null
+          ? DateTime.tryParse(json['dateInstalled'].toString())
+          : null,
       newRouterModemSN: json['newRouterModemSN']?.toString().trim(),
       newLCP: json['newLCP']?.toString().trim(),
       newNAP: json['newNAP']?.toString().trim(),

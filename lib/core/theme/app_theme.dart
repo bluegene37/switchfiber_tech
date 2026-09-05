@@ -7,57 +7,61 @@ import 'package:flutter/material.dart';
 /// a native, refined iOS experience with Cupertino page transitions, hairline borders,
 /// inset grouped card styling, and high-contrast light and dark surfaces.
 class AppTheme {
-  // Brand Color Palette (Client's Desired Red Palette - Strictly Preserved)
-  static const Color primary = Color(0xFFE74C5A); // Warm Rose Red
-  static const Color primaryDark = Color(0xFFD63A48);
-  static const Color primaryActive = Color(0xFFC02E3C);
-  static const Color primarySubtleBg = Color(0xFFFEF2F3);
-  static const Color primarySubtleBorder = Color(0xFFFDCFD3);
-  static const Color primarySubtleBgDark = Color(0xFF2C1E20);
-  static const Color primarySubtleBorderDark = Color(0xFF4D262A);
+  // Brand Color Palette (Modern Electric Fiber Red - High-Energy Telecom Standard)
+  static const Color primary =
+      Color(0xFFE02424); // Bold, punchy Electric Fiber Red
+  static const Color primaryDark = Color(0xFFC81E1E);
+  static const Color primaryActive = Color(0xFF9B1C1C);
+  static const Color primarySubtleBg =
+      Color(0xFFFEF2F2); // Soft luminous rose-white
+  static const Color primarySubtleBorder = Color(0xFFFECACA);
+  static const Color primarySubtleBgDark =
+      Color(0xFF2D1214); // Deep crimson-tinted dark
+  static const Color primarySubtleBorderDark = Color(0xFF5C1D24);
 
-  // iOS Light Surface & Neutral Tokens
+  // Light Surface & Neutral Tokens (Crisp Modern Slate Canvas)
   static const Color lightBg =
-      Color(0xFFF2F2F7); // iOS System Grouped Background
+      Color(0xFFF8FAFC); // Slate 50 - clean, luminous, modern canvas
   static const Color lightCard = Color(0xFFFFFFFF); // Pure white card surface
   static const Color white = Color(0xFFFFFFFF);
-  static const Color darkSlate = Color(0xFF1C1C1E); // iOS Primary Label
-  static const Color textMuted = Color(0xFF8E8E93); // iOS Secondary Label
+  static const Color darkSlate =
+      Color(0xFF0F172A); // Slate 900 - crisp, modern deep ink
+  static const Color textMuted = Color(0xFF94A3B8); // Slate 400
   static const Color textSecondary = textMuted;
-  static const Color textTertiary = Color(0xFFC7C7CC); // iOS Tertiary Label
+  static const Color textTertiary = Color(0xFFCBD5E1); // Slate 300
   static const Color borderLight =
-      Color(0xFFE5E5EA); // iOS System Separator (0.5px hairline)
-  static const Color fillLight = Color(0xFFE5E5EA); // iOS Secondary System Fill
+      Color(0xFFE2E8F0); // Slate 200 - precision 0.5px hairline
+  static const Color fillLight =
+      Color(0xFFF1F5F9); // Slate 100 - modern fill for search / tags
 
-  // iOS Dark Surface & Neutral Tokens
+  // Dark Surface & Neutral Tokens (Midnight Obsidian Tech Palette)
   static const Color darkBg =
-      Color(0xFF000000); // True iOS System Dark Background
+      Color(0xFF0B0F19); // Midnight Obsidian - rich, deep space canvas
   static const Color darkCard =
-      Color(0xFF1C1C1E); // iOS Secondary System Grouped Card
+      Color(0xFF161F30); // Midnight Navy Slate - elevated card surface
   static const Color darkCardElevated =
-      Color(0xFF2C2C2E); // iOS Tertiary / Modal Card
+      Color(0xFF243048); // Tertiary / Modal elevated card
   static const Color darkElevatedCard = darkCardElevated;
-  static const Color darkInput = Color(0xFF2C2C2E); // iOS System Input Fill
-  static const Color textSecondaryDark =
-      Color(0xFF8E8E93); // iOS Dark Secondary Label
-  static const Color textTertiaryDark =
-      Color(0xFF636366); // iOS Dark Tertiary Label
+  static const Color darkInput =
+      Color(0xFF1B2538); // Modern Slate dark input fill
+  static const Color textSecondaryDark = Color(0xFF94A3B8); // Slate 400
+  static const Color textTertiaryDark = Color(0xFF64748B); // Slate 500
   static const Color borderDark =
-      Color(0xFF38383A); // iOS Dark Separator (0.5px hairline)
-  static const Color fillDark = Color(0xFF3A3A3C);
+      Color(0xFF283548); // Precision dark hairline border
+  static const Color fillDark = Color(0xFF202B3F);
 
-  // Status Colors (Calibrated for High Legibility)
+  // Status Colors (Calibrated for High Legibility & Modern Vibrancy)
   static const Color success =
-      Color(0xFF34C759); // iOS System Green (Active / Pass)
+      Color(0xFF10B981); // Modern Emerald (Active / Pass)
   static const Color warning =
-      Color(0xFFFF9500); // iOS System Orange (Marginal / Syncing)
+      Color(0xFFF59E0B); // Modern Amber (Marginal / Syncing)
   static const Color danger =
-      Color(0xFFFF3B30); // iOS System Red (Failed / Faulty)
+      Color(0xFFEF4444); // Modern Crimson Red (Failed / Faulty)
   static const Color info =
-      Color(0xFF007AFF); // iOS System Blue (Pending / Info)
+      Color(0xFF0284C7); // Modern Sky Blue (Pending / Info)
 
   // Status subtle backgrounds
-  static const Color successSubtle = Color(0xFFF0FDF4);
+  static const Color successSubtle = Color(0xFFECFDF5);
   static const Color warningSubtle = Color(0xFFFFFBEB);
   static const Color dangerSubtle = Color(0xFFFEF2F2);
   static const Color infoSubtle = Color(0xFFF0F9FF);
@@ -66,22 +70,32 @@ class AppTheme {
   // both surfaces of its theme (verified by test/app_theme_contrast_test.dart).
   // The bright tokens above stay for fills, badges, icons and borders.
   static const Color secondaryInk =
-      Color(0xFF5A5A60); // 6.85:1 white, 6.14:1 page
+      Color(0xFF475569); // Slate 600 - 7.58:1 white, 7.24:1 page
   static const Color secondaryInkDark =
-      Color(0xFFAEAEB2); // 7.69:1 card, 9.50:1 page
-  static const Color brandInk = primaryActive; // #C02E3C, 5.68:1 white
-  static const Color brandInkDark = Color(0xFFFF8A94); // 7.55:1 card
+      Color(0xFF94A3B8); // Slate 400 - 6.43:1 card, 7.47:1 page
+  static const Color brandInk =
+      Color(0xFFB91C1C); // Red 700 - 6.47:1 white, 6.18:1 page
+  static const Color brandInkDark =
+      Color(0xFFFF6B7A); // Radiant Coral Red - 6.00:1 card, 6.96:1 page
   static const Color successInk =
-      Color(0xFF1B7F3B); // 5.07:1 white, 4.54:1 page
-  static const Color successInkDark = Color(0xFF5CD27A); // 8.88:1 card
-  static const Color warningInk = Color(0xFF8A5200); // 6.39:1 white
-  static const Color warningInkDark = Color(0xFFFFB340); // 9.54:1 card
-  static const Color dangerInk = Color(0xFFC1291F); // 5.83:1 white
-  static const Color dangerInkDark = Color(0xFFFF6B62); // 6.10:1 card
-  static const Color infoInk = Color(0xFF0062CC); // 5.80:1 white
-  static const Color infoInkDark = Color(0xFF5AA9FF); // 6.93:1 card
-  static const Color violetInk = Color(0xFF6D28D9); // 7.10:1 white
-  static const Color violetInkDark = Color(0xFFB99CFF); // 7.50:1 card
+      Color(0xFF15803D); // Emerald 700 - 5.02:1 white, 4.79:1 page
+  static const Color successInkDark =
+      Color(0xFF4ADE80); // Emerald 400 - 9.47:1 card, 10.99:1 page
+  static const Color warningInk =
+      Color(0xFFB45309); // Amber 700 - 5.02:1 white, 4.80:1 page
+  static const Color warningInkDark =
+      Color(0xFFFBBF24); // Amber 400 - 9.88:1 card, 11.47:1 page
+  static const Color dangerInk =
+      Color(0xFFB91C1C); // Red 700 - 6.47:1 white, 6.18:1 page
+  static const Color dangerInkDark =
+      Color(0xFFF87171); // Red 400 - 5.96:1 card, 6.92:1 page
+  static const Color infoInk =
+      Color(0xFF0369A1); // Sky 700 - 5.93:1 white, 5.67:1 page
+  static const Color infoInkDark =
+      Color(0xFF38BDF8); // Sky 400 - 7.70:1 card, 8.94:1 page
+  static const Color violetInk = Color(0xFF6D28D9); // 7.10:1 white, 6.79:1 page
+  static const Color violetInkDark =
+      Color(0xFFC084FC); // 6.24:1 card, 7.25:1 page
 
   static bool _isDark(BuildContext c) =>
       Theme.of(c).brightness == Brightness.dark;
@@ -100,6 +114,13 @@ class AppTheme {
   static Color infoInkOf(BuildContext c) => _isDark(c) ? infoInkDark : infoInk;
   static Color violetInkOf(BuildContext c) =>
       _isDark(c) ? violetInkDark : violetInk;
+
+  /// Surface helpers for subtle brand and neutral fills
+  static Color primarySubtleBgOf(BuildContext c) =>
+      _isDark(c) ? primarySubtleBgDark : primarySubtleBg;
+  static Color primarySubtleBorderOf(BuildContext c) =>
+      _isDark(c) ? primarySubtleBorderDark : primarySubtleBorder;
+  static Color fillOf(BuildContext c) => _isDark(c) ? fillDark : fillLight;
 
   /// Standard iOS Page Transitions Theme
   static const PageTransitionsTheme _pageTransitionsTheme =
@@ -208,7 +229,7 @@ class AppTheme {
         primary: primary,
         onPrimary: white,
         primaryContainer: primarySubtleBg,
-        onPrimaryContainer: primaryActive,
+        onPrimaryContainer: brandInk,
         secondary: darkSlate,
         onSecondary: white,
         surface: lightCard,
@@ -335,14 +356,14 @@ class AppTheme {
         primaryColor: primary,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: darkBg,
-        barBackgroundColor: Color(0xCC1C1C1E),
+        barBackgroundColor: Color(0xEB161F30),
       ),
       colorScheme: const ColorScheme.dark(
         primary: primary,
         onPrimary: white,
-        primaryContainer: Color(0xFF3F2327),
-        onPrimaryContainer: Color(0xFFFF8591),
-        secondary: Color(0xFFE5E5EA),
+        primaryContainer: primarySubtleBgDark,
+        onPrimaryContainer: brandInkDark,
+        secondary: Color(0xFFE2E8F0),
         onSecondary: darkBg,
         surface: darkCard,
         onSurface: white,
@@ -390,8 +411,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFFFF8591),
-          side: const BorderSide(color: Color(0xFFFF8591), width: 1.2),
+          foregroundColor: brandInkDark,
+          side: const BorderSide(color: brandInkDark, width: 1.2),
           minimumSize: const Size(48, 48),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(

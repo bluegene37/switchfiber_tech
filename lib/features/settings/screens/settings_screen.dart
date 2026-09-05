@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/server_display.dart';
 import '../../auth/signals/auth_signals.dart';
 import '../signals/settings_signals.dart';
+import '../../diagnostics/screens/sync_error_log_screen.dart';
 import '../../jobs/signals/jobs_signals.dart';
 
 /// Settings & Technician Terminal Diagnostics screen.
@@ -256,7 +257,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 20, color: AppTheme.textMuted),
+            Icon(icon, size: 20, color: AppTheme.secondaryInkOf(context)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -327,6 +328,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: children,
+      ),
+    );
+  }
+
+  /// Force Full Sync: pushes pending edits, then replaces the local cache
+  /// with the server's copy.
+  ///
+  /// That second step discards any edit the server refused, so the
+  /// technician proves who they are first. The password is checked against
+  /// the API, not a cached copy.
+  Future<void> _forceFullSync(BuildContext context, int pending) async {
+    final auth = widget.authSignals;
+    final user = auth.currentUser.value;
+    if (user == null) return;
+
+    final password = await _askPassword(context, pending);
+    if (password == null || !context.mounted) return;
+
+    final ok = await auth.login(username: user.username, password: password);
+    if (!context.mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.authError.value ?? 'Password not accepted.'),
+          backgroundColor: AppTheme.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final res = await widget.jobsSignals.forceRefresh();
+    if (!context.mounted) return;
+    final lost = res.failedCount;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(lost == 0
+            ? 'Synced and refreshed from the server.'
+            : '$lost pending update(s) were refused by the server and have '
+                'been replaced by the server copy. See Sync Error Log.'),
+        backgroundColor: lost == 0 ? AppTheme.success : AppTheme.warning,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: lost == 0 ? 4 : 10),
+      ),
+    );
+  }
+
+  Future<String?> _askPassword(BuildContext context, int pending) {
+    final controller = TextEditingController();
+    return showCupertinoDialog<String>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Force Full Sync'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pending == 0
+                    ? 'The local cache will be replaced with the server copy. '
+                        'Enter your password to continue.'
+                    : '$pending pending update(s) will be pushed first. Any '
+                        'the server refuses will be lost and replaced by the '
+                        'server copy. Enter your password to continue.',
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: controller,
+                obscureText: true,
+                autofocus: true,
+                placeholder: 'Password',
+                onSubmitted: (v) => Navigator.of(ctx).pop(v),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('Sync'),
+          ),
+        ],
       ),
     );
   }
@@ -532,10 +621,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 isDark: isDark,
                 showDivider: false,
                 onTap: _showOpticalPowerStandards,
-                trailing: const Icon(
+                trailing: Icon(
                   CupertinoIcons.chevron_forward,
                   size: 24,
-                  color: AppTheme.textMuted,
+                  color: AppTheme.secondaryInkOf(context),
+                ),
+              ),
+            ],
+          ),
+
+          // Section 3b: Why a pending push was refused. Sits next to the
+          // offline cache because that is the question it answers: the edit
+          // is saved, so what is the server objecting to?
+          _buildIosSectionHeader('Sync Diagnostics'),
+          _buildIosGroupedCard(
+            isDark: isDark,
+            children: [
+              _buildIosSettingRow(
+                icon: CupertinoIcons.exclamationmark_triangle,
+                iconBg: AppTheme.warning,
+                title: 'Sync Error Log',
+                subtitle: 'What the server said when a push was refused',
+                isDark: isDark,
+                showDivider: false,
+                onTap: () {
+                  final dao = widget.jobsSignals.repository.errorLog;
+                  if (dao == null) return;
+                  Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: (_) => SyncErrorLogScreen(dao: dao),
+                    ),
+                  );
+                },
+                trailing: Icon(
+                  CupertinoIcons.chevron_forward,
+                  size: 24,
+                  color: AppTheme.secondaryInkOf(context),
                 ),
               ),
             ],
@@ -586,20 +707,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: ElevatedButton.icon(
                           onPressed: isSyncing
                               ? null
-                              : () async {
-                                  final res =
-                                      await syncWorker.syncPendingJobs();
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(res.message),
-                                      backgroundColor: res.success
-                                          ? AppTheme.success
-                                          : AppTheme.warning,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
+                              : () => _forceFullSync(context, pending),
                           icon: isSyncing
                               ? const SizedBox(
                                   width: 16,
@@ -616,32 +724,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ? 'Synchronizing...'
                                 : 'Force Full Sync (Drift ↔ API)',
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Re-seed sample data
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await jobs.repository.seedSampleJobs();
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text(
-                                    'Reset & populated sample field tech jobs in Drift DB.'),
-                                backgroundColor: isDark
-                                    ? AppTheme.darkCard
-                                    : AppTheme.darkSlate,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                              CupertinoIcons.arrow_counterclockwise,
-                              size: 24),
-                          label: const Text('Re-seed Sample Field Data'),
                         ),
                       ),
                     ],
@@ -836,7 +918,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : AppTheme.brandInkOf(context);
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppTheme.textMuted),
+        Icon(icon, size: 20, color: AppTheme.secondaryInkOf(context)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

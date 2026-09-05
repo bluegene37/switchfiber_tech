@@ -83,4 +83,3 @@ class ImageCaptureService {
     return 'image/jpeg';
   }
 }
-

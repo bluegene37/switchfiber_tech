@@ -124,8 +124,7 @@ class ServiceOrders extends Table {
   TextColumn get nap => text().nullable()();
   TextColumn get port => text().nullable()();
   TextColumn get vlan => text().nullable()();
-  TextColumn get supportStatus =>
-      text().withDefault(const Constant('Open'))();
+  TextColumn get supportStatus => text().withDefault(const Constant('Open'))();
   TextColumn get concern =>
       text().withDefault(const Constant('Service Call'))();
   TextColumn get priorityLevel => text().nullable()();
@@ -151,12 +150,50 @@ class ServiceOrders extends Table {
   TextColumn get image3 => text().nullable()();
   TextColumn get houseFrontPicture => text().nullable()();
   TextColumn get addressCoordinates => text().nullable()();
-  RealColumn get serviceCharge =>
-      real().withDefault(const Constant(0.0))();
+  RealColumn get serviceCharge => real().withDefault(const Constant(0.0))();
   TextColumn get rawJson => text().nullable()();
   BoolColumn get isSynced => boolean().withDefault(const Constant(true))();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// Every failed attempt to push a record to the server, kept on the phone.
+///
+/// The app is offline-first: a refused edit stays saved locally and retries.
+/// That is deliberate, but it used to be silent, so a job could sit on
+/// "needs to sync" forever with nothing anywhere saying why. Each attempt
+/// that the server refuses is written here instead, with what was sent and
+/// what came back, so the failure can be read on the phone that hit it.
+class SyncErrorLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// 'JOB_ORDER' or 'SERVICE_ORDER'.
+  TextColumn get entityType => text()();
+  IntColumn get entityId => integer()();
+
+  /// The ticket number, so a log line is readable without a lookup.
+  TextColumn get reference => text().withDefault(const Constant(''))();
+
+  /// What the technician was doing: 'complete', 'activate', 'field-status'.
+  TextColumn get operation => text()();
+
+  /// HTTP status, or null when the request never got an answer at all
+  /// (no signal, timeout, connection reset).
+  IntColumn get statusCode => integer().nullable()();
+
+  /// The server's own message, or the exception when there was no response.
+  TextColumn get message => text()();
+
+  /// Size of the request body in bytes. A completion inlines every photo as
+  /// Base64, so this is the first thing to look at when big pushes fail and
+  /// small ones do not.
+  IntColumn get payloadBytes => integer().withDefault(const Constant(0))();
+
+  DateTimeColumn get occurredAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// Set once the same record syncs successfully, so the log shows what is
+  /// still outstanding rather than everything that ever went wrong.
+  BoolColumn get resolved => boolean().withDefault(const Constant(false))();
 }

@@ -21,7 +21,6 @@ class JobPhotoGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final muted = isDark ? AppTheme.textSecondaryDark : AppTheme.textMuted;
 
     final entries = <(String, String)>[
       for (final p in JobPhoto.values)
@@ -43,7 +42,8 @@ class JobPhotoGallery extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(CupertinoIcons.camera, size: 20, color: muted),
+            const Icon(CupertinoIcons.camera,
+                size: 20, color: AppTheme.primary),
             const SizedBox(width: 8),
             Text('No photos attached yet', style: context.text.bodySmall),
           ],

@@ -115,8 +115,8 @@ class LcpNapPinPopup extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.place_outlined,
-                    size: 20, color: AppTheme.textMuted),
+                const Icon(Icons.place_rounded,
+                    size: 20, color: AppTheme.primary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

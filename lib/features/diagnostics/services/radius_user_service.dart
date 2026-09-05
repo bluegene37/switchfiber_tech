@@ -7,7 +7,8 @@ class RadiusUserService {
   static final RadiusUserService instance = RadiusUserService._internal();
   final ApiClient _api;
 
-  RadiusUserService._internal([ApiClient? api]) : _api = api ?? ApiClient.instance;
+  RadiusUserService._internal([ApiClient? api])
+      : _api = api ?? ApiClient.instance;
 
   factory RadiusUserService({ApiClient? api}) =>
       api == null ? instance : RadiusUserService._internal(api);
@@ -35,7 +36,8 @@ class RadiusUserService {
   Future<RadiusUserDto?> fetchRadiusUserByName(String name) async {
     if (name.trim().isEmpty) return null;
     try {
-      final response = await _api.get('/RadiusUser/${Uri.encodeComponent(name)}');
+      final response =
+          await _api.get('/RadiusUser/${Uri.encodeComponent(name)}');
       dynamic raw = response.data;
       if (raw is String) {
         try {
@@ -49,7 +51,9 @@ class RadiusUserService {
 
     // Fallback: search within list
     final all = await fetchRadiusUsers();
-    return all.where((u) => u.name.trim().toLowerCase() == name.trim().toLowerCase()).firstOrNull;
+    return all
+        .where((u) => u.name.trim().toLowerCase() == name.trim().toLowerCase())
+        .firstOrNull;
   }
 
   /// Connect an account via `POST /api/RadiusUser/{name}/connect`

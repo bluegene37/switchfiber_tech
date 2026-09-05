@@ -200,9 +200,21 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(
-              'Ticket #${order.id}',
-              style: context.text.titleLarge,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'SO-${order.id.toString().padLeft(4, '0')}',
+                  style: context.text.titleMedium!.copyWith(
+                    fontFamily: 'JetBrains Mono',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  order.concern,
+                  style: context.text.bodySmall,
+                ),
+              ],
             ),
           ),
           body: Form(
@@ -217,9 +229,15 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 _buildSubscriberCard(order, isDark),
                 const SizedBox(height: 16),
 
-                // 2. Hardware Swaps & Pullout Card
+                // 2. Plant & Hardware Allocation (2x2 Instrument Grid)
+                _buildPlantAndHardwareCard(order, isDark),
+                const SizedBox(height: 16),
+
+                // 3. Hardware Swaps & Pullout Card
                 _buildHardwareSwapCard(order, isDark),
-                // 2b. Live RADIUS PPPoE Connection & Reconnect Test
+                const SizedBox(height: 16),
+
+                // 3b. Live RADIUS PPPoE Connection & Reconnect Test
                 RadiusConnectionCard(
                   accountName: (order.username != null &&
                           order.username!.isNotEmpty &&
@@ -230,35 +248,44 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // 3. Materials Used (BOM)
+                // 4. Materials Used (BOM)
                 _buildMaterialsCounterCard(isDark),
                 const SizedBox(height: 16),
 
-                // 4. Photos Proofs (with GPS EXIF)
+                // 5. Photos Proofs (with GPS EXIF)
                 _buildPhotosCard(isDark),
                 const SizedBox(height: 16),
 
-                // 5. Subscriber Signature Pad
+                // 6. Subscriber Signature Pad
                 _buildSignatureCard(isDark),
                 const SizedBox(height: 24),
 
-                // 6. Complete Action Button
-                FilledButton.icon(
+                // 7. Complete Action Button (56dp height)
+                ElevatedButton(
                   onPressed: _isSubmitting ? null : () => _handleSubmit(order),
-                  icon: _isSubmitting
-                      ? const CupertinoActivityIndicator(color: Colors.white)
-                      : const Icon(CupertinoIcons.checkmark_seal_fill),
-                  label: Text(
-                    _isSubmitting ? 'Submitting...' : 'Complete Service Order',
-                    style:
-                        context.text.titleSmall!.copyWith(color: Colors.white),
-                  ),
-                  style: FilledButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: const Size.fromHeight(56),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
+                  child: _isSubmitting
+                      ? const CupertinoActivityIndicator(color: Colors.white)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(CupertinoIcons.checkmark_seal_fill,
+                                size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Complete Service Order',
+                              style: context.text.titleSmall!
+                                  .copyWith(color: Colors.white),
+                            ),
+                          ],
+                        ),
                 ),
                 const SizedBox(height: 32),
               ],
@@ -286,20 +313,49 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                         ? AppTheme.primarySubtleBgDark
                         : AppTheme.primarySubtleBg,
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark
+                          ? AppTheme.primarySubtleBorderDark
+                          : AppTheme.primarySubtleBorder,
+                      width: 0.5,
+                    ),
                   ),
-                  child: Text(
-                    order.concern,
-                    style: context.text.labelLarge!
-                        .copyWith(color: AppTheme.brandInkOf(context)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        order.concern.toLowerCase().contains('pullout')
+                            ? CupertinoIcons.arrow_right_arrow_left
+                            : CupertinoIcons.wrench_fill,
+                        size: 20,
+                        color: AppTheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        order.concern,
+                        style: context.text.labelMedium!
+                            .copyWith(color: AppTheme.brandInkOf(context)),
+                      ),
+                    ],
                   ),
                 ),
                 const Spacer(),
                 if (order.isUrgent)
-                  Chip(
-                    label: Text('URGENT',
-                        style: context.text.labelLarge!
-                            .copyWith(color: Colors.white)),
-                    backgroundColor: AppTheme.primary,
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppTheme.danger,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'URGENT',
+                      style: context.text.labelSmall!.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -308,9 +364,26 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               order.fullName,
               style: context.text.titleMedium,
             ),
-            Text(
-              'Account: ${order.accountNumber} • ${order.provider ?? order.plan ?? "Fiber"}',
-              style: context.text.bodySmall,
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Text(
+                  'Account: ',
+                  style: context.text.bodySmall,
+                ),
+                Text(
+                  order.accountNumber,
+                  style: context.text.bodySmall!.copyWith(
+                    fontFamily: 'JetBrains Mono',
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.brandInkOf(context),
+                  ),
+                ),
+                Text(
+                  ' • ${order.provider ?? order.plan ?? "Switch Fiber"}',
+                  style: context.text.bodySmall,
+                ),
+              ],
             ),
             const Divider(height: 24),
             Row(
@@ -322,36 +395,272 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 Expanded(
                   child: Text(
                     order.address,
-                    style: context.text.bodySmall,
+                    style: context.text.bodyMedium,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
                 if (order.contactNumber.isNotEmpty)
-                  OutlinedButton.icon(
-                    onPressed: () =>
-                        launchUrl(Uri.parse('tel:${order.contactNumber}')),
-                    icon: const Icon(CupertinoIcons.phone_fill, size: 24),
-                    label: Text(order.contactNumber),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          launchUrl(Uri.parse('tel:${order.contactNumber}')),
+                      icon: const Icon(CupertinoIcons.phone_fill, size: 20),
+                      label: const Text('Call Client'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
                   ),
-                const Spacer(),
+                if (order.contactNumber.isNotEmpty && order.latLng != null)
+                  const SizedBox(width: 10),
                 if (order.latLng != null)
-                  ElevatedButton.icon(
-                    onPressed: () => MapNavigationService.navigateTo(
-                        order.latLng!,
-                        label: order.fullName),
-                    icon: const Icon(CupertinoIcons.arrow_up_right_diamond_fill,
-                        size: 24),
-                    label: const Text('Navigate'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => MapNavigationService.navigateTo(
+                          order.latLng!,
+                          label: order.fullName),
+                      icon: const Icon(CupertinoIcons.location_north_fill,
+                          size: 20),
+                      label: const Text('Directions'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
                     ),
                   ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlantAndHardwareCard(ServiceOrderDto order, bool isDark) {
+    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
+    final muted = AppTheme.secondaryInkOf(context);
+    final lcpText = order.lcp?.isNotEmpty == true ? order.lcp! : 'Unassigned';
+    final napText = order.nap?.isNotEmpty == true ? order.nap! : 'Unassigned';
+    final portText =
+        order.port?.isNotEmpty == true ? order.port! : 'Unassigned';
+    final ontText = order.routerModel?.isNotEmpty == true
+        ? order.routerModel!
+        : (order.routerModemSN?.isNotEmpty == true
+            ? order.routerModemSN!
+            : 'Pending Inspection');
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.hub_outlined,
+                    size: 20, color: AppTheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Plant & Hardware Allocation',
+                    style: context.text.titleMedium,
+                  ),
+                ),
+                if (order.vlan != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkInput : AppTheme.fillLight,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: borderColor, width: 0.5),
+                    ),
+                    child: Text(
+                      'VLAN ${order.vlan}',
+                      style: context.text.labelMedium!.copyWith(
+                        fontFamily: 'JetBrains Mono',
+                        color: AppTheme.infoInkOf(context),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Modern 2x2 Instrument Grid Partitioned by Hairlines
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: borderColor, width: 0.5),
+                color:
+                    isDark ? const Color(0xFF14171F) : const Color(0xFFF8FAFC),
+              ),
+              child: Column(
+                children: [
+                  // Row 1: LCP & NAP
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.storage_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'LCP CABINET',
+                                      style: context.text.labelSmall!.copyWith(
+                                        color: muted,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  lcpText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                            width: 0.5, thickness: 0.5, color: borderColor),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.alt_route_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'NAP BOX',
+                                      style: context.text.labelSmall!.copyWith(
+                                        color: muted,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  napText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(height: 0.5, thickness: 0.5, color: borderColor),
+                  // Row 2: Port & ONT
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.settings_ethernet_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'NAP PORT',
+                                      style: context.text.labelSmall!.copyWith(
+                                        color: muted,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  portText,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                            width: 0.5, thickness: 0.5, color: borderColor),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.router_rounded,
+                                        size: 20, color: muted),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'ONT / MODEM',
+                                      style: context.text.labelSmall!.copyWith(
+                                        color: muted,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  ontText,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: context.text.titleSmall!.copyWith(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -378,6 +687,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             const SizedBox(height: 14),
             TextFormField(
               controller: _pulloutSnController,
+              style: const TextStyle(fontFamily: 'JetBrains Mono'),
               decoration: const InputDecoration(
                 labelText: 'Pullout Modem Serial Number (Old)',
                 prefixIcon: Icon(Icons.qr_code_rounded, size: 20),
@@ -387,6 +697,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _newSnController,
+              style: const TextStyle(fontFamily: 'JetBrains Mono'),
               decoration: const InputDecoration(
                 labelText: 'Replacement Modem Serial Number (New)',
                 prefixIcon: Icon(Icons.qr_code_scanner_rounded, size: 20),
@@ -469,18 +780,24 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           ),
         ),
         IconButton(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: count > 0 ? () => onChanged(count - 1) : null,
-          icon: const Icon(CupertinoIcons.minus_circle, size: 22),
+          icon: const Icon(CupertinoIcons.minus_circle, size: 24),
         ),
         Container(
           constraints: const BoxConstraints(minWidth: 32),
           alignment: Alignment.center,
-          child: Text('$count', style: context.text.titleSmall),
+          child: Text('$count',
+              style: context.text.titleSmall!.copyWith(
+                fontFamily: 'JetBrains Mono',
+                fontWeight: FontWeight.w700,
+              )),
         ),
         IconButton(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => onChanged(count + 1),
           icon: const Icon(CupertinoIcons.plus_circle_fill,
-              size: 22, color: AppTheme.primary),
+              size: 24, color: AppTheme.primary),
         ),
       ],
     );
@@ -498,9 +815,18 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 const Icon(Icons.camera_alt_outlined,
                     size: 18, color: AppTheme.primary),
                 const SizedBox(width: 8),
-                Text('Proof of Service (GPS Geotagged)',
-                    style: context.text.titleMedium),
+                Expanded(
+                  child: Text(
+                    'Proof of Service (GPS Geotagged)',
+                    style: context.text.titleMedium,
+                  ),
+                ),
               ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Capture photos of the repaired hardware, drop line, and residence.',
+              style: context.text.labelSmall,
             ),
             const SizedBox(height: 12),
             Row(
@@ -508,7 +834,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 Expanded(
                   child: PhotoCaptureTile(
                     label: 'Modem Setup',
-                    hint: 'Modem setup & lights',
+                    hint: 'Modem lights',
                     icon: Icons.router_rounded,
                     value: _photo1,
                     pick: (source) =>
@@ -520,7 +846,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 Expanded(
                   child: PhotoCaptureTile(
                     label: 'Drop / NAP',
-                    hint: 'Drop cable connection',
+                    hint: 'Drop cable',
                     icon: Icons.alt_route_rounded,
                     value: _photo2,
                     pick: (source) =>
@@ -532,7 +858,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 Expanded(
                   child: PhotoCaptureTile(
                     label: 'House Front',
-                    hint: 'House facade & number',
+                    hint: 'House facade',
                     icon: Icons.home_rounded,
                     value: _photo3,
                     pick: (source) =>

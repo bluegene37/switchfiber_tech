@@ -65,4 +65,11 @@ class LcpNapLocationsDao extends DatabaseAccessor<AppDatabase>
   Future<void> clearAll() {
     return delete(lcpNapLocations).go();
   }
+
+  /// Delete test/sample demo locations
+  Future<int> deleteSampleLocations() {
+    return (delete(lcpNapLocations)
+          ..where((t) => t.street.equals('Sample Street')))
+        .go();
+  }
 }

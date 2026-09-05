@@ -163,7 +163,7 @@ class _RadiusConnectionCardState extends State<RadiusConnectionCard> {
                 child: Row(
                   children: [
                     const Icon(CupertinoIcons.exclamationmark_circle,
-                        size: 20, color: AppTheme.textMuted),
+                        size: 20, color: AppTheme.warning),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
